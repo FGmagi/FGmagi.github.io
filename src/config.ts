@@ -23,29 +23,29 @@ const SITE_LANG = "zh_CN"; // 语言代码，例如：'en', 'zh_CN', 'ja' 等。
 const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UTC+8
 
 const fullBanner = {
-	desktop: ["/assets/desktop-banner/FlandreScarlet_0.webp"], // 桌面横幅图片
+	desktop: [
+		"public/assets/images/A-FS.webp",
+		"public/assets/images/A-BA.jpg",
+	], // 桌面横幅图片
 	mobile: [
-		"/assets/mobile-banner/Shinku_1.webp",
-		"/assets/mobile-banner/Shinku_2.webp",
-		"/assets/mobile-banner/Shinku_3.webp",
+		"public/assets/images/C-SK-0.webp",
+		"public/assets/images/C-SK-1.webp",
+		"public/assets/images/C-SK-2.webp",
 	], // 移动横幅图片
 };
 const wideBanner = {
-	desktop: [
-		"/assets/desktop-banner/FlandreScarlet_1.webp",
-		"/assets/desktop-banner/Shinku_0.webp",
-	], // 桌面横幅图片
+	desktop: ["public/assets/images/B-FS.webp", "assets/images/B-SK.webp"], // 桌面横幅图片
 	mobile: [
-		"/assets/mobile-banner/Shinku_1.webp",
-		"/assets/mobile-banner/Shinku_2.webp",
-		"/assets/mobile-banner/Shinku_3.webp",
+		"public/assets/images/C-SK-0.webp",
+		"public/assets/images/C-SK-1.webp",
+		"public/assets/images/C-SK-2.webp",
 	],
 };
 
 export const siteConfig: SiteConfig = {
 	title: "FGmagi Blog",
 	subtitle: "少女祈祷中",
-	siteURL: "https://FGmagi.github.io/", // 请替换为你的站点URL，以斜杠结尾
+	siteURL: "https://fgmagi.pages.dev", // 请替换为你的站点URL，以斜杠结尾
 	siteStartDate: "2026-2-18", // 站点开始运行日期，用于站点统计组件计算运行天数
 
 	timeZone: SITE_TIMEZONE,
@@ -61,7 +61,7 @@ export const siteConfig: SiteConfig = {
 	featurePages: {
 		anime: true, // 番剧页面开关
 		diary: true, // 日记页面开关
-		friends: false, // 友链页面开关
+		friends: true, // 友链页面开关
 		projects: true, // 项目页面开关
 		skills: false, // 技能页面开关
 		timeline: false, // 时间线页面开关
@@ -91,7 +91,7 @@ export const siteConfig: SiteConfig = {
 		userId: "1215825", // 在此处设置你的Bangumi用户ID，可以设置为 "sai" 测试
 		fetchOnDev: false, // 是否在开发环境下获取 Bangumi 数据（默认 false），获取前先执行 pnpm build 构建 json 文件
 	},
-
+	//pnpm run update-bilibili 更新追番进度
 	bilibili: {
 		vmid: "403250481", // 在此处设置你的Bilibili用户ID (vmid)，例如 "1129280784"
 		fetchOnDev: false, // 是否在开发环境下获取 Bilibili 数据（默认 false）
@@ -101,7 +101,7 @@ export const siteConfig: SiteConfig = {
 	},
 
 	anime: {
-		mode: "local", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置，"bilibili" 使用Bilibili API
+		mode: "bilibili", // 番剧页面模式："bangumi" 使用Bangumi API，"local" 使用本地配置，"bilibili" 使用Bilibili API
 	},
 
 	// 文章列表布局配置
@@ -354,7 +354,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "/assets/images/FlandreScarlet.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
+	avatar: "/assets/images/head-image.webp", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	name: "FGmagi",
 	bio: "弱水三千，只取一瓢",
 	typewriter: {
@@ -444,7 +444,7 @@ export const shareConfig: ShareConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题，填空使用i18n字符串Key.announcement
-	content: "ブログへようこそ！これはサンプルの告知です", // 公告内容
+	content: "施工中，暂无告示", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
@@ -455,7 +455,7 @@ export const announcementConfig: AnnouncementConfig = {
 };
 
 export const musicPlayerConfig: MusicPlayerConfig = {
-	enable: true, // 启用音乐播放器功能
+	enable: false, // 启用音乐播放器功能
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:
 		"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址
@@ -553,8 +553,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 	],
 
 	// 侧栏组件布局配置
+	// 可选：announcement、tags
 	components: {
-		left: ["profile", "announcement", "categories", "tags"],
+		left: ["profile", "announcement", "categories"],
 		right: ["site-stats", "calendar"],
 		drawer: ["profile", "announcement"],
 	},

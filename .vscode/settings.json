@@ -14,7 +14,9 @@
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
 	"liveServer.settings.root": "/dist",
-    "github.copilot.inlineSuggest.enable": true,
-    "editor.inlineSuggest.enabled": false,
-	"frontMatter.dashboard.openOnStart": false
+	"github.copilot.inlineSuggest.enable": true,
+	"editor.inlineSuggest.enabled": false,
+	"frontMatter.dashboard.openOnStart": false,
+	"python-envs.defaultEnvManager": "ms-python.python:system",
+	"python-envs.pythonProjects": []
 }

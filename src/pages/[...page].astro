@@ -2,25 +2,31 @@
 import type { GetStaticPaths } from "astro";
 import Pagination from "../components/control/Pagination.astro";
 import PostPage from "../components/PostPage.astro";
+import PostSearchBar from "../components/PostSearchBar.svelte";
 import { PAGE_SIZE } from "../constants/constants";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../utils/content-utils";
 import { initPostIdMap } from "../utils/permalink-utils";
 
+// 26.08.30修改，内容为：主页分页列表过滤 active: false 的文章，不在主页显示
 export const getStaticPaths = (async ({ paginate }) => {
 	const allBlogPosts = await getSortedPosts();
+	// 过滤 active: false 的文章，不在主页显示
+	const activeBlogPosts = allBlogPosts.filter(
+		(post) => post.data.active !== false,
+	);
 	// 初始化文章 ID 映射（用于 permalink 功能）
-	initPostIdMap(allBlogPosts);
-	return paginate(allBlogPosts, { pageSize: PAGE_SIZE });
+	initPostIdMap(activeBlogPosts);
+	return paginate(activeBlogPosts, { pageSize: PAGE_SIZE });
 }) satisfies GetStaticPaths;
 // https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
 
 const { page } = Astro.props;
-
-const len = page.data.length;
 ---
 
-<MainGridLayout>
+<MainGridLayout fill>
+    {/* 26.08.30修改，内容为：主页文档卡片上方新增搜索栏（简洁模式下居中），点击搜索跳转 /archive/?q=关键字 */}
+    <PostSearchBar className="home-search-bar mb-4" client:load />
     <PostPage page={page}></PostPage>
-    <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+    <Pagination class="mx-auto onload-animation mt-auto" page={page}></Pagination>
 </MainGridLayout>

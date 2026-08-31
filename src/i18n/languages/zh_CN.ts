@@ -4,7 +4,7 @@ import type { Translation } from "../translation";
 export const zh_CN: Translation = {
 	[Key.home]: "主页",
 	[Key.about]: "关于我们",
-	[Key.archive]: "归档",
+	[Key.archive]: "全部", // 26.08.30修改，内容为：归档页文案由"归档"改为"全部"
 	[Key.search]: "搜索",
 	[Key.other]: "其他",
 
@@ -46,7 +46,7 @@ export const zh_CN: Translation = {
 	[Key.postCount]: "篇文章",
 	[Key.postsCount]: "篇文章",
 
-	[Key.themeColor]: "主题色",
+	[Key.themeColor]: "主题", // 26.08.30修改，内容为：主题色按钮文案由"主题色"改为"主题"
 
 	[Key.lightMode]: "亮色",
 	[Key.darkMode]: "暗色",
@@ -330,4 +330,15 @@ export const zh_CN: Translation = {
 	// 布局切换按钮
 	[Key.switchToGridMode]: "切换到网格模式",
 	[Key.switchToListMode]: "切换到列表模式",
+
+	// 26.08.30修改，内容为：新增布局/主题模式显示文案与简洁模式文案
+	// 布局/主题模式显示
+	[Key.listMode]: "网格模式",
+	[Key.gridMode]: "列表模式",
+	[Key.dayMode]: "夜晚模式",
+	[Key.nightMode]: "白天模式",
+
+	// 简洁模式
+	[Key.simpleMode]: "常规模式",
+	[Key.normalMode]: "简洁模式",
 };

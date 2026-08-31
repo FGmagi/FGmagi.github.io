@@ -1,9 +1,18 @@
+/* 26.08.30修改，内容为：md 阅读页正文使用 思源黑体（占位字体，后续替换） */
+.markdown-content {
+  font-family: "思源黑体", "萝莉体 第二版", "ZenMaruGothic-Medium", sans-serif;
+}
+
 .custom-md {
   h1 {
     @apply text-3xl;
   }
 
   :is(h1, h2, h3, h4, h5, h6) {
+    /* 26.08.30：标题与正文之间设置 2.5 行间距 */
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+
     .anchor {
       @apply transition -m-0.5 ms-[0.2ch] p-0.5 select-none opacity-0 no-underline;
 

@@ -1,14 +1,14 @@
 /* 动画增强样式 - 参考 yukina 主题优化 */
 
-/* 页面切换状态类 */
+/* 26.08.31修改，内容为：页面切换透明度统一由 #main-grid 控制，子元素保持稳定 */
 html.is-leaving .transition-leaving {
-  transform: translateY(-1rem);
-  opacity: 0;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 html.is-entering .transition-main {
-  transform: translateY(1.5rem);
-  opacity: 0;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 /* 离开动画类 */

@@ -4,7 +4,7 @@ import type { Translation } from "../translation";
 export const en: Translation = {
 	[Key.home]: "Home",
 	[Key.about]: "About",
-	[Key.archive]: "Archive",
+	[Key.archive]: "All", // 26.08.30修改，内容为：归档页文案由 Archive 改为 All
 	[Key.search]: "Search",
 	[Key.other]: "Other",
 
@@ -339,7 +339,16 @@ export const en: Translation = {
 	[Key.profileStatsVisits]: "Visits",
 	[Key.profileStatsUnavailable]: "Stats unavailable",
 
+	// 26.08.30修改，内容为：新增布局/主题模式显示文案与简洁模式文案
 	// Layout Switch Button
 	[Key.switchToGridMode]: "Switch to Grid Mode",
 	[Key.switchToListMode]: "Switch to List Mode",
+	[Key.listMode]: "List Mode",
+	[Key.gridMode]: "Grid Mode",
+	[Key.dayMode]: "Day Mode",
+	[Key.nightMode]: "Night Mode",
+
+	// Simple mode
+	[Key.simpleMode]: "Simple Mode",
+	[Key.normalMode]: "Normal Mode",
 };

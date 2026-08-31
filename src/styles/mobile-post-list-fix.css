@@ -64,7 +64,7 @@
 /* 桌面端保持原有样式 */
 @media (min-width: 769px) {
   #post-list-container {
-    transition: all 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
   }
 }
 
@@ -166,4 +166,79 @@ body.wallpaper-transparent #post-list-container {
     background: transparent !important;
     background-color: transparent !important;
   }
+}
+
+/* 26.08.31修改，内容为：简洁模式下卡片透明优先于壁纸半透明（与上方壁纸规则同特异性且位于本文件末尾，确保胜出） */
+body.simple-mode .card-base,
+body.simple-mode .card-base-transparent,
+body.simple-mode .float-panel,
+body.simple-mode #post-list-container .card-base,
+body.simple-mode #post-list-container > * .card-base,
+body.simple-mode .post-card-item .card-base,
+body.simple-mode .card-base .card-base {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--line-divider);
+  border-radius: var(--radius-large);
+  box-shadow: -3px 3px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* 26.08.31修改，内容为：导航栏工具卡片保持不透明背景，覆盖移动端透明补丁 */
+body.simple-mode #navbar > div,
+body.wallpaper-transparent #navbar > div {
+  background: var(--card-bg) !important;
+  background-color: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+body.simple-mode #navbar .card-base {
+  background: var(--card-bg) !important;
+  background-color: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+body.simple-mode .card-base:hover,
+body.simple-mode .card-base-transparent:hover,
+body.simple-mode .float-panel:hover,
+body.simple-mode #post-list-container .card-base:hover,
+body.simple-mode #post-list-container > * .card-base:hover,
+body.simple-mode .post-card-item .card-base:hover,
+body.simple-mode .card-base .card-base:hover {
+  box-shadow: -9px 9px 9px rgba(0, 0, 0, 0.12);
+}
+:root.dark body.simple-mode .card-base,
+:root.dark body.simple-mode .card-base-transparent,
+:root.dark body.simple-mode .float-panel,
+:root.dark body.simple-mode #post-list-container .card-base,
+:root.dark body.simple-mode #post-list-container > * .card-base,
+:root.dark body.simple-mode .post-card-item .card-base,
+:root.dark body.simple-mode .card-base .card-base {
+  box-shadow: -3px 3px 3px rgba(0, 0, 0, 0.35);
+}
+:root.dark body.simple-mode .card-base:hover,
+:root.dark body.simple-mode .card-base-transparent:hover,
+:root.dark body.simple-mode .float-panel:hover,
+:root.dark body.simple-mode #post-list-container .card-base:hover,
+:root.dark body.simple-mode #post-list-container > * .card-base:hover,
+:root.dark body.simple-mode .post-card-item .card-base:hover,
+:root.dark body.simple-mode .card-base .card-base:hover {
+  box-shadow: -9px 9px 9px rgba(0, 0, 0, 0.35);
+}
+
+/* 26.08.31修改，内容为：常规模式下内容卡片白色背景延伸至页面底部（覆盖上方壁纸透明规则，同特异性且位于本文件末尾） */
+body:not(.simple-mode) #post-list-container {
+  background: var(--card-bg) !important;
+  background-color: var(--card-bg) !important;
+}
+
+/* 26.08.31修改，内容为：页面和模式切换时解除移动端初始化隐藏，避免列表自身比主网格晚一拍显示 */
+body.swup-leaving #post-list-container,
+body.page-entering #post-list-container,
+body.simple-mode-switching #post-list-container,
+body.simple-mode-switching-in #post-list-container {
+  opacity: 1 !important;
+  transition: none !important;
 }

@@ -239,6 +239,7 @@ onDestroy(() => {
             if (!isDesktopSearchExpanded) toggleDesktopSearch(); 
             search(keywordDesktop, true);
         }}
+        oncontextmenu={(e) => { e.preventDefault(); keywordDesktop = ""; result = []; }}
         onblur={handleBlur}
         class="transition-all pl-10 text-sm bg-transparent outline-0
             h-full {isDesktopSearchExpanded ? 'w-36' : 'w-0'} text-black/50 dark:text-white/50"
@@ -260,6 +261,7 @@ onDestroy(() => {
   ">
         <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
         <input placeholder={i18n(I18nKey.search)} bind:value={keywordMobile}
+               oncontextmenu={(e) => { e.preventDefault(); keywordMobile = ""; result = []; }}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 text-black/50 dark:text-white/50"
         >

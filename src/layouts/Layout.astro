@@ -94,7 +94,9 @@ if (!banner || typeof banner !== "string" || banner.trim() === "") {
 // TODO don't use post cover as banner for now
 banner = getDefaultBanner();
 
-const enableBanner = !!siteConfig.banner.src;
+// 26.08.31修改，内容为：SSR 初始横幅类按默认壁纸模式判断（默认 fullscreen 时首帧直接全屏渲染，避免先显示横幅再切换造成卡片上移/壁纸刷新）
+const enableBanner =
+	siteConfig.wallpaperMode.defaultMode === "banner" && !!siteConfig.banner.src;
 
 let pageTitle: string;
 if (title) {
@@ -954,6 +956,67 @@ function disableAnimation() {
 	}
 
 	const setup = () => {
+		// 26.08.30修改，内容为：新增 pendingHomeState 记录目标页面是否为首页（swup 切换时 content:replace 阶段 location 可能尚未更新），供磁贴显隐同步使用
+		// 记录目标页面是否为首页（swup 切换时 content:replace 阶段 location 可能尚未更新）
+		let pendingHomeState: boolean | null = null;
+
+		// 26.08.30修改，内容为：新增 syncMainGrid 函数——swup 只替换容器内部内容，不会更新 #main-grid 等元素上的 Tailwind 网格列类，需手动同步左右磁贴显示与主内容区列位置
+		// 同步 #main-grid 与主内容区的网格列类（swup 只替换容器内部内容，不会更新这些元素上的 Tailwind 类）
+		const syncMainGrid = () => {
+			const mainGrid = document.getElementById("main-grid");
+			const main = document.getElementById("swup-container");
+			if (!mainGrid || !main) return;
+
+			const leftSidebar = document.querySelector(".home-sidebar");
+			const rightSidebar = document.querySelector(".home-right-sidebar");
+
+			// 平板端（md）：仅左磁贴可能显示
+			const showLeftMd = leftSidebar ? !leftSidebar.classList.contains("md:hidden") : false;
+			mainGrid.classList.remove("md:grid-cols-1", "md:grid-cols-[17.5rem_1fr]");
+			main.classList.remove("md:col-start-1", "md:col-end-2", "md:col-start-2", "md:col-end-3");
+			if (showLeftMd) {
+				mainGrid.classList.add("md:grid-cols-[17.5rem_1fr]");
+				main.classList.add("md:col-start-2", "md:col-end-3");
+			} else {
+				mainGrid.classList.add("md:grid-cols-1");
+				main.classList.add("md:col-start-1", "md:col-end-2");
+			}
+
+			// 桌面端（lg）
+			const showLeftLg = leftSidebar ? !leftSidebar.classList.contains("lg:hidden") : false;
+			const showRightLg = rightSidebar ? !rightSidebar.classList.contains("lg:hidden") : false;
+
+			const gridCols = [
+				"lg:grid-cols-1",
+				"lg:grid-cols-[17.5rem_1fr]",
+				"lg:grid-cols-[1fr_17.5rem]",
+				"lg:grid-cols-[17.5rem_1fr_17.5rem]",
+			];
+			const mainCols = [
+				"lg:col-span-1",
+				"lg:col-start-1",
+				"lg:col-end-2",
+				"lg:col-start-2",
+				"lg:col-end-3",
+			];
+			gridCols.forEach((c) => mainGrid.classList.remove(c));
+			mainCols.forEach((c) => main.classList.remove(c));
+
+			if (showLeftLg && showRightLg) {
+				mainGrid.classList.add("lg:grid-cols-[17.5rem_1fr_17.5rem]");
+				main.classList.add("lg:col-start-2", "lg:col-end-3");
+			} else if (showLeftLg) {
+				mainGrid.classList.add("lg:grid-cols-[17.5rem_1fr]");
+				main.classList.add("lg:col-start-2", "lg:col-end-3");
+			} else if (showRightLg) {
+				mainGrid.classList.add("lg:grid-cols-[1fr_17.5rem]");
+				main.classList.add("lg:col-start-1", "lg:col-end-2");
+			} else {
+				mainGrid.classList.add("lg:grid-cols-1");
+				main.classList.add("lg:col-span-1");
+			}
+		};
+
 		// TODO: temp solution to change the height of the banner
 		/*
     window.swup.hooks.on('animation:out:start', () => {
@@ -986,7 +1049,64 @@ function disableAnimation() {
 			}
 		});
 
+		// 26.08.31修改，内容为：点击站内链接立即标记 swup-leaving，中间内容/白色面板与磁贴即刻开始淡出（不依赖 swup 动画钩子时序，消除延迟消失）
+		document.addEventListener("click", (e) => {
+			const target = e.target as Element | null;
+			const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+			if (!anchor) return;
+			const href = anchor.getAttribute("href") || "";
+			if (
+				href.startsWith("#") ||
+				href.startsWith("http") ||
+				href.startsWith("//") ||
+				anchor.getAttribute("target") === "_blank"
+			) {
+				return;
+			}
+			// 26.08.31修改，内容为：目标与当前页面相同时不触发 swup 导航，仅做一次淡出-淡入刷新，避免内容隐藏后无法重新显示
+			const samePage =
+				new URL(anchor.href, window.location.origin).pathname ===
+				window.location.pathname;
+			if (samePage) {
+				e.preventDefault();
+				if ((window as any).__samePageFading) return;
+				(window as any).__samePageFading = true;
+				document.body.classList.add("swup-leaving");
+				setTimeout(() => {
+					document.body.classList.remove("swup-leaving");
+					(window as any).__samePageFading = false;
+				}, 320);
+				return;
+			}
+			document.body.classList.add("swup-leaving");
+			// 安全网：若导航异常未触发 content:replace / page:view，超时后恢复显示
+			clearTimeout((window as any).__swupLeavingTimer);
+			(window as any).__swupLeavingTimer = setTimeout(() => {
+				document.body.classList.remove("swup-leaving");
+			}, 2000);
+		});
+		document.addEventListener("swup:page:view", () => {
+			document.body.classList.remove("swup-leaving");
+			clearTimeout((window as any).__swupLeavingTimer);
+		});
+
 		window.swup.hooks.on("content:replace", () => {
+			// 26.08.30修改，内容为：content:replace 阶段再切换 lg:is-home，确保旧页面左中右卡片先同步淡出、再渲染目标布局
+			const bodyElement = document.querySelector("body");
+			if (bodyElement) {
+				if (pendingHomeState) {
+					bodyElement.classList.add("lg:is-home");
+				} else {
+					bodyElement.classList.remove("lg:is-home");
+				}
+			}
+			// 26.08.30修改，内容为：content:replace 阶段同步磁贴显隐（非首页隐藏）并同步主网格布局，避免过渡期磁贴位置错乱
+			// 同步磁贴显示状态与主网格布局（避免过渡期磁贴位置错乱）
+			const isHomePath = pendingHomeState ?? (window.location.pathname === "/" || window.location.pathname === "");
+			document.querySelectorAll(".home-sidebar, .home-right-sidebar").forEach((el) => {
+				el.classList.toggle("sidebar-force-hidden", !isHomePath);
+			});
+			syncMainGrid();
 			// 初始化新页面的图片、公式、滚动条和TOC
 			initFancybox();
 			checkKatex();
@@ -1041,15 +1161,10 @@ function disableAnimation() {
 				cleanupFancybox();
 
 				// 处理 Banner class 和显示状态
-				const bodyElement = document.querySelector("body");
 				const isHomePage = pathsEqual(visit.to.url, url("/"));
-				if (bodyElement) {
-					if (isHomePage) {
-						bodyElement.classList.add("lg:is-home");
-					} else {
-						bodyElement.classList.remove("lg:is-home");
-					}
-				}
+				// 26.08.30修改，内容为：visit:start 阶段记录目标页面是否为首页，供 content:replace 阶段磁贴显隐同步使用
+				pendingHomeState = isHomePage;
+				// 26.08.30修改，内容为：lg:is-home 切换延后到 content:replace，避免离开动画期间网格提前变宽、磁贴提前消失
 
 				// Control banner text visibility based on page
 				const bannerTextOverlay = document.querySelector(
@@ -1129,6 +1244,16 @@ function disableAnimation() {
 		);
 
 		window.swup.hooks.on("page:view", () => {
+			// 26.08.30修改，内容为：page:view 阶段同步非主页磁贴显隐（sidebar-force-hidden）并同步主网格布局类
+			// 非主页时隐藏侧边栏磁贴（swup 只替换主内容，侧边栏需手动同步）
+			const isHomePath = window.location.pathname === "/" || window.location.pathname === "";
+			document.querySelectorAll(".home-sidebar, .home-right-sidebar").forEach((el) => {
+				el.classList.toggle("sidebar-force-hidden", !isHomePath);
+			});
+
+			// 同步 #main-grid 与主内容区的网格列类
+			syncMainGrid();
+
 			// hide the temp high element when the transition is done
 			const heightExtend = document.getElementById("page-height-extend");
 			if (heightExtend) {

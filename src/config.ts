@@ -57,16 +57,17 @@ export const siteConfig: SiteConfig = {
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 
+	// 26.08.30修改，内容为：关闭未使用的特色页面（diary 日记、projects 项目、devices 设备），保留 anime/friends/albums
 	// 特色页面开关配置（关闭未使用的页面有助于提升 SEO，关闭后请记得在 navbarConfig 中移除对应链接）
 	featurePages: {
 		anime: true, // 番剧页面开关
-		diary: true, // 日记页面开关
+		diary: false, // 日记页面开关
 		friends: true, // 友链页面开关
-		projects: true, // 项目页面开关
+		projects: false, // 项目页面开关
 		skills: false, // 技能页面开关
 		timeline: false, // 时间线页面开关
 		albums: true, // 相册页面开关
-		devices: true, // 设备页面开关
+		devices: false, // 设备页面开关
 	},
 
 	// 顶栏标题配置
@@ -74,7 +75,7 @@ export const siteConfig: SiteConfig = {
 		// 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo
 		mode: "logo",
 		// 顶栏标题文本
-		text: "MizukiUI",
+		text: "FGmagi", // 26.08.30修改，内容为：站名由 MizukiUI 改为 FGmagi
 		// 顶栏标题图标路径，默认使用 public/assets/home/home.png
 		icon: "assets/home/home.png",
 		// 网站Logo图片路径
@@ -238,115 +239,44 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 		interval: 300, // 轮播间隔时间（秒）
 	},
 	zIndex: -1, // 层级，确保壁纸在背景层
-	opacity: 0.78, // 壁纸透明度
+	opacity: 0.28, // 26.08.30修改，内容为：壁纸透明度由 0.78 调低至 0.28，避免干扰正文阅读
 	blur: 1, // 背景模糊程度
 };
 
+// 26.08.30修改，内容为：导航栏链接重构——仅保留主页、全部与"目录"下拉（含追番/友链/图片/我的/关于），移除原多级外链菜单
 export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
-		// 支持自定义导航栏链接，支持多级菜单
 		{
-			name: "Links",
-			url: "/links/",
-			icon: "material-symbols:link",
-			children: [
-				{
-					name: "GitHub",
-					url: "https://github.com/FGmagi",
-					external: true,
-					//icon: "fa6-brands:github",
-				},
-				{
-					name: "Bangumi",
-					url: "https://bgm.tv/user/1215825",
-					external: true,
-				},
-				{
-					name: "Bilibili",
-					url: "https://space.bilibili.com/403250481",
-					external: true,
-					//icon: "fa6-brands:bilibili",
-				},
-				{
-					name: "Pixiv",
-					url: "https://www.pixiv.net/users/101271864",
-					external: true,
-					//icon: "fa6-brands:bilibili",
-				},
-				{
-					name: "项目源地址",
-					url: "https://github.com/FGmagi/FGmagi.github.io",
-					external: true,
-					//icon: "mdi:git",
-				},
-			],
-		},
-		{
-			name: "My",
+			name: "目录",
 			url: "/content/",
-			icon: "material-symbols:person",
+			icon: "material-symbols:menu",
 			children: [
 				{
-					name: "Anime",
+					name: "追番",
 					url: "/anime/",
 					icon: "material-symbols:movie",
 				},
 				{
-					name: "Diary",
-					url: "/diary/",
-					icon: "material-symbols:book",
+					name: "友链",
+					url: "/friends/",
+					icon: "material-symbols:group",
 				},
 				{
-					name: "Gallery",
+					name: "图片",
 					url: "/albums/",
 					icon: "material-symbols:photo-library",
 				},
 				{
-					name: "Devices",
-					url: "devices/",
-					icon: "material-symbols:devices",
-					external: false,
-				},
-			],
-		},
-		{
-			name: "About",
-			url: "/content/",
-			icon: "material-symbols:info",
-			children: [
-				{
-					name: "About",
-					url: "/about/",
+					name: "我的",
+					url: "/posts/myself/",
 					icon: "material-symbols:person",
 				},
 				{
-					name: "Friends",
-					url: "/friends/",
-					icon: "material-symbols:group",
-				},
-			],
-		},
-		{
-			name: "Others",
-			url: "#",
-			icon: "material-symbols:more-horiz",
-			children: [
-				{
-					name: "Projects",
-					url: "/projects/",
-					icon: "material-symbols:work",
-				},
-				{
-					name: "Skills",
-					url: "/skills/",
-					icon: "material-symbols:psychology",
-				},
-				{
-					name: "Timeline",
-					url: "/timeline/",
-					icon: "material-symbols:timeline",
+					name: "关于",
+					url: "/posts/about/",
+					icon: "material-symbols:info",
 				},
 			],
 		},
@@ -361,33 +291,7 @@ export const profileConfig: ProfileConfig = {
 		enable: true, // 启用个人简介打字机效果
 		speed: 80, // 打字速度（毫秒）
 	},
-	links: [
-		{
-			name: "Bilibili",
-			icon: "fa6-brands:bilibili",
-			url: "https://space.bilibili.com/701864046",
-		},
-		{
-			name: "Gitee",
-			icon: "mdi:git",
-			url: "https://gitee.com/matsuzakayuki",
-		},
-		{
-			name: "GitHub",
-			icon: "fa6-brands:github",
-			url: "https://github.com/matsuzaka-yuki",
-		},
-		{
-			name: "Codeberg",
-			icon: "simple-icons:codeberg",
-			url: "https://codeberg.org",
-		},
-		{
-			name: "Discord",
-			icon: "fa6-brands:discord",
-			url: "https://discord.gg/MqW6TcQtVM",
-		},
-	],
+	links: [],
 };
 
 export const licenseConfig: LicenseConfig = {
@@ -439,7 +343,7 @@ export const commentConfig: CommentConfig = {
 };
 
 export const shareConfig: ShareConfig = {
-	enable: true, // 启用分享功能
+	enable: false, // 启用分享功能
 };
 
 export const announcementConfig: AnnouncementConfig = {
@@ -449,7 +353,7 @@ export const announcementConfig: AnnouncementConfig = {
 	link: {
 		enable: true, // 启用链接
 		text: "Learn More", // 链接文本
-		url: "/about/", // 链接 URL
+		url: "/posts/about/", // 链接 URL
 		external: false, // 内部链接
 	},
 };
@@ -498,7 +402,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
-			animationDelay: 50,
+			animationDelay: 0,
 		},
 		{
 			// 组件类型：分类组件
@@ -508,7 +412,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
-			animationDelay: 150,
+			animationDelay: 0,
 			// 响应式配置
 			responsive: {
 				// 折叠阈值：当分类数量超过5个时自动折叠
@@ -523,7 +427,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
-			animationDelay: 250,
+			animationDelay: 0,
 			// 响应式配置
 			responsive: {
 				// 折叠阈值：当标签数量超过20个时自动折叠
@@ -538,7 +442,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
-			animationDelay: 200,
+			animationDelay: 0,
 		},
 		{
 			// 组件类型：日历组件(移动端不显示)
@@ -548,7 +452,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// CSS 类名
 			class: "onload-animation",
 			// 动画延迟时间
-			animationDelay: 250,
+			animationDelay: 0,
 		},
 	],
 
@@ -567,7 +471,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 		// 基础延迟时间（毫秒）
 		baseDelay: 0,
 		// 递增延迟时间（毫秒），每个组件依次增加的延迟
-		increment: 50,
+		increment: 0, // 26.08.30修改，内容为：组件递增加载延迟由 50ms 调整为 0ms，加快页面呈现
 	},
 
 	// 响应式布局配置
@@ -621,7 +525,7 @@ export const pioConfig: import("./types/config").PioConfig = {
 	mode: "draggable", // 默认为可拖拽模式
 	hiddenOnMobile: true, // 默认在移动设备上隐藏
 	dialog: {
-		welcome: "Welcome to Mizuki Website!", // 欢迎词
+		welcome: "Welcome to FGmagi Blog!", // 26.08.30修改，内容为：欢迎语由 Mizuki Website 改为 FGmagi Blog
 		touch: [
 			"What are you doing?",
 			"Stop touching me!",

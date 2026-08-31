@@ -3,21 +3,25 @@ import { onMount } from "svelte";
 
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import PostSearchBar from "./PostSearchBar.svelte";
 
 export let tags: string[];
 export let categories: string[];
 export let sortedPosts: Post[] = [];
+export let postsContent: Record<string, string> = {};
 
 const params = new URLSearchParams(window.location.search);
 tags = params.has("tag") ? params.getAll("tag") : [];
 categories = params.has("category") ? params.getAll("category") : [];
 const uncategorized = params.get("uncategorized");
+const searchKeyword = params.get("q") || "";
 
 interface Post {
 	id: string;
 	url?: string; // 预计算的文章 URL
 	data: {
 		title: string;
+		description?: string;
 		tags: string[];
 		category?: string;
 		published: Date;
@@ -64,6 +68,28 @@ onMount(async () => {
 		filteredPosts = filteredPosts.filter((post) => !post.data.category);
 	}
 
+	// 26.08.30修改，内容为：新增关键字搜索——匹配标题/说明/标签/正文，空格分词、大小写不敏感、任意关键字命中即匹配，与标签/分类筛选互不影响
+	const keywords = searchKeyword
+		.trim()
+		.toLowerCase()
+		.split(/\s+/)
+		.filter(Boolean);
+	if (keywords.length > 0) {
+		filteredPosts = filteredPosts.filter((post) => {
+			const title = (post.data.title || "").toLowerCase();
+			const desc = (post.data.description || "").toLowerCase();
+			const tagsText = (post.data.tags || []).join(" ").toLowerCase();
+			const content = (postsContent[post.id] || "").toLowerCase();
+			return keywords.some(
+				(kw) =>
+					title.includes(kw) ||
+					desc.includes(kw) ||
+					tagsText.includes(kw) ||
+					content.includes(kw),
+			);
+		});
+	}
+
 	// 按发布时间倒序排序，确保不受置顶影响
 	filteredPosts = filteredPosts
 		.slice()
@@ -91,6 +117,8 @@ onMount(async () => {
 	groups = groupedPostsArray;
 });
 </script>
+
+<PostSearchBar keyword={searchKeyword} className="archive-search-bar mb-4" />
 
 <div class="card-base px-8 py-6">
     {#each groups as group}

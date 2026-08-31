@@ -322,6 +322,17 @@ enum I18nKey {
 	// 布局切换按钮
 	switchToGridMode = "switchToGridMode",
 	switchToListMode = "switchToListMode",
+
+	// 26.08.30修改，内容为：新增布局/主题模式显示文案 key（listMode/gridMode/dayMode/nightMode）与简洁模式 key（simpleMode/normalMode）
+	// 布局/主题模式显示
+	listMode = "listMode",
+	gridMode = "gridMode",
+	dayMode = "dayMode",
+	nightMode = "nightMode",
+
+	// 简洁模式
+	simpleMode = "simpleMode",
+	normalMode = "normalMode",
 }
 
 export default I18nKey;

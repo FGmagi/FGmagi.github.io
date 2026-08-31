@@ -113,6 +113,20 @@
 			searchHandler,
 		]);
 
+		// 26.08.31修改，内容为：右键清空友链搜索栏并重置筛选
+		var contextMenuHandler = (e) => {
+			e.preventDefault();
+			searchInput.value = "";
+			searchTerm = "";
+			filterFriends();
+		};
+		searchInput.addEventListener("contextmenu", contextMenuHandler);
+		window.friendsPageState.eventListeners.push([
+			searchInput,
+			"contextmenu",
+			contextMenuHandler,
+		]);
+
 		// 标签筛选
 		for (var i = 0; i < tagFilters.length; i++) {
 			((button) => {

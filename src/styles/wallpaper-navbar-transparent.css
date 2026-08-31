@@ -103,6 +103,15 @@ body.wallpaper-transparent #navbar[data-transparent-mode="semifull"].scrolled {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 26.08.31修改，内容为：顶部主页/全部/目录工具栏常驻不透明卡片，避免全屏壁纸状态下变透明 */
+body #navbar > div {
+  background: var(--card-bg) !important;
+  background-color: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
 /* 子组件样式 (Sub-Components) */
 :is(.dropdown-content, #nav-menu-panel, #mobile-toc-panel, #display-setting, #search-panel, .music-player .mini-player, .float-panel) {
   /* 使用面板专用变量 */

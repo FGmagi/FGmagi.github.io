@@ -117,8 +117,7 @@
     opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.15s ease-out;
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 350px;
+  /* 26.08.31修改，内容为：移除 content-visibility，避免追番卡片按滚动从上到下依次出现 */
 }
 
 .anime-grid-container [data-anime-status].anime-fade-out {

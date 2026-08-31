@@ -42,7 +42,8 @@ export default defineConfig({
 		swup({
 			theme: false,
 			animationClass: "transition-swup-",
-			containers: ["main"],
+			// 26.08.30修改，内容为：swup 容器由 main 扩展为同时包含 #sidebar-swup-container，使页面切换时侧边栏磁贴随内容一起过渡
+			containers: ["main", "#sidebar-swup-container"],
 			smoothScrolling: false, // 禁用平滑滚动以提升性能，避免与锚点导航冲突
 			cache: true,
 			preload: true, // swup 默认鼠标悬停预加载

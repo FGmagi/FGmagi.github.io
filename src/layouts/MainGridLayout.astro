@@ -38,6 +38,8 @@ interface Props {
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 	headings?: MarkdownHeading[];
+	// 26.08.30修改，内容为：新增 fill 属性，主页列表页填充视口高度（不足8篇时分页图标贴视觉底部）
+	fill?: boolean;
 }
 
 // 类型守卫函数
@@ -106,6 +108,7 @@ const {
 	setOGTypeArticle,
 	postSlug,
 	headings = [],
+	fill = false,
 } = Astro.props;
 const hasBannerCredit = siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
@@ -129,25 +132,30 @@ const mainPanelTop =
 const finalMainPanelTop =
 	siteConfig.wallpaperMode.defaultMode === "banner" ? mainPanelTop : "5.5rem";
 
-// 检查左侧边栏是否有组件
+// 26.08.30修改，内容为：左右侧边栏、手机 drawer、平板侧边栏是否显示均增加"仅首页显示"限制（isHomePage），非首页隐藏全部磁贴
+// 检查左侧边栏是否有组件（仅首页显示）
 const hasLeftSidebarComponents =
-	widgetManager.getComponentsByPosition("top", "left", "desktop").length > 0 ||
-	widgetManager.getComponentsByPosition("sticky", "left", "desktop").length > 0;
+	isHomePage &&
+	(widgetManager.getComponentsByPosition("top", "left", "desktop").length > 0 ||
+		widgetManager.getComponentsByPosition("sticky", "left", "desktop").length > 0);
 
-// 检查右侧边栏是否有组件
+// 检查右侧边栏是否有组件（仅首页显示）
 const hasRightSidebarComponents =
-	widgetManager.getComponentsByPosition("top", "right", "desktop").length > 0 ||
-	widgetManager.getComponentsByPosition("sticky", "right", "desktop").length > 0;
+	isHomePage &&
+	(widgetManager.getComponentsByPosition("top", "right", "desktop").length > 0 ||
+		widgetManager.getComponentsByPosition("sticky", "right", "desktop").length > 0);
 
-// 检查手机端 drawer 是否有组件
+// 检查手机端 drawer 是否有组件（仅首页显示）
 const hasMobileDrawerComponents =
-	widgetManager.getComponentsByPosition("top", "drawer", "mobile").length > 0 ||
-	widgetManager.getComponentsByPosition("sticky", "drawer", "mobile").length > 0;
+	isHomePage &&
+	(widgetManager.getComponentsByPosition("top", "drawer", "mobile").length > 0 ||
+		widgetManager.getComponentsByPosition("sticky", "drawer", "mobile").length > 0);
 
-// 平板端是否有组件（考虑自动移动逻辑）
+// 平板端是否有组件（考虑自动移动逻辑，仅首页显示）
 const hasTabletLeftSidebarComponents =
-	widgetManager.getComponentsByPosition("top", "left", "tablet").length > 0 ||
-	widgetManager.getComponentsByPosition("sticky", "left", "tablet").length > 0;
+	isHomePage &&
+	(widgetManager.getComponentsByPosition("top", "left", "tablet").length > 0 ||
+		widgetManager.getComponentsByPosition("sticky", "left", "tablet").length > 0);
 
 // 检查侧边栏是否启用，动态调整网格布局
 const mobileShowSidebar = hasMobileDrawerComponents;
@@ -233,25 +241,32 @@ const mainContentClass = `
 	.trim()
 	.replace(/\s+/g, " ");
 
-// 检查是否应该启用半透明效果（当默认模式为 fullscreen 时）
-const shouldEnableTransparency =
-	siteConfig.wallpaperMode.defaultMode === "fullscreen";
-
-// 为组件添加半透明效果的CSS类
-const transparentClass = shouldEnableTransparency
-	? "wallpaper-transparent"
-	: "";
+// 26.08.31修改，内容为：透明状态改由 body.wallpaper-transparent 统一控制，移除静态标记，确保隐藏壁纸模式清除毛玻璃效果
 ---
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug}>
 
 <script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling}}>
 
+	// 26.08.30修改，内容为：页面渲染前始终强制使用列表模式（布局切换按钮已隐藏），并应用简洁模式（默认开启，隐藏左右磁贴）
+
 	// 立即执行，在页面渲染前应用壁纸模式和布局模式，避免闪烁
 	(function() {
+		// 列表/网格切换按钮已隐藏，始终使用列表模式（覆盖此前保存的 grid 缓存）
+		localStorage.setItem('postListLayout', 'list');
+		sessionStorage.setItem('postListLayout', 'list');
+
 		const wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
 		const body = document.body;
 		
+		// 26.08.31修改，内容为：简洁模式默认改为关闭（常规模式），仅当存储值为 true 时启用
+		const simpleMode = localStorage.getItem('simpleMode');
+		if (simpleMode === 'true') {
+			body.classList.add('simple-mode');
+		} else {
+			body.classList.remove('simple-mode');
+		}
+
 		// 定义 banner 高度常量（与 constants.ts 保持一致）
 		// const BANNER_HEIGHT = 35;
 		// const BANNER_HEIGHT_EXTEND = 30;
@@ -463,13 +478,35 @@ const transparentClass = shouldEnableTransparency
 		applyWallpaperMode();
 	});
 	
-	// 支持 Swup 页面过渡 - 在内容替换之前就应用布局，避免闪烁
+	// 26.08.30修改，内容为：新增监听 simple-mode-change 事件，实时切换 body 的 simple-mode 类（无需刷新页面）
+
+	// 监听简洁模式变化，立即应用（不重载页面）
+	window.addEventListener('simple-mode-change', function(event) {
+		const simple = event.detail && event.detail.simple;
+		if (simple) {
+			document.body.classList.add('simple-mode');
+		} else {
+			document.body.classList.remove('simple-mode');
+		}
+	});
+
+	// 26.08.31修改，内容为：Swup 页面切换统一由 #main-grid 控制淡出和淡入，清除新节点动画并保留 page-entering 至渐变结束
+	function clearPageRegionAnimations() {
+		const transitionRegion = document.getElementById('main-grid');
+		if (!transitionRegion) return;
+		transitionRegion.querySelectorAll('.onload-animation').forEach((element) => {
+			element.classList.remove('onload-animation');
+		});
+	}
+
 	function setupSwupLayoutSync() {
 		// @ts-ignore
 		if (typeof window !== 'undefined' && window.swup) {
 			// 关键：在 content:replace 之前（animation:out:start）就准备好布局状态
 			// @ts-ignore
 			window.swup.hooks.on('animation:out:start', function() {
+				// 26.08.30修改，内容为：离开动画开始前标记 swup-leaving，左中右卡片同步淡出并冻结网格布局
+				document.body.classList.add('swup-leaving');
 				// 保存当前布局状态，以便在新页面中立即应用
 				const savedLayout = localStorage.getItem('postListLayout');
 				if (savedLayout) {
@@ -481,6 +518,14 @@ const transparentClass = shouldEnableTransparency
 			// 在内容替换后立即应用布局，不等待其他脚本
 			// @ts-ignore
 			window.swup.hooks.on('content:replace', function() {
+				// 26.08.31修改，内容为：内容替换后先清除主网格子元素动画，再由主网格统一淡入，避免中间卡片单独延迟
+				document.body.classList.remove('swup-leaving');
+				clearPageRegionAnimations();
+				document.body.classList.add('page-entering');
+				clearTimeout(window.__pageEnteringTimer);
+				window.__pageEnteringTimer = setTimeout(() => {
+					document.body.classList.remove('page-entering');
+				}, 360);
 				const mainGrid = document.getElementById('main-grid');
 				if (mainGrid) {
 					// @ts-ignore
@@ -538,9 +583,21 @@ const transparentClass = shouldEnableTransparency
 	}
 	
 	// 支持 Swup 页面过渡
+	// 26.08.30修改，内容为：swup 页面切换后重新应用简洁模式（simple-mode 类），避免切页后磁贴显示状态残留
+
 	document.addEventListener('swup:page:view', function() {
+		// 26.08.31修改，内容为：新页面节点插入后再次清除加载动画，page-entering继续到统一渐变完成，避免跨页瞬间显示
+		clearPageRegionAnimations();
 		applyWallpaperMode();
 		
+		// 26.08.31修改，内容为：在Swup页面切换时重新应用简洁模式（默认常规模式）
+		const simpleMode = localStorage.getItem('simpleMode');
+		if (simpleMode === 'true') {
+			document.body.classList.add('simple-mode');
+		} else {
+			document.body.classList.remove('simple-mode');
+		}
+
 		// 在Swup页面切换时也要重新应用布局模式
 		requestAnimationFrame(function() {
 			const mainGrid = document.getElementById('main-grid');
@@ -791,10 +848,10 @@ const transparentClass = shouldEnableTransparency
 </div>
 
 <!-- Main content -->
-<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${siteConfig.wallpaperMode.defaultMode === 'none' ? 'no-banner-layout' : ''} ${transparentClass}`} style={`top: ${finalMainPanelTop}`}>
+<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${siteConfig.wallpaperMode.defaultMode === 'none' ? 'no-banner-layout' : ''}`} style={`top: ${finalMainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? 'mobile-no-sidebar' : ''} ${hasRightSidebarComponents ? 'mobile-both-sidebar' : ''}`}
+        <div id="main-grid" class={`page-transition-region transition-opacity duration-300 ease-out w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? 'mobile-no-sidebar' : ''} ${hasRightSidebarComponents ? 'mobile-both-sidebar' : ''}`}
              data-layout-mode={defaultPostListLayout}
         >
             <!-- Banner image credit -->
@@ -811,21 +868,20 @@ const transparentClass = shouldEnableTransparency
             </a>}
 
 
+            {/* 26.08.30修改，内容为：左右磁贴容器改为始终渲染（带 home-sidebar/home-right-sidebar 类），由 CSS 按首页/简洁模式控制显隐，供 swup 切换时同步 */}
             {/* 侧边栏和主内容区域容器 */}
-            <div class="contents">
-                {(mobileShowSidebar || tabletShowSidebar || desktopShowSidebar) && (
-                    <SideBar class={`${sidebarClass} ${transparentClass}`} headings={headings}></SideBar>
-                )}
-                
-                {hasRightSidebarComponents && (
-                    <div class={`right-sidebar-container ${rightSidebarClass} ${transparentClass}`}>
-                        <RightSideBar headings={headings}></RightSideBar>
-                    </div>
-                )}
+
+            {/* 侧边栏和主内容区域容器 */}
+            <div id="sidebar-swup-container" class="contents">
+                <SideBar class={`${sidebarClass} home-sidebar`} headings={headings}></SideBar>
+
+                <div class={`right-sidebar-container home-right-sidebar ${rightSidebarClass}`}>
+                    <RightSideBar headings={headings}></RightSideBar>
+                </div>
             </div>
 
             <main id="swup-container" class={`${mainContentClass} transition-main`}>
-                <div id="content-wrapper" class="onload-animation transition-leaving">
+                <div id="content-wrapper" class:list={["onload-animation transition-leaving", fill ? "home-content-fill" : ""]}>
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
@@ -866,8 +922,100 @@ const transparentClass = shouldEnableTransparency
 <!-- 保留此元素以确保Swup正常工作 -->
 {(!siteConfig.toc.enable || isFloatTOC) && <div id="toc-container" class="hidden"></div>}
 </Layout>
+{/* 26.08.30修改，内容为：新增简洁模式与非首页时隐藏左右磁贴、主内容占满整行的样式 */}
+
 
 <style>
+:global(.sidebar-force-hidden) {
+    display: none !important;
+}
+
+/* 非主页：隐藏左右磁贴（覆盖初始加载时 SideBar 内部样式，以及 swup 切换后的旧状态） */
+:global(body:not(.lg\:is-home) .home-sidebar),
+:global(body:not(.lg\:is-home) .home-right-sidebar) {
+    display: none !important;
+}
+
+/* 非主页：主内容区占满整行，与上方导航栏等宽居中（覆盖 swup 切换后残留的旧网格列模板） */
+@media (min-width: 768px) {
+    :global(body:not(.lg\:is-home) #main-grid) {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+    :global(body:not(.lg\:is-home) #swup-container) {
+        grid-column: 1 / -1 !important;
+    }
+}
+
+/* 简洁模式：隐藏左右磁贴 */
+:global(body.simple-mode .home-sidebar),
+:global(body.simple-mode .home-right-sidebar) {
+    display: none !important;
+}
+
+/* 简洁模式：主内容区占满整行，与上方导航栏等宽居中 */
+@media (min-width: 768px) {
+    :global(body.simple-mode #main-grid) {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+    :global(body.simple-mode #swup-container) {
+        grid-column: 1 / -1 !important;
+    }
+}
+
+/* 26.08.31修改，内容为：主页列表区高度改由 JS 按左右磁贴下端对齐（syncPanelHeight），不再固定视口高度 */
+:global(#content-wrapper.home-content-fill) {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 26.08.31修改，内容为：页面切换只让主网格做一次透明度过渡，左右磁贴、中间内容和页脚因此同时出现 */
+:global(.page-transition-region) {
+    opacity: 1;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+:global(body.swup-leaving .page-transition-region) {
+    animation: none !important;
+    opacity: 0 !important;
+    pointer-events: none;
+    will-change: opacity;
+}
+
+:global(body.page-entering .page-transition-region) {
+    animation: page-region-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both !important;
+    pointer-events: none;
+    will-change: opacity;
+}
+
+/* Swup 的子容器不再拥有独立透明度，避免与主网格形成两次淡入 */
+:global(body.swup-leaving .page-transition-region #swup-container),
+:global(body.page-entering .page-transition-region #swup-container),
+:global(body.swup-leaving .page-transition-region #content-wrapper),
+:global(body.page-entering .page-transition-region #content-wrapper) {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* 新页面的卡片只跟随主网格显示，不再执行 onload-animation */
+:global(body.swup-leaving .page-transition-region .onload-animation),
+:global(body.page-entering .page-transition-region .onload-animation) {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+@keyframes page-region-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 26.08.31修改，内容为：常规模式（fill 页面）下文章列表区拉伸至视口底部，仅高于切页按钮 */
+:global(#content-wrapper.home-content-fill > #post-list-container) {
+    flex: 1 1 auto;
+}
+
 /* Banner text styles */
 .banner-title {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);

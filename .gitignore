@@ -1,5 +1,8 @@
 Mizuki_docs/
 Mizuki-Content-Manager-main/
+任务书.md
+*任务日志.log
+*.prompt.md
 
 # build output
 dist/
@@ -44,6 +47,17 @@ cache/
 fuwari/
 src/data/myself.ts
 src/pages/myself.astro
+
+# 技术手册（本地查看，不上传）
+本地手册.md
+
+# 技术笔记（不上传）
+notes/
+
+# 本地启动脚本（不上传）
+start.bat
+
+*.lnk
 
 # Bangumi generated data
 src/data/bangumi-data.json

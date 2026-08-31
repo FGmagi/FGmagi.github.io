@@ -4,8 +4,6 @@ import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import { getFileDirFromPath, getTagUrl, getPostUrl } from "@/utils/url-utils";
 import { siteConfig } from "../config";
-import I18nKey from "../i18n/i18nKey";
-import { i18n } from "../i18n/translation";
 import ImageWrapper from "./misc/ImageWrapper.astro";
 import PostMetadata from "./PostMeta.astro";
 
@@ -18,6 +16,7 @@ interface Props {
 const { entry, style } = Astro.props;
 const className = Astro.props.class;
 
+// 26.08.30修改，内容为：卡片改为悬停整体变暗10%、移除封面悬停箭头与标题变色、无标签不渲染、无说明时显示正文首行半宽省略号、日期/字数/分类移至标题同行靠右底对齐、简洁模式隐藏封面
 const {
 	title,
 	published,
@@ -38,77 +37,77 @@ const { remarkPluginFrontmatter } = await render(entry);
 
 <div
 	class:list={[
-		"card-base flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative",
+		"card-base group flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative",
 		className,
 	]}
 	style={style}
 >
+	<div class="absolute inset-0 z-30 pointer-events-none transition rounded-[var(--radius-large)] bg-black/10 opacity-0 group-hover:opacity-100"></div>
+	<!-- 26.08.31修改，内容为：整卡可点击跳转——覆盖全卡的链接锚点，点击卡片任意位置进入文章 -->
+	<a href={url} aria-label={title} tabindex="-1" class="absolute inset-0 z-10 rounded-[var(--radius-large)]"></a>
 	<div
 		class:list={[
-			"pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative",
+			"post-card-content pl-6 md:pl-9 pr-6 md:pr-[0.667rem] pt-6 md:pt-7 pb-6 relative",
 			{
 				"w-full md:w-[calc(100%_-_3.25rem_-_0.75rem)]": !hasCover,
 				"w-full md:w-[calc(100%_-_var(--coverWidth)_-_0.75rem)]": hasCover,
 			},
 		]}
 	>
-		<a
-			href={url}
-			class="transition group w-full block font-bold mb-3 text-3xl text-90
-        hover:text-[var(--primary)] dark:hover:text-[var(--primary)]
-        active:text-[var(--title-active)] dark:active:text-[var(--title-active)]
-        before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
-        before:absolute
-        before:top-[2.1875rem] before:left-[1.125rem] before:hidden md:before:block"
-		>
-			{
-				pinned && (
-					<Icon
-						name="mdi:pin"
-						class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5"
-					/>
-				)
-			}
-			{title}
-			<Icon
-				class="inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute"
-				name="material-symbols:chevron-right-rounded"
-			/>
-			<Icon
-				class="text-[var(--primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0"
-				name="material-symbols:chevron-right-rounded"
-			/>
-		</a>
+		<div class="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 mb-3">
+			<a
+				href={url}
+				class="transition min-w-0 flex-1 block font-bold text-3xl text-90
+				before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
+				before:absolute
+				before:top-[2.1875rem] before:left-[1.125rem] before:hidden md:before:block"
+			>
+				{
+					pinned && (
+						<Icon
+							name="mdi:pin"
+							class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5"
+						/>
+					)
+				}
+				{title}
+			</a>
 
-		<PostMetadata
-			published={published}
-			updated={updated}
-			tags={tags}
-			category={category || ""}
-			hideTagsForMobile={true}
-			hideUpdateDate={true}
-			className="mb-4"
-			showOnlyBasicMeta={true}
-			words={remarkPluginFrontmatter.words}
-			showWordCount={true}
-		/>
+			<PostMetadata
+				published={published}
+				updated={updated}
+				tags={tags}
+				category={category || ""}
+				hideTagsForMobile={true}
+				hideUpdateDate={true}
+				className="shrink-0 post-card-meta mr-4"
+				showOnlyBasicMeta={true}
+				words={remarkPluginFrontmatter.words}
+				showWordCount={true}
+				hideUncategorized
+				hideMetaIcons
+			/>
+		</div>
 
 		<div
 			class:list={[
-				"transition text-75 mb-3.5 pr-4",
-				{ "line-clamp-2 md:line-clamp-1": !description },
+				"transition text-75 mt-[0.3rem] mb-[0.575rem] pr-4",
+				description
+					? "line-clamp-2 md:line-clamp-1"
+					: "line-clamp-1 max-w-[50%]",
 			]}
 		>
 			{description || remarkPluginFrontmatter.excerpt}
 		</div>
 
-		<div class="flex flex-wrap gap-2 mt-2">
-			{
-				tags && tags.length > 0 ? (
-					tags.map((tag) => (
+		{
+			tags && tags.length > 0 && (
+				<div class="flex flex-wrap gap-2 mt-2">
+					{tags.map((tag) => (
 						<a
 							href={getTagUrl(tag)}
 							class:list={[
+								"relative z-20",
 								siteConfig.tagStyle?.useNewStyle
 									? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-[var(--primary)] dark:hover:text-[var(--primary)] active:text-[var(--primary)] dark:active:text-[var(--primary)] group/tag whitespace-nowrap"
 									: "btn-regular h-6 text-xs px-2 rounded-lg",
@@ -119,12 +118,10 @@ const { remarkPluginFrontmatter } = await render(entry);
 								# {tag.trim()}
 							</span>
 						</a>
-					))
-				) : (
-					<span class="text-xs text-50">{i18n(I18nKey.noTags)}</span>
-				)
-			}
-		</div>
+					))}
+				</div>
+			)
+		}
 	</div>
 
 	{
@@ -133,23 +130,17 @@ const { remarkPluginFrontmatter } = await render(entry);
 				href={url}
 				aria-label={title}
 				class:list={[
-					"group",
+					"post-cover-link",
 					"max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
-					"md:w-[var(--coverWidth)] relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95",
+					"md:w-[var(--coverWidth)] relative md:absolute md:top-[12.5%] md:bottom-[12.5%] md:right-3 rounded-xl overflow-hidden active:scale-95",
 				]}
 			>
-				<div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
-				<div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
-					<Icon
-						name="material-symbols:chevron-right-rounded"
-						class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl"
-					/>
-				</div>
 				<ImageWrapper
 					src={image}
 					basePath={getFileDirFromPath(entry.filePath || "")}
 					alt="Cover Image of the Post"
 					class="w-full h-full"
+					hideOverlay
 				/>
 			</a>
 		)
@@ -178,4 +169,21 @@ const { remarkPluginFrontmatter } = await render(entry);
 >
 </div>
 
-<style define:vars={{ coverWidth }}></style>
+<style define:vars={{ coverWidth }}>
+	/* 26.08.30修改，内容为：简洁模式下主页不渲染封面图，内容区恢复全宽 */
+	:global(body.simple-mode .post-cover-link) {
+		display: none !important;
+	}
+	:global(body.simple-mode .post-card-content) {
+		width: 100% !important;
+		padding-right: 2rem !important;
+	}
+	/* 26.08.31修改，内容为：竖图居中 contain（左右透明边距），横图填满封面 */
+	:global(.post-cover-link img.cover-portrait) {
+		object-fit: contain !important;
+	}
+	/* 26.08.31修改，内容为：常规模式下隐藏字数统计（简洁模式保留），日期/分类保持在封面左侧 2rem 处 */
+	:global(body:not(.simple-mode) .post-card-meta .meta-words) {
+		display: none !important;
+	}
+</style>

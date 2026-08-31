@@ -1,0 +1,194 @@
+[2m21:29:07[22m [34m[content][39m Syncing content
+[2m21:29:07[22m [34m[content][39m Synced content
+[2m21:29:07[22m [34m[types][39m Generated [2m524ms[22m
+[2m21:29:07[22m [34m[build][39m output: [34m"static"[39m
+[2m21:29:07[22m [34m[build][39m mode: [34m"static"[39m
+[2m21:29:07[22m [34m[build][39m directory: [34mD:\make\Project\FGmagi.github.io\dist\[39m
+[2m21:29:07[22m [34m[build][39m Collecting build info...
+[2m21:29:07[22m [34m[build][39m [32m✓ Completed in 732ms.[39m
+[2m21:29:07[22m [34m[build][39m Building static entrypoints...
+[33m[1m21:29:13[22m [WARN] [vite][39m 
+/assets/font/ZenMaruGothic-Medium.woff2 referenced in /assets/font/ZenMaruGothic-Medium.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
+[33m[1m21:29:13[22m [WARN] [vite][39m 
+/assets/font/萝莉体 第二版.woff2 referenced in /assets/font/萝莉体 第二版.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
+[2m21:29:15[22m [34m[vite][39m [32m✓ built in 8.07s[39m
+[2m21:29:15[22m [34m[build][39m [32m✓ Completed in 8.14s.[39m
+
+[42m[30m building client (vite) [39m[49m
+[2m21:29:15[22m [34m[vite][39m transforming...
+[2m21:29:17[22m [34m[vite][39m [32m✓[39m 290 modules transformed.
+[2m21:29:17[22m [34m[vite][39m rendering chunks...
+[2m21:29:17[22m [34m[vite][39m computing gzip size...
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/ec.g1fg5.js                                                    [39m[1m[2m  0.94 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size3-Regular.CTq5MqoE.woff                              [39m[1m[2m  4.42 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size4-Regular.Dl5lxZxV.woff2                             [39m[1m[2m  4.93 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size2-Regular.Dy4dx90m.woff2                             [39m[1m[2m  5.21 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size1-Regular.mCD8mA8B.woff2                             [39m[1m[2m  5.47 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size4-Regular.BF-4gkZK.woff                              [39m[1m[2m  5.98 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size2-Regular.oD1tc_U0.woff                              [39m[1m[2m  6.19 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size1-Regular.C195tn64.woff                              [39m[1m[2m  6.50 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Caligraphic-Regular.Di6jR-x-.woff2                       [39m[1m[2m  6.91 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Caligraphic-Bold.Dq_IR9rO.woff2                          [39m[1m[2m  6.91 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size3-Regular.DgpXs0kz.ttf                               [39m[1m[2m  7.59 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Caligraphic-Regular.CTRA-rTL.woff                        [39m[1m[2m  7.66 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Caligraphic-Bold.BEiXGLvX.woff                           [39m[1m[2m  7.72 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Script-Regular.D3wIWfF6.woff2                            [39m[1m[2m  9.64 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Regular.DDBCnlJ7.woff2                         [39m[1m[2m 10.34 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size4-Regular.DWFBv043.ttf                               [39m[1m[2m 10.36 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Script-Regular.D5yQViql.woff                             [39m[1m[2m 10.59 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Fraktur-Regular.CTYiF6lA.woff2                           [39m[1m[2m 11.32 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Fraktur-Bold.CL6g_b3V.woff2                              [39m[1m[2m 11.35 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size2-Regular.B7gKUWhC.ttf                               [39m[1m[2m 11.51 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Italic.C3H0VqGB.woff2                          [39m[1m[2m 12.03 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Bold.D1sUS0GD.woff2                            [39m[1m[2m 12.22 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Size1-Regular.Dbsnue_I.ttf                               [39m[1m[2m 12.23 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Regular.CS6fqUqJ.woff                          [39m[1m[2m 12.32 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Caligraphic-Regular.wX97UBjC.ttf                         [39m[1m[2m 12.34 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Caligraphic-Bold.ATXxdsX0.ttf                            [39m[1m[2m 12.37 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Fraktur-Regular.Dxdc4cR9.woff                            [39m[1m[2m 13.21 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Fraktur-Bold.BsDP51OF.woff                               [39m[1m[2m 13.30 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Typewriter-Regular.CO6r4hn1.woff2                        [39m[1m[2m 13.57 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Italic.DN2j7dab.woff                           [39m[1m[2m 14.11 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Bold.DbIhKOiC.woff                             [39m[1m[2m 14.41 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Typewriter-Regular.C0xS9mPB.woff                         [39m[1m[2m 16.03 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Math-BoldItalic.CZnvNsCZ.woff2                           [39m[1m[2m 16.40 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Math-Italic.t53AETM-.woff2                               [39m[1m[2m 16.44 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Script-Regular.C5JkGWo-.ttf                              [39m[1m[2m 16.65 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-BoldItalic.DxDJ3AOS.woff2                           [39m[1m[2m 16.78 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Italic.NWA7e6Wa.woff2                               [39m[1m[2m 16.99 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Math-BoldItalic.iY-2wyZ7.woff                            [39m[1m[2m 18.67 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Math-Italic.DA0__PXp.woff                                [39m[1m[2m 18.75 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-BoldItalic.SpSLRI95.woff                            [39m[1m[2m 19.41 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Regular.BNo7hRIc.ttf                           [39m[1m[2m 19.44 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Fraktur-Regular.CB_wures.ttf                             [39m[1m[2m 19.57 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Fraktur-Bold.BdnERNNW.ttf                                [39m[1m[2m 19.58 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Italic.BMLOBm91.woff                                [39m[1m[2m 19.68 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Italic.YYjJ1zSn.ttf                            [39m[1m[2m 22.36 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_SansSerif-Bold.CFMepnvq.ttf                              [39m[1m[2m 24.50 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Bold.Cx986IdX.woff2                                 [39m[1m[2m 25.32 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Regular.B22Nviop.woff2                              [39m[1m[2m 26.27 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Typewriter-Regular.D3Ib7_Hf.ttf                          [39m[1m[2m 27.56 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_AMS-Regular.BQhdFMY1.woff2                               [39m[1m[2m 28.08 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Bold.Jm3AIy58.woff                                  [39m[1m[2m 29.91 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Regular.Dr94JaBh.woff                               [39m[1m[2m 30.77 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Math-BoldItalic.B3XSjfu4.ttf                             [39m[1m[2m 31.20 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Math-Italic.flOr_0UB.ttf                                 [39m[1m[2m 31.31 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-BoldItalic.DzxPMmG6.ttf                             [39m[1m[2m 32.97 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_AMS-Regular.DMm9YOAa.woff                                [39m[1m[2m 33.52 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Italic.3WenGoN9.ttf                                 [39m[1m[2m 33.58 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Bold.waoOVXN0.ttf                                   [39m[1m[2m 51.34 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_Main-Regular.ypZvNtVU.ttf                                [39m[1m[2m 53.58 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[32m_astro/KaTeX_AMS-Regular.DRggAlZN.ttf                                 [39m[1m[2m 63.63 kB[22m[1m[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[35m_astro/_page_.BNqIFLDd.css                                            [39m[1m[2m  6.13 kB[22m[1m[22m[2m │ gzip:  1.39 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[35m_astro/Layout.omPQcCVA.css                                            [39m[1m[2m 14.04 kB[22m[1m[22m[2m │ gzip:  2.61 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[35m_astro/ec.ucqne.css                                                   [39m[1m[2m 21.58 kB[22m[1m[22m[2m │ gzip:  4.60 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[35m_astro/katex.B82Si5CG.css                                             [39m[1m[2m 29.20 kB[22m[1m[22m[2m │ gzip:  7.97 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[35m_astro/fancybox.DRe9SoLl.css                                          [39m[1m[2m 32.82 kB[22m[1m[22m[2m │ gzip:  6.35 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/404.astro_astro_type_script_index_0_lang.dvY850Ym.js           [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/albums.astro_astro_type_script_index_0_lang.dvY850Ym.js        [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/archive.astro_astro_type_script_index_0_lang.dvY850Ym.js       [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/devices.astro_astro_type_script_index_0_lang.dvY850Ym.js       [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/diary.astro_astro_type_script_index_0_lang.dvY850Ym.js         [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/friends.astro_astro_type_script_index_0_lang.dvY850Ym.js       [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/_...slug_.astro_astro_type_script_index_0_lang.dvY850Ym.js     [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/rss.astro_astro_type_script_index_1_lang.dvY850Ym.js           [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/skills.astro_astro_type_script_index_0_lang.dvY850Ym.js        [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/timeline.astro_astro_type_script_index_1_lang.dvY850Ym.js      [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/_permalink_.astro_astro_type_script_index_0_lang.dvY850Ym.js   [39m[1m[2m  0.10 kB[22m[1m[22m[2m │ gzip:  0.12 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/constants.DaxSDMEW.js                                          [39m[1m[2m  0.11 kB[22m[1m[22m[2m │ gzip:  0.11 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/url-utils.CMpdgSqy.js                                          [39m[1m[2m  0.28 kB[22m[1m[22m[2m │ gzip:  0.20 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Pio.gmukUwTI.js                                                [39m[1m[2m  0.41 kB[22m[1m[22m[2m │ gzip:  0.29 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/navigation-utils.Cc6bKnia.js                                   [39m[1m[2m  0.52 kB[22m[1m[22m[2m │ gzip:  0.33 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/input.YRwhIefA.js                                              [39m[1m[2m  0.83 kB[22m[1m[22m[2m │ gzip:  0.47 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/SwupScriptsPlugin.DeeT9ppa.js                                  [39m[1m[2m  1.10 kB[22m[1m[22m[2m │ gzip:  0.62 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/preload-helper.BlTxHScW.js                                     [39m[1m[2m  1.11 kB[22m[1m[22m[2m │ gzip:  0.65 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/client.svelte.C6D1q1WY.js                                      [39m[1m[2m  1.19 kB[22m[1m[22m[2m │ gzip:  0.67 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/lifecycle.CND_ZjY1.js                                          [39m[1m[2m  1.25 kB[22m[1m[22m[2m │ gzip:  0.71 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/config.DlGnOhxo.js                                             [39m[1m[2m  1.26 kB[22m[1m[22m[2m │ gzip:  0.56 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/right-sidebar-layout.vJPKW6ps.js                               [39m[1m[2m  1.53 kB[22m[1m[22m[2m │ gzip:  0.60 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/props.DWYr8kbx.js                                              [39m[1m[2m  1.74 kB[22m[1m[22m[2m │ gzip:  0.89 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/index.modern.D46RI4Wq.js                                       [39m[1m[2m  1.77 kB[22m[1m[22m[2m │ gzip:  0.91 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/if.BgCM_dVa.js                                                 [39m[1m[2m  1.83 kB[22m[1m[22m[2m │ gzip:  0.84 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Icon.aJCsZzeH.js                                               [39m[1m[2m  1.94 kB[22m[1m[22m[2m │ gzip:  1.07 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/setting-utils.CHcwNblF.js                                      [39m[1m[2m  1.96 kB[22m[1m[22m[2m │ gzip:  0.76 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/panel-manager.BYknToDe.js                                      [39m[1m[2m  2.00 kB[22m[1m[22m[2m │ gzip:  0.67 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/page.CtGVhf01.js                                               [39m[1m[2m  2.02 kB[22m[1m[22m[2m │ gzip:  0.99 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/utils.3AuDKzKw.js                                              [39m[1m[2m  2.28 kB[22m[1m[22m[2m │ gzip:  1.19 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/DisplaySettings.CwVsRCXt.js                                    [39m[1m[2m  2.44 kB[22m[1m[22m[2m │ gzip:  1.31 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Navbar.astro_astro_type_script_index_0_lang.BRzFkB64.js        [39m[1m[2m  2.48 kB[22m[1m[22m[2m │ gzip:  0.91 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/SwupHeadPlugin.DvOZNxAa.js                                     [39m[1m[2m  2.58 kB[22m[1m[22m[2m │ gzip:  1.28 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/projects.astro_astro_type_script_index_0_lang.DKQ4aRTu.js      [39m[1m[2m  2.63 kB[22m[1m[22m[2m │ gzip:  1.15 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/RightSideBar.astro_astro_type_script_index_0_lang.9y7PnwiG.js  [39m[1m[2m  3.02 kB[22m[1m[22m[2m │ gzip:  1.16 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/MusicPlayer.BKOGiXsJ.js                                        [39m[1m[2m  3.03 kB[22m[1m[22m[2m │ gzip:  1.55 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/ArchivePanel.BDtsm4S8.js                                       [39m[1m[2m  3.81 kB[22m[1m[22m[2m │ gzip:  1.67 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/each.BUaXgHWV.js                                               [39m[1m[2m  3.82 kB[22m[1m[22m[2m │ gzip:  1.81 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/WallpaperSwitch.ByFyJkmL.js                                    [39m[1m[2m  4.03 kB[22m[1m[22m[2m │ gzip:  1.71 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/FloatingTOC.astro_astro_type_script_index_0_lang.BRnmJ81N.js   [39m[1m[2m  4.33 kB[22m[1m[22m[2m │ gzip:  1.63 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/render.CNv_Q7_7.js                                             [39m[1m[2m  4.50 kB[22m[1m[22m[2m │ gzip:  2.03 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/SwupA11yPlugin.Db7ns-wA.js                                     [39m[1m[2m  5.25 kB[22m[1m[22m[2m │ gzip:  2.13 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/SwupPreloadPlugin.CxVXAG_A.js                                  [39m[1m[2m  6.06 kB[22m[1m[22m[2m │ gzip:  2.35 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Layout.astro_astro_type_script_index_1_lang.DGJQrGZe.js        [39m[1m[2m  6.09 kB[22m[1m[22m[2m │ gzip:  2.26 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Search.CGkxzmyf.js                                             [39m[1m[2m  6.15 kB[22m[1m[22m[2m │ gzip:  2.61 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/TOC.astro_astro_type_script_index_0_lang.zga0xClO.js           [39m[1m[2m  6.25 kB[22m[1m[22m[2m │ gzip:  2.43 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/MobileTOC.qH6XjrA4.js                                          [39m[1m[2m  6.46 kB[22m[1m[22m[2m │ gzip:  2.92 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/translation.Be7SJwmf.js                                        [39m[1m[2m  6.61 kB[22m[1m[22m[2m │ gzip:  3.10 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Layout.astro_astro_type_script_index_0_lang._R4ib5TO.js        [39m[1m[2m  8.19 kB[22m[1m[22m[2m │ gzip:  2.53 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Layout.astro_astro_type_script_index_2_lang.xWqFDVlh.js        [39m[1m[2m  9.14 kB[22m[1m[22m[2m │ gzip:  3.21 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/functions.WhpeioxD.js                                          [39m[1m[2m 17.81 kB[22m[1m[22m[2m │ gzip:  6.93 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/Swup.DHq3IxW6.js                                               [39m[1m[2m 21.62 kB[22m[1m[22m[2m │ gzip:  7.41 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/template.CV6FLnMz.js                                           [39m[1m[2m 23.13 kB[22m[1m[22m[2m │ gzip:  9.11 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/SharePoster.DDrCIHHA.js                                        [39m[1m[2m 34.23 kB[22m[1m[22m[2m │ gzip: 13.61 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/zh_TW.CAR08eYr.js                                              [39m[1m[2m 53.09 kB[22m[1m[22m[2m │ gzip: 13.84 kB[22m
+[2m21:29:17[22m [34m[vite][39m [2mdist/[22m[36m_astro/index.D26FdS83.js                                              [39m[1m[2m114.06 kB[22m[1m[22m[2m │ gzip: 39.11 kB[22m
+[2m21:29:17[22m [34m[vite][39m [32m✓ built in 2.21s[39m
+
+[42m[30m generating static routes [39m[49m
+[2m21:29:18[22m [32m▶[39m src/pages/404.astro
+[2m21:29:18[22m   [34m└─[39m [2m/404.html[22m [2m(+34ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/albums/[id]/index.astro
+相册 AcgExample 已设置为隐藏，跳过显示
+相册 ExternalExample 已设置为隐藏，跳过显示
+[2m21:29:18[22m [32m▶[39m src/pages/albums.astro
+[2m21:29:18[22m   [34m└─[39m [2m/albums/index.html[22m相册 AcgExample 已设置为隐藏，跳过显示
+相册 ExternalExample 已设置为隐藏，跳过显示
+ [2m(+12ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/anime.astro
+[2m21:29:18[22m   [34m└─[39m [2m/anime/index.html[22m [2m(+30ms)[22m 
+[2m21:29:18[22m [35mλ[39m src/pages/api/calendar-data.json.ts
+[2m21:29:18[22m   [34m└─[39m [2m/api/calendar-data.json[22m [2m(+2ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/archive.astro
+[2m21:29:18[22m   [34m└─[39m [2m/archive/index.html[22m [2m(+8ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/atom.astro
+[2m21:29:18[22m   [34m└─[39m [2m/atom/index.html[22m [2m(+8ms)[22m 
+[2m21:29:18[22m [35mλ[39m src/pages/atom.xml.ts
+[2m21:29:18[22m   [34m└─[39m [2m/atom.xml[22m [2m(+16ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/devices.astro
+[2m21:29:18[22m   [34m└─[39m [2m/devices/index.html[22m [2m(+2ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/diary.astro
+[2m21:29:18[22m   [34m└─[39m [2m/diary/index.html[22m [2m(+2ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/friends.astro
+[2m21:29:18[22m   [34m└─[39m [2m/friends/index.html[22m [2m(+9ms)[22m 
+[2m21:29:18[22m [35mλ[39m src/pages/og/[...slug].png.ts
+[2m21:29:18[22m [32m▶[39m src/pages/posts/[...slug].astro
+[2m21:29:18[22m   [34m├─[39m [2m/posts/about/index.html[22m [2m(+18ms)[22m 
+[2m21:29:18[22m   [34m└─[39m [2m/posts/myself/index.html[22m [2m(+8ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/projects.astro
+[2m21:29:18[22m   [34m└─[39m [2m/projects/index.html[22m [2m(+3ms)[22m 
+[2m21:29:18[22m [35mλ[39m src/pages/robots.txt.ts
+[2m21:29:18[22m   [34m└─[39m [2m/robots.txt[22m [2m(+2ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/rss.astro
+[2m21:29:18[22m   [34m└─[39m [2m/rss/index.html[22m [2m(+8ms)[22m 
+[2m21:29:18[22m [35mλ[39m src/pages/rss.xml.ts
+[2m21:29:18[22m   [34m└─[39m [2m/rss.xml[22m [2m(+7ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/skills.astro
+[2m21:29:18[22m   [34m└─[39m [2m/skills/index.html[22m [2m(+3ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/timeline.astro
+[2m21:29:18[22m   [34m└─[39m [2m/timeline/index.html[22m [2m(+2ms)[22m 
+[2m21:29:18[22m [32m▶[39m src/pages/[permalink].astro
+[2m21:29:18[22m [32m▶[39m src/pages/[...page].astro
+[2m21:29:18[22m   [34m└─[39m [2m/index.html[22m [2m(+10ms)[22m 
+[2m21:29:18[22m [32m✓ Completed in 817ms.
+[39m
+[2m21:29:18[22m [34m[@astrojs/sitemap][39m `sitemap-index.xml` created at `dist`
+[2m21:29:18[22m [34m[build][39m 15 page(s) built in [1m12.09s[22m
+[2m21:29:18[22m [34m[build][39m [1mComplete![22m

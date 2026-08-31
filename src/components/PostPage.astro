@@ -23,7 +23,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 
 <div
 	id="post-list-container"
-	class={`transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 ${initialLayoutClass}`}
+	class={`transition-opacity duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] overflow-hidden mb-4 ${initialLayoutClass}`}
 	data-default-layout={defaultLayout}
 	data-both-sidebars={hasRightSidebars}
 >
@@ -185,6 +185,111 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 		}
 	}
 	setTimeout(publishLayoutInit, 150);
+
+	// 26.08.31修改，内容为：常规模式封面宽高比按窗口动态调整（1:1~16:9，封面高度与卡片等高），竖图居中 contain、横图填满；监听图片加载/resize/scroll/swup
+	function getClampedCoverRatio() {
+		return Math.min(16 / 9, Math.max(1, window.innerWidth / window.innerHeight));
+	}
+	function applyCoverOrientation(img: HTMLImageElement) {
+		if (img.naturalWidth > 0 && img.naturalWidth < img.naturalHeight) {
+			img.classList.add("cover-portrait");
+			img.classList.remove("cover-landscape");
+		} else {
+			img.classList.add("cover-landscape");
+			img.classList.remove("cover-portrait");
+		}
+	}
+	function sizePostCovers() {
+		const links = document.querySelectorAll<HTMLElement>(".post-cover-link");
+		links.forEach((link) => {
+			const height = link.offsetHeight;
+			if (!height) return;
+			const width = Math.round(height * getClampedCoverRatio());
+			link.style.width = `${width}px`;
+			const card = link.closest<HTMLElement>(".card-base");
+			// 26.08.31修改，内容为：define:vars 会把 --coverWidth 内联到每个元素，仅更新根节点无效；改为直接设置内容区宽度（与封面左缘对齐），保证日期/分类随封面同步移动
+			if (card) {
+				const content = card.querySelector<HTMLElement>(".post-card-content");
+				if (content) {
+					content.style.width = `calc(100% - ${width}px - 0.75rem)`;
+				}
+			}
+		});
+	}
+	function initPostCoverLayout() {
+		document
+			.querySelectorAll<HTMLImageElement>(".post-cover-link img")
+			.forEach((img) => {
+				if (img.complete && img.naturalWidth > 0) {
+					applyCoverOrientation(img);
+				} else {
+					img.addEventListener(
+						"load",
+						() => applyCoverOrientation(img),
+						{ once: true },
+					);
+				}
+			});
+		sizePostCovers();
+		syncPanelHeight();
+		observeSidebars();
+	}
+	// 26.08.31修改，内容为：主页内容不足时白色面板底部与左右磁贴下端水平对齐（测量磁贴高度设置面板最小高度）
+	function syncPanelHeight() {
+		const panel = document.getElementById("post-list-container");
+		if (!panel) return;
+		const panelTop = panel.getBoundingClientRect().top;
+		let maxH = 0;
+		// 26.08.31修改，内容为：测量每列最后一个磁贴元素下缘相对面板顶部的位置（容器会被网格拉伸，须以磁贴内容为准）
+		document
+			.querySelectorAll(".home-sidebar, .home-right-sidebar")
+			.forEach((sb) => {
+				const sidebar = sb as HTMLElement;
+				if (sidebar.offsetHeight === 0) return;
+				const widgets = sb.querySelectorAll(".card-base");
+				if (widgets.length === 0) return;
+				const last = widgets[widgets.length - 1];
+				const bottom = last.getBoundingClientRect().bottom - panelTop;
+				if (bottom > maxH) maxH = bottom;
+			});
+		panel.style.minHeight = maxH > 0 ? `${maxH}px` : "";
+	}
+	// 26.08.31修改，内容为：观察左右磁贴尺寸变化（字体/图片加载后高度变化），持续同步面板高度
+	let sidebarResizeObserver: ResizeObserver | null = null;
+	function observeSidebars() {
+		if (typeof ResizeObserver === "undefined") return;
+		if (!sidebarResizeObserver) {
+			sidebarResizeObserver = new ResizeObserver(() => syncPanelHeight());
+		}
+		sidebarResizeObserver.disconnect();
+		document
+			.querySelectorAll(".home-sidebar, .home-right-sidebar")
+			.forEach((sb) => sidebarResizeObserver!.observe(sb));
+	}
+	let coverResizeRaf = 0;
+	function scheduleCoverResize() {
+		if (coverResizeRaf) return;
+		coverResizeRaf = window.requestAnimationFrame(() => {
+			coverResizeRaf = 0;
+			sizePostCovers();
+			syncPanelHeight();
+		});
+	}
+	window.addEventListener("resize", scheduleCoverResize);
+	window.addEventListener("scroll", scheduleCoverResize, { passive: true });
+	document.addEventListener("DOMContentLoaded", initPostCoverLayout);
+	if (document.readyState !== "loading") initPostCoverLayout();
+	document.addEventListener("swup:page:view", () =>
+		setTimeout(initPostCoverLayout, 0),
+	);
+	// 26.08.31修改，内容为：图片/字体加载后重算面板高度，确保底部与磁贴下端对齐
+	window.addEventListener("load", () => {
+		setTimeout(syncPanelHeight, 50);
+		setTimeout(syncPanelHeight, 400);
+	});
+	setTimeout(syncPanelHeight, 300);
+	setTimeout(syncPanelHeight, 1200);
+	setTimeout(observeSidebars, 300);
 </script>
 
 <style>
@@ -204,55 +309,19 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 		@apply grid grid-cols-1 md:grid-cols-2 gap-6;
 	}
 
-	/* 内容可见性 (视口外不渲染) */
+	/* 26.08.31修改，内容为：文章卡片交由主网格统一过渡，不再单独渐入，避免中间内容晚于侧栏且封面反复闪烁 */
 	#post-list-container > :global(*) {
-		content-visibility: auto;
-		contain-intrinsic-size: 200px;
-		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		opacity: 0;
-		animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-		animation-delay: calc(
-			var(--content-delay) + var(--i) * var(--interval)
-		);
+		transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
-	/* 网格模式动画调整 */
-	#post-list-container.grid-mode > :global(*) {
-		animation-name: fadeInScale;
-	}
-
-	/* 布局切换时的过渡状态 */
+	/* 布局切换时保持卡片稳定，避免宽度和透明度动画叠加 */
 	#post-list-container.layout-switching {
-		opacity: 0.95;
+		opacity: 1;
 	}
 
 	#post-list-container.layout-switching > :global(*) {
-		animation-delay: calc(var(--i) * 50ms);
-	}
-
-	#post-list-container.layout-switching > :global(*) {
-		transform: scale(0.98);
-	}
-
-	@keyframes fadeInScale {
-		from {
-			opacity: 0;
-			transform: scale(0.95);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1);
-		}
-	}
-
-	@keyframes fadeInSlide {
-		from {
-			opacity: 0;
-			transform: translateX(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateX(0);
-		}
+		animation: none;
+		opacity: 1;
+		transform: none;
 	}
 </style>

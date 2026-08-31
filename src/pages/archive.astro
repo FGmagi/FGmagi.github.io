@@ -3,12 +3,21 @@ import ArchivePanel from "@components/ArchivePanel.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getCollection } from "astro:content";
 import { getSortedPostsList } from "@utils/content-utils";
+import fs from "node:fs";
+import path from "node:path";
 
 const sortedPostsList = await getSortedPostsList();
 
+// 26.08.30修改，内容为：归档页过滤 active: false 的文章，不在归档页显示
+// 过滤 active: false 的文章，不在归档页显示
+const activePostsList = sortedPostsList.filter(
+	(post) => post.data.active !== false,
+);
+
 // 1. 修复类型兼容性：将 category 的 null 转换为 undefined
-const posts = sortedPostsList.map((post) => ({
+const posts = activePostsList.map((post) => ({
     ...post,
     data: {
         ...post.data,
@@ -21,6 +30,21 @@ const tags = [...new Set(posts.flatMap(post => post.data.tags))];
 
 // 3. 提取所有分类 (去重且过滤掉 undefined)
 const categories = [...new Set(posts.map(post => post.data.category).filter((c): c is string => typeof c === "string"))];
+
+// 26.08.30修改，内容为：构建文章正文内容映射（id -> 原始 md 文本），供归档页关键字搜索使用
+const rawPosts = await getCollection("posts", ({ data }) => {
+	return import.meta.env.PROD ? data.draft !== true : true;
+});
+const postsContent: Record<string, string> = {};
+for (const rawPost of rawPosts) {
+	// 26.08.30修改，内容为：glob loader 条目无 body，按 filePath 读取原始 md 文本
+	if (rawPost.filePath) {
+		postsContent[rawPost.id] = fs.readFileSync(
+			path.join(process.cwd(), rawPost.filePath),
+			"utf-8",
+		);
+	}
+}
 ---
 
 <MainGridLayout title={i18n(I18nKey.archive)}>
@@ -34,6 +58,7 @@ const categories = [...new Set(posts.map(post => post.data.category).filter((c):
             sortedPosts={posts}
             tags={tags}
             categories={categories}
+            postsContent={postsContent}
             client:only="svelte"
     ></ArchivePanel>
 </MainGridLayout>

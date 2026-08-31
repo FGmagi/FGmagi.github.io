@@ -4,7 +4,7 @@ import type { Translation } from "../translation";
 export const ja: Translation = {
 	[Key.home]: "ホーム",
 	[Key.about]: "このブログについて",
-	[Key.archive]: "アーカイブ",
+	[Key.archive]: "すべて", // 26.08.30修改，内容为：归档页文案由 アーカイブ 改为 すべて
 	[Key.search]: "検索",
 	[Key.other]: "その他",
 
@@ -342,7 +342,16 @@ export const ja: Translation = {
 	[Key.profileStatsVisits]: "訪問",
 	[Key.profileStatsUnavailable]: "統計は利用できません",
 
+	// 26.08.30修改，内容为：新增布局/主题模式显示文案与简洁模式文案
 	// レイアウト切り替えボタン
 	[Key.switchToGridMode]: "グリッドビュー切り替え",
 	[Key.switchToListMode]: "リストビューに切り替え",
+	[Key.listMode]: "リスト表示",
+	[Key.gridMode]: "グリッド表示",
+	[Key.dayMode]: "ライトモード",
+	[Key.nightMode]: "ダークモード",
+
+	// シンプルモード
+	[Key.simpleMode]: "シンプルモード",
+	[Key.normalMode]: "通常モード",
 };

@@ -1,7 +1,6 @@
 ---
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
 import { siteConfig } from "../config";
-import localAnimeList from "../data/anime";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -37,23 +36,41 @@ const ANIME_MODE = siteConfig.anime?.mode || "bangumi";
 
 let animeList: AnimeItem[] = [];
 
+// 26.08.30修改，内容为：新增本地番剧数据回退读取函数，bilibili 数据缺失/加载失败或开发模式跳过时回退 public/data/anime.json，保证页面始终有内容
+function loadLocalAnimeList(): AnimeItem[] {
+	const animeJsonPath = path.join(process.cwd(), "public/data/anime.json");
+	if (fs.existsSync(animeJsonPath)) {
+		try {
+			return JSON.parse(fs.readFileSync(animeJsonPath, "utf-8"));
+		} catch (error) {
+			console.error("Failed to parse public/data/anime.json:", error);
+		}
+	} else {
+		console.warn(`Anime data file not found at ${animeJsonPath}.`);
+	}
+	return [];
+}
+
+// 26.08.30修改，内容为：本地番剧列表从 public/data/anime.json 读取（原为 src/data/anime 静态导入）
 if (ANIME_MODE === "local") {
-	animeList = localAnimeList;
+	animeList = loadLocalAnimeList();
 } else if (ANIME_MODE === "bilibili") {
 	const isDev = import.meta.env.DEV;
 	const shouldFetchOnDev = siteConfig.bilibili?.fetchOnDev ?? false;
 	const skipLoad = isDev && !shouldFetchOnDev;
 
 	if (skipLoad) {
-		console.log("[Dev] Skipping Bilibili data load (fetchOnDev is off).");
-		animeList = [];
+		console.log("[Dev] Skipping Bilibili data load (fetchOnDev is off), fallback to local anime.json");
+		animeList = loadLocalAnimeList();
 	} else {
 		try {
-			const dataPath = path.join(
-				process.cwd(),
-				"src/data/bilibili-data.json",
-			);
-			if (fs.existsSync(dataPath)) {
+			// 26.08.31修改，内容为：bilibili 数据优先读取 public/data/bilibili-data.json（public 网页路径 /data/bilibili-data.json），其次 src/data/bilibili-data.json，均缺失时回退 public/data/anime.json
+			const dataPaths = [
+				path.join(process.cwd(), "public/data/bilibili-data.json"),
+				path.join(process.cwd(), "src/data/bilibili-data.json"),
+			];
+			const dataPath = dataPaths.find((p) => fs.existsSync(p));
+			if (dataPath) {
 				const fileContent = fs.readFileSync(dataPath, "utf-8");
 				const rawData = JSON.parse(fileContent);
 				animeList = rawData.map((item: any) => ({
@@ -70,12 +87,12 @@ if (ANIME_MODE === "local") {
 					genre: Array.isArray(item.genre) ? item.genre : [],
 				}));
 			} else {
-				console.warn(`Bilibili data file not found at ${dataPath}.`);
-				animeList = [];
+				console.warn(`Bilibili data file not found (${dataPaths.join(" / ")}), fallback to local anime.json`);
+				animeList = loadLocalAnimeList();
 			}
 		} catch (error) {
 			console.error("Failed to load Bilibili anime data:", error);
-			animeList = [];
+			animeList = loadLocalAnimeList();
 		}
 	}
 } else {
@@ -271,7 +288,7 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 
 									return (
 										<div
-											class="group relative bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-[var(--radius-large)] overflow-hidden hover:shadow-lg"
+											class="card-base group relative bg-[var(--card-bg)] border border-[var(--line-divider)] rounded-[var(--radius-large)] overflow-hidden hover:shadow-lg"
 											data-anime-status={anime.status}
 										>
 											<div class="relative anime-cover-container aspect-[2/3] overflow-hidden">

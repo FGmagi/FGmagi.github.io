@@ -3,7 +3,6 @@ import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
 import path from "node:path";
 import Comment from "@components/comment/index.astro";
-import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import SharePoster from "@components/misc/SharePoster.svelte";
 import I18nKey from "@i18n/i18nKey";
@@ -13,6 +12,7 @@ import { getSortedPosts } from "@utils/content-utils";
 import {
 	getFileDirFromPath,
 	getPostUrlBySlug,
+	getTagUrl,
 	removeFileExtension,
 } from "@utils/url-utils";
 import {
@@ -22,10 +22,10 @@ import {
 import { Icon } from "astro-icon/components";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { licenseConfig, permalinkConfig, shareConfig } from "src/config";
+import { permalinkConfig, shareConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
-import { profileConfig, siteConfig } from "../../config";
+import { fullscreenWallpaperConfig, profileConfig, siteConfig } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 import Encryptor from "../../components/Encryptor.astro";
 
@@ -94,8 +94,12 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
-const { remarkPluginFrontmatter } = await render(entry);
 
+// 26.08.30修改，内容为：新增 image_mode 封面渲染模式（up=标题上方 / down=标题下方正文前 / background=封面作页面背景），缺省 up
+const imageMode = entry.data.image_mode || "up";
+const hasCoverImage = !!entry.data.image;
+
+// 26.08.30修改，内容为：封面图解析增加 public 目录回退（content 集合移至 public/data 后，import.meta.glob 无法匹配 public/ 下图片，直接构造 public URL）
 // Process cover image for SharePoster
 let posterCoverUrl = entry.data.image;
 if (entry.data.image) {
@@ -117,6 +121,9 @@ if (entry.data.image) {
 		if (file) {
 			const img = await file();
 			posterCoverUrl = img.src;
+		} else if (basePath.startsWith("public/")) {
+			// public/ 下的图片会被原样复制到构建产物，直接使用其 public URL
+			posterCoverUrl = `/${basePath.replace(/^public\//, "")}/${entry.data.image.replace(/^\.\//, "")}`;
 		}
 	}
 }
@@ -196,50 +203,34 @@ const jsonLd = {
                 {},
             ]}
         >
-            <!-- word count and reading time -->
-            <div
-                class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation"
-            >
-                <div class="flex flex-row items-center">
-                    <div
-                        class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2"
-                    >
-                        <Icon name="material-symbols:notes-rounded" />
-                    </div>
-                    <div class="text-sm">
-                        {remarkPluginFrontmatter.words}
-                        {" " + i18n(I18nKey.wordsCount)}
-                    </div>
-                </div>
-                <div class="flex flex-row items-center">
-                    <div
-                        class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2"
-                    >
-                        <Icon
-                            name="material-symbols:schedule-outline-rounded"
-                        />
-                    </div>
-                    <div class="text-sm">
-                        {remarkPluginFrontmatter.minutes}
-                        {
-                            " " +
-                                i18n(
-                                    remarkPluginFrontmatter.minutes === 1
-                                        ? I18nKey.minuteCount
-                                        : I18nKey.minutesCount,
-                                )
-                        }
-                    </div>
-                </div>
-            </div>
+            {/* 26.08.30修改，内容为：文章头部隐藏字数统计与阅读时间 */}
+            {/* 字数统计与阅读时间已隐藏 */}
 
-            <!-- title -->
-            <div class="relative onload-animation">
+            {hasCoverImage && siteConfig.showCoverInContent && imageMode === "background" && (
+                <div class="post-bg-cover" data-pagefind-ignore style={`opacity: ${fullscreenWallpaperConfig.opacity}`}>
+                    <img src={posterCoverUrl} alt="" class="w-full h-full object-cover" />
+                </div>
+            )}
+
+            {hasCoverImage && siteConfig.showCoverInContent && imageMode === "up" && (
+                <div class="mb-8">
+                    <ImageWrapper
+                        id="post-cover"
+                        src={entry.data.image}
+                        basePath={getFileDirFromPath(entry.filePath || '')}
+                        class="rounded-xl banner-container onload-animation"
+                    />
+                </div>
+            )}
+
+            {/* 26.08.30修改，内容为：文章标题与元数据（时间/分类）改为同高度靠右布局，标签移至标题右侧以 # 前缀展示 */}
+            <!-- title + tags + meta（时间/分类与标题同高度，靠右） -->
+            <div class="relative onload-animation flex flex-wrap items-end justify-between gap-x-4 gap-y-2 mb-3">
                 <div
                     data-pagefind-body
                     data-pagefind-weight="10"
                     data-pagefind-meta="title"
-                    class="transition w-full block font-bold mb-3
+                    class="transition font-bold
                     text-3xl md:text-[2.25rem]/[2.75rem]
                     text-black/90 dark:text-white/90
                     md:before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
@@ -247,40 +238,38 @@ const jsonLd = {
                 >
                     {entry.data.title}
                 </div>
+                <div class="flex flex-col items-end gap-y-2">
+                    {entry.data.tags && entry.data.tags.length > 0 && (
+                        <div class="flex flex-wrap items-center justify-end gap-2">
+                            {entry.data.tags.map((tag) => (
+                                <a href={getTagUrl(tag)} class="btn-regular h-6 text-xs px-2 rounded-lg whitespace-nowrap">
+                                    # {tag.trim()}
+                                </a>
+                            ))}
+                        </div>
+                    )}
+                    <PostMetadata
+                        className=""
+                        published={entry.data.published}
+                        updated={entry.data.updated}
+                        category={entry.data.category || undefined}
+                        id={entry.id}
+                        hideTags
+                    />
+                </div>
             </div>
 
-            <!-- metadata -->
-            <div class="onload-animation">
-                <PostMetadata
-                    className="mb-5"
-                    published={entry.data.published}
-                    updated={entry.data.updated}
-                    tags={entry.data.tags}
-                    category={entry.data.category || undefined}
-                    id={entry.id}
-                />
-                {
-                    (!entry.data.image|| (entry.data.image && !siteConfig.showCoverInContent)) && (
-                        <div class="mt-4 border-[var(--line-divider)] border-dashed border-b-[1px] mb-5" />
-                    )
-                }
-            </div>
-
-            <!-- always show cover as long as it has one -->
-
-            {
-                entry.data.image && siteConfig.showCoverInContent && (
-                    <>
-                        <div class="mt-4" />
-                        <ImageWrapper
-                            id="post-cover"
-                            src={entry.data.image}
-                            basePath={getFileDirFromPath(entry.filePath || '')}
-                            class="mb-8 rounded-xl banner-container onload-animation"
-                        />
-                    </>
-                )
-            }
+            {hasCoverImage && siteConfig.showCoverInContent && imageMode === "down" && (
+                <>
+                    <div class="mt-4" />
+                    <ImageWrapper
+                        id="post-cover"
+                        src={entry.data.image}
+                        basePath={getFileDirFromPath(entry.filePath || '')}
+                        class="mb-8 rounded-xl banner-container onload-animation"
+                    />
+                </>
+            )}
 
             {
                 isEncrypted ? (
@@ -332,27 +321,16 @@ const jsonLd = {
                 </div>
             )}
 
-            {licenseConfig.enable && (
-                <div id="license-component" class:list={["encrypted-hidden-wrapper", { "encrypted-hidden": isEncrypted }]}>
-                    <License
-                    title={entry.data.title}
-                    id={entry.id}
-                    pubDate={entry.data.published}
-                    author={entry.data.author}
-                    sourceLink={entry.data.sourceLink}
-                    licenseName={entry.data.licenseName}
-                    licenseUrl={entry.data.licenseUrl}
-                    class="mb-6 rounded-xl license-container onload-animation"
-                />
-                </div>
-            )}
+            {/* 26.08.30修改，内容为：隐藏文章许可协议（作者、发布于、许可协议）组件 */}
+            {/* 许可协议（作者、发布于、许可协议）已隐藏 */}
         </div>
     </div>
 
     <!-- 评论 -->
     <Comment post={entry} />
 
-    {siteConfig.showLastModified && (
+    {/* 26.08.30修改，内容为：隐藏"最后修改时间"与"上一篇/下一篇"导航区域 */}
+    {false && siteConfig.showLastModified && entry.data.active !== false && (
         <>
             <div
                 id="last-modified"
@@ -438,6 +416,7 @@ const jsonLd = {
         </>
     )}
 
+    {false && entry.data.active !== false && (
     <div
         class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full"
     >
@@ -489,4 +468,19 @@ const jsonLd = {
             }
         </a>
     </div>
+    )}
 </MainGridLayout>
+
+<style>
+	/* 26.08.30修改，内容为：image_mode=background 时封面作为页面背景（z-index -1 覆盖原壁纸），透明度与原背景图一致，简洁模式 14%，带过渡，离开页面随内容替换自动恢复 */
+	.post-bg-cover {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		pointer-events: none;
+		transition: opacity 0.6s ease;
+	}
+	:global(body.simple-mode .post-bg-cover) {
+		opacity: 0.14 !important;
+	}
+</style>

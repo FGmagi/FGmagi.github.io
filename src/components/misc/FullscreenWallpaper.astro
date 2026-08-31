@@ -95,7 +95,8 @@ const renderGroups = [
 	<script is:inline>
 	// 立即执行脚本：防止闪烁
 	(function() {
-		const mode = localStorage.getItem('wallpaperMode') || 'banner';
+		// 26.08.31修改，内容为：无缓存时默认 fullscreen（与配置一致），避免启动时按 banner 隐藏壁纸造成闪烁
+		const mode = localStorage.getItem('wallpaperMode') || 'fullscreen';
 		if (mode !== 'fullscreen') {
 			document.currentScript.parentElement.style.display = 'none';
 		}

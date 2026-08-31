@@ -1,12 +1,12 @@
 ---
 import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
-// import Icon from "../components/misc/Icon.astro";
 import { siteConfig } from "../config";
-import { getShuffledFriendsList } from "../data/friends";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import fs from "node:fs";
+import path from "node:path";
 
 // 检查友链页面是否启用
 if (!siteConfig.featurePages.friends) {
@@ -20,7 +20,23 @@ if (!friendsPost) {
 }
 
 const { Content } = await render(friendsPost);
-const friendsList = getShuffledFriendsList();
+
+// 26.08.31修改，内容为：友链数据改为从 public/data/friends.json 读取（public 网页路径为 /data/friends.json），并按 flag 升序、相同 flag 按 id 升序排序
+// 从 JSON 读取友链数据，按 flag 升序、相同 flag 按 id 升序排序
+const friendsJsonPath = path.join(
+	process.cwd(),
+	"public/data/friends.json",
+);
+const rawFriends = JSON.parse(fs.readFileSync(friendsJsonPath, "utf-8"));
+const friendsList = rawFriends
+	.map((item: any) => ({
+		...item,
+		flag: typeof item.flag === "number" ? item.flag : 1,
+	}))
+	.sort((a: any, b: any) => {
+		if (a.flag !== b.flag) return a.flag - b.flag;
+		return a.id - b.id;
+	});
 
 // 获取所有标签
 const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
@@ -61,8 +77,8 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 							class="w-full px-4 py-2 pl-10 rounded-lg bg-[var(--btn-regular-bg)] 
 									text-black/90 dark:text-white/90
 									border border-black/10 dark:border-white/10
-									focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50
-									transition-all duration-200"
+									focus:outline-none
+									transition-colors duration-200"
 						/>
 						<svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40" 
 							 fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,11 +260,6 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 		}
 	}
 
-	/* 搜索框焦点效果 */
-	#friend-search:focus {
-		box-shadow: 0 0 0 3px var(--primary) / 0.1;
-	}
-	
 	/* 标签筛选按钮样式 - 与番剧页面一致 */
 	.filter-container {
 		display: flex;

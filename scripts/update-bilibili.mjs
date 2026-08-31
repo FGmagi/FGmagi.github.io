@@ -11,7 +11,8 @@ const CONFIG_PATH = path.join(
 );
 const OUTPUT_FILE = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
-	"../src/data/bilibili-data.json",
+	// 26.08.31修改，内容为：生成数据写入 public/data（网页路径 /data/bilibili-data.json），与番剧页读取位置一致
+	"../public/data/bilibili-data.json",
 );
 
 // 状态映射: 1=想看, 2=在看, 3=已看

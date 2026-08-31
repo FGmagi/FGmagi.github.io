@@ -36,16 +36,19 @@ async function getRawSortedPosts() {
 	return sorted;
 }
 
+// 26.08.30修改，内容为：上一篇/下一篇链接只在 active=true 的文章之间连接，active=false 的文章不参与
 export async function getSortedPosts() {
 	const sorted = await getRawSortedPosts();
 
-	for (let i = 1; i < sorted.length; i++) {
-		sorted[i].data.nextSlug = sorted[i - 1].id;
-		sorted[i].data.nextTitle = sorted[i - 1].data.title;
+	// 上一篇/下一篇只在 active=true 的文章间连接，active=false 的不参与
+	const activeSorted = sorted.filter((post) => post.data.active !== false);
+	for (let i = 1; i < activeSorted.length; i++) {
+		activeSorted[i].data.nextSlug = activeSorted[i - 1].id;
+		activeSorted[i].data.nextTitle = activeSorted[i - 1].data.title;
 	}
-	for (let i = 0; i < sorted.length - 1; i++) {
-		sorted[i].data.prevSlug = sorted[i + 1].id;
-		sorted[i].data.prevTitle = sorted[i + 1].data.title;
+	for (let i = 0; i < activeSorted.length - 1; i++) {
+		activeSorted[i].data.prevSlug = activeSorted[i + 1].id;
+		activeSorted[i].data.prevTitle = activeSorted[i + 1].data.title;
 	}
 
 	return sorted;

@@ -80,7 +80,8 @@ html.is-animating #swup-container.transition-swup-fade {
 /* 页面加载动画 - yukina风格 */
 .onload-animation {
   opacity: 0;
-  animation: fade-in-up 300ms ease-out forwards;
+  /* 26.09.01修改，内容为：淡入动画增加缓冲帧——时长 300ms->500ms、起始延迟 150ms、fill-mode forwards->both，无缓存刷新首帧绘制被推迟时淡入仍在首帧之后可见 */
+  animation: fade-in-up 500ms ease-out 150ms both;
 }
 
 .onload-animation-fade-in {

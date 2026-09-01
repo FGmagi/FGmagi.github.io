@@ -24,21 +24,21 @@ const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UT
 
 const fullBanner = {
 	desktop: [
-		"public/assets/images/A-FS.webp",
-		"public/assets/images/A-BA.jpg",
+		"/assets/images/A-FS.webp",
+		"/assets/images/A-BA.jpg",
 	], // 桌面横幅图片
 	mobile: [
-		"public/assets/images/C-SK-0.webp",
-		"public/assets/images/C-SK-1.webp",
-		"public/assets/images/C-SK-2.webp",
+		"/assets/images/C-SK-0.webp",
+		"/assets/images/C-SK-1.webp",
+		"/assets/images/C-SK-2.webp",
 	], // 移动横幅图片
 };
 const wideBanner = {
-	desktop: ["public/assets/images/B-FS.webp", "assets/images/B-SK.webp"], // 桌面横幅图片
+	desktop: ["/assets/images/B-FS.webp", "/assets/images/B-SK.webp"], // 桌面横幅图片
 	mobile: [
-		"public/assets/images/C-SK-0.webp",
-		"public/assets/images/C-SK-1.webp",
-		"public/assets/images/C-SK-2.webp",
+		"/assets/images/C-SK-0.webp",
+		"/assets/images/C-SK-1.webp",
+		"/assets/images/C-SK-2.webp",
 	],
 };
 
@@ -112,6 +112,8 @@ export const siteConfig: SiteConfig = {
 		defaultMode: "list",
 		// 是否允许用户切换布局
 		allowSwitch: true,
+		// 每页文章数量，范围 5-10，默认 10
+		pageSize: 10,
 	},
 
 	// 标签样式配置
@@ -210,21 +212,24 @@ export const siteConfig: SiteConfig = {
 	font: {
 		// 注意：自定义字体需要在 src/styles/main.css 中引入字体文件
 		// 注意：字体子集优化功能目前仅支持 TTF 格式字体,开启后需要在生产环境才能看到效果,在Dev环境下显示的是浏览器默认字体!
+		// 26.09.01 [2]修改，内容为：全站统一使用 思源黑体（用户提供的 TTF）；asciiFont 与 cjkFont 均指向思源黑体，asciiFont 不启用压缩以避免与 cjkFont 输出同名思源黑体.woff2 互相覆盖
 		asciiFont: {
 			// 英文字体 - 优先级最高
 			// 指定为英文字体则无论字体包含多大范围，都只会保留 ASCII 字符子集
-			fontFamily: "ZenMaruGothic-Medium",
+			fontFamily: "system-ui",
 			fontWeight: "400",
-			localFonts: ["ZenMaruGothic-Medium.ttf"],
-			enableCompress: true, // 启用字体子集优化，减少字体文件大小
+			localFonts: [],
+			enableCompress: false,
 		},
 		cjkFont: {
 			// 中日韩字体 - 作为回退字体
-			fontFamily: "萝莉体 第二版",
-			fontWeight: "500",
-			localFonts: ["萝莉体 第二版.ttf"],
+			fontFamily: "system-ui",
+			fontWeight: "400",
+			localFonts: ["思源黑体.ttf"],// 思源黑体.ttf
 			enableCompress: true, // 启用字体子集优化，减少字体文件大小
 		},
+		// 26.09.01 [2]新增，内容为：全局字体栈是否使用 Segoe UI（true=包含，false=移除）
+		useSegoeUI: true,
 	},
 	showLastModified: true, // 控制“上次编辑”卡片显示的开关
 };

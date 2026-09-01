@@ -141,20 +141,24 @@ if (siteConfig.font) {
 	if (siteConfig.font.asciiFont?.fontFamily) {
 		const asciiFont = siteConfig.font.asciiFont.fontFamily;
 		// 如果字体名包含空格，需要用引号包围
-		fonts.push(asciiFont.includes(" ") ? `"${asciiFont}"` : asciiFont);
+		const asciiFontFamily = asciiFont.includes(" ") ? `"${asciiFont}"` : asciiFont;
+		// 26.09.01 [2]：asciiFont 与 cjkFont 现同名（思源黑体），去重仅入队一次避免重复
+		if (!fonts.includes(asciiFontFamily)) fonts.push(asciiFontFamily);
 	}
 	// 再添加 CJK 字体（作为回退）
 	if (siteConfig.font.cjkFont?.fontFamily) {
 		const cjkFont = siteConfig.font.cjkFont.fontFamily;
 		// 如果字体名包含空格，需要用引号包围
-		fonts.push(cjkFont.includes(" ") ? `"${cjkFont}"` : cjkFont);
+		const cjkFontFamily = cjkFont.includes(" ") ? `"${cjkFont}"` : cjkFont;
+		if (!fonts.includes(cjkFontFamily)) fonts.push(cjkFontFamily);
 	}
 	// 添加系统字体作为最终回退
+	// 26.09.01 [2]新增，内容为：全局字体栈是否使用 Segoe UI，由 siteConfig.font.useSegoeUI 控制（未配置默认启用）
 	fonts.push(
 		"system-ui",
 		"-apple-system",
 		"BlinkMacSystemFont",
-		"'Segoe UI'",
+		...(siteConfig.font.useSegoeUI !== false ? ["'Segoe UI'"] : []),
 		"Roboto",
 		"Oxygen",
 		"Ubuntu",

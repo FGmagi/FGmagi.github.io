@@ -11,6 +11,9 @@ interface Props {
 
 const { page } = Astro.props;
 
+// 26.09.01修改，内容为：本页真实文章不足5篇时，追加空白占位卡补齐到5张，首帧即固定容器高度，消除“先显示文档、再补空白”的卡顿
+const blankCount = Math.max(0, 5 - page.data.length);
+
 // 检查是否启用右侧边栏（通过检查右侧是否有组件）
 const hasRightSidebars =
 	widgetManager.getComponentsByPosition("top", "right", "desktop").length > 0 ||
@@ -36,7 +39,33 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 			/>
 		))
 	}
+	{
+		// 26.09.01修改，内容为：空白卡只占高度、不可交互（无链接、无焦点、aria-hidden），常规/简洁模式下均不可见
+		Array.from({ length: blankCount }, () => (
+			<div class="blank-post-card" aria-hidden="true"></div>
+		))
+	}
 </div>
+
+<script is:inline>
+// 26.09.01修改，内容为：解析期（首帧前）按卡片实际高度计算封面宽度，避免封面先按 28% 宽渲染、首帧后再收窄的闪烁
+(function() {
+	var ratio = Math.min(16 / 9, Math.max(1, window.innerWidth / window.innerHeight));
+	document.querySelectorAll('.post-cover-link').forEach(function(link) {
+		var height = link.offsetHeight;
+		if (!height) return;
+		var width = Math.round(height * ratio);
+		link.style.width = width + 'px';
+		var card = link.closest('.card-base');
+		if (card) {
+			var content = card.querySelector('.post-card-content');
+			if (content) {
+				content.style.width = 'calc(100% - ' + width + 'px - 0.75rem)';
+			}
+		}
+	});
+})();
+</script>
 
 <script>
 	// 动态布局切换脚本
@@ -216,6 +245,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 			}
 		});
 	}
+	// 26.09.01修改，内容为：封面尺寸初始化（竖图/横图类与宽度计算）；不再调用已弃用的 syncPanelHeight/observeSidebars
 	function initPostCoverLayout() {
 		document
 			.querySelectorAll<HTMLImageElement>(".post-cover-link img")
@@ -231,10 +261,8 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 				}
 			});
 		sizePostCovers();
-		syncPanelHeight();
-		observeSidebars();
 	}
-	// 26.08.31修改，内容为：主页内容不足时白色面板底部与左右磁贴下端水平对齐（测量磁贴高度设置面板最小高度）
+	// 26.09.01修改，内容为：主页内容不足时白色面板底部与左右磁贴下端水平对齐（测量磁贴高度设置面板最小高度）；用于对齐内容卡片，已弃用，不再被调用
 	function syncPanelHeight() {
 		const panel = document.getElementById("post-list-container");
 		if (!panel) return;
@@ -254,25 +282,13 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 			});
 		panel.style.minHeight = maxH > 0 ? `${maxH}px` : "";
 	}
-	// 26.08.31修改，内容为：观察左右磁贴尺寸变化（字体/图片加载后高度变化），持续同步面板高度
-	let sidebarResizeObserver: ResizeObserver | null = null;
-	function observeSidebars() {
-		if (typeof ResizeObserver === "undefined") return;
-		if (!sidebarResizeObserver) {
-			sidebarResizeObserver = new ResizeObserver(() => syncPanelHeight());
-		}
-		sidebarResizeObserver.disconnect();
-		document
-			.querySelectorAll(".home-sidebar, .home-right-sidebar")
-			.forEach((sb) => sidebarResizeObserver!.observe(sb));
-	}
+	// 26.09.01修改，内容为：resize/scroll 防抖重算封面宽度；移除已弃用的面板高度同步
 	let coverResizeRaf = 0;
 	function scheduleCoverResize() {
 		if (coverResizeRaf) return;
 		coverResizeRaf = window.requestAnimationFrame(() => {
 			coverResizeRaf = 0;
 			sizePostCovers();
-			syncPanelHeight();
 		});
 	}
 	window.addEventListener("resize", scheduleCoverResize);
@@ -282,26 +298,22 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 	document.addEventListener("swup:page:view", () =>
 		setTimeout(initPostCoverLayout, 0),
 	);
-	// 26.08.31修改，内容为：图片/字体加载后重算面板高度，确保底部与磁贴下端对齐
-	window.addEventListener("load", () => {
-		setTimeout(syncPanelHeight, 50);
-		setTimeout(syncPanelHeight, 400);
-	});
-	setTimeout(syncPanelHeight, 300);
-	setTimeout(syncPanelHeight, 1200);
-	setTimeout(observeSidebars, 300);
 </script>
 
 <style>
 	/* 基础容器 */
 	#post-list-container {
+		/* 26.09.01修改，内容为：卡片槽位高度 = 真实卡渲染高度减 1rem 后（内容区 pt-4 md:pt-5 pb-4 时实测 117.19px ≈ 7.324rem），用于不足 5 篇时面板底部恒为 5 张卡高度 */
+		--post-card-slot-height: 7.324rem;
 		min-height: 200px;
 		transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	/* 布局模式 - 列表模式 */
+	/* 26.09.01修改，内容为：桌面端列表模式卡片间距由 1rem 改为 0（真实卡之间、真实与空白卡之间均不留间距）；面板最小高度固定为 5 张卡槽位高度，不足 5 篇时空白卡拉伸填满 */
 	#post-list-container.list-mode {
-		@apply flex flex-col gap-4;
+		@apply flex flex-col gap-0;
+		min-height: calc(var(--post-card-slot-height) * 5);
 	}
 
 	/* 布局模式 - 网格模式 (仅在桌面端生效，移动端强制单列) */
@@ -323,5 +335,16 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 		animation: none;
 		opacity: 1;
 		transform: none;
+	}
+
+	/* 26.09.01修改，内容为：空白占位卡——flex 拉伸填满容器剩余空间（min-height 0，不再固定 12rem），透明、无边框阴影、不可交互，常规/简洁模式下均不可见 */
+	#post-list-container .blank-post-card {
+		flex: 1 1 0;
+		min-height: 0;
+		background: transparent;
+		border: none;
+		box-shadow: none;
+		pointer-events: none;
+		opacity: 0;
 	}
 </style>

@@ -57,6 +57,23 @@ interface Props {
 // 	);
 // };
 
+/**
+ * 26.09.01 [2]：防御性归一化图片路径
+ * 去除配置中误写的 public/ 前缀，并确保本地路径以 / 开头；http(s) 远程地址原样返回；兼容 string 与数组
+ */
+const normalizeAssetPath = (src: string | string[]): string | string[] => {
+	const normalizeOne = (s: string): string => {
+		if (!s) return s;
+		if (/^(https?:)?\/\//i.test(s)) return s;
+		let p = s.trim();
+		if (p.startsWith("public/")) p = p.slice("public/".length);
+		if (!p.startsWith("/")) p = "/" + p;
+		return p;
+	};
+	if (Array.isArray(src)) return src.map(normalizeOne);
+	return normalizeOne(src);
+};
+
 // 获取banner图片的辅助函数
 const getBannerImages = async () => {
 	let bannerSrc = siteConfig.banner.src;
@@ -87,14 +104,14 @@ const getBannerImages = async () => {
 			mobile?: string | string[];
 		};
 		return {
-			desktop: srcObj.desktop || srcObj.mobile || "",
-			mobile: srcObj.mobile || srcObj.desktop || "",
+			desktop: normalizeAssetPath(srcObj.desktop || srcObj.mobile || ""),
+			mobile: normalizeAssetPath(srcObj.mobile || srcObj.desktop || ""),
 		};
 	}
 	// 如果是字符串或字符串数组，同时用于桌面端和移动端
 	return {
-		desktop: bannerSrc,
-		mobile: bannerSrc,
+		desktop: normalizeAssetPath(bannerSrc),
+		mobile: normalizeAssetPath(bannerSrc),
 	};
 };
 

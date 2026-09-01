@@ -3,12 +3,12 @@ import type { GetStaticPaths } from "astro";
 import Pagination from "../components/control/Pagination.astro";
 import PostPage from "../components/PostPage.astro";
 import PostSearchBar from "../components/PostSearchBar.svelte";
-import { PAGE_SIZE } from "../constants/constants";
+import { siteConfig } from "../config";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../utils/content-utils";
 import { initPostIdMap } from "../utils/permalink-utils";
 
-// 26.08.30修改，内容为：主页分页列表过滤 active: false 的文章，不在主页显示
+// 26.09.01修改，内容为：主页分页列表过滤 active: false 的文章，不在主页显示；分页数量改由配置 postListLayout.pageSize 控制（5-10，夹紧保证合法）
 export const getStaticPaths = (async ({ paginate }) => {
 	const allBlogPosts = await getSortedPosts();
 	// 过滤 active: false 的文章，不在主页显示
@@ -17,7 +17,9 @@ export const getStaticPaths = (async ({ paginate }) => {
 	);
 	// 初始化文章 ID 映射（用于 permalink 功能）
 	initPostIdMap(activeBlogPosts);
-	return paginate(activeBlogPosts, { pageSize: PAGE_SIZE });
+	// 每页文章数量：配置可调，范围 5-10，默认 10，防御性夹紧
+	const pageSize = Math.min(10, Math.max(5, siteConfig.postListLayout.pageSize ?? 10));
+	return paginate(activeBlogPosts, { pageSize });
 }) satisfies GetStaticPaths;
 // https://github.com/withastro/astro/issues/6507#issuecomment-1489916992
 

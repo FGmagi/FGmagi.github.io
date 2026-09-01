@@ -45,9 +45,10 @@ const { remarkPluginFrontmatter } = await render(entry);
 	<div class="absolute inset-0 z-30 pointer-events-none transition rounded-[var(--radius-large)] bg-black/10 opacity-0 group-hover:opacity-100"></div>
 	<!-- 26.08.31修改，内容为：整卡可点击跳转——覆盖全卡的链接锚点，点击卡片任意位置进入文章 -->
 	<a href={url} aria-label={title} tabindex="-1" class="absolute inset-0 z-10 rounded-[var(--radius-large)]"></a>
+	<!-- 26.09.01修改，内容为：内容区垂直内边距改为 pt-4 md:pt-5 pb-4（移动端 3rem->2rem、桌面端 3.25rem->2.25rem，各恰减 1rem），字体大小不变；空白卡槽位高度已在 PostPage.astro 同步校准 -->
 	<div
 		class:list={[
-			"post-card-content pl-6 md:pl-9 pr-6 md:pr-[0.667rem] pt-6 md:pt-7 pb-6 relative",
+			"post-card-content pl-6 md:pl-9 pr-6 md:pr-[0.667rem] pt-4 md:pt-5 pb-4 relative",
 			{
 				"w-full md:w-[calc(100%_-_3.25rem_-_0.75rem)]": !hasCover,
 				"w-full md:w-[calc(100%_-_var(--coverWidth)_-_0.75rem)]": hasCover,

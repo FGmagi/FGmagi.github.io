@@ -9,6 +9,19 @@ interface Props {
 
 const { config, className } = Astro.props;
 
+/**
+ * 26.09.01 [2]：防御性归一化图片路径
+ * 去除配置中误写的 public/ 前缀，并确保本地路径以 / 开头；http(s) 远程地址原样返回
+ */
+const normalizeAssetPath = (src: string): string => {
+	if (!src) return src;
+	if (/^(https?:)?\/\//i.test(src)) return src;
+	let p = src.trim();
+	if (p.startsWith("public/")) p = p.slice("public/".length);
+	if (!p.startsWith("/")) p = "/" + p;
+	return p;
+};
+
 // 获取当前设备类型的图片源
 const getImageSources = async () => {
 	let srcConfig = config.src;
@@ -20,7 +33,7 @@ const getImageSources = async () => {
 			const text = await response.text();
 			const apiImages = text.split("\n").filter((line) => line.trim());
 			if (apiImages.length > 0) {
-				return { desktop: apiImages, mobile: apiImages };
+				return { desktop: apiImages.map(normalizeAssetPath), mobile: apiImages.map(normalizeAssetPath) };
 			}
 		} catch (error) {
 			console.warn("Failed to fetch images from API:", error);
@@ -33,15 +46,17 @@ const getImageSources = async () => {
 	if (typeof srcConfig === "object" && srcConfig !== null && !Array.isArray(srcConfig)) {
 		const desktop = toArray(srcConfig.desktop);
 		const mobile = toArray(srcConfig.mobile);
+		const resolvedDesktop = desktop.length > 0 ? desktop : mobile;
+		const resolvedMobile = mobile.length > 0 ? mobile : desktop;
 		return {
-			desktop: desktop.length > 0 ? desktop : mobile,
-			mobile: mobile.length > 0 ? mobile : desktop,
+			desktop: resolvedDesktop.map(normalizeAssetPath),
+			mobile: resolvedMobile.map(normalizeAssetPath),
 		};
 	}
 
 	// 如果是字符串或字符串数组，同时用于桌面端和移动端
 	const allImages = toArray(srcConfig as string | string[]);
-	return { desktop: allImages, mobile: allImages };
+	return { desktop: allImages.map(normalizeAssetPath), mobile: allImages.map(normalizeAssetPath) };
 };
 
 const imageSources = await getImageSources();
@@ -180,6 +195,22 @@ const renderGroups = [
 			</script>
 		</div>
 	)}
+	<script is:inline>
+	// 26.09.01修改，内容为：解析期（首帧前）按 sessionStorage 保存的轮播索引恢复背景图可见性，消除刷新时“先显示第 0 张、再淡入切换”的渲染残留
+	(function() {
+		var savedIndex = parseInt(sessionStorage.getItem('mizuki_wallpaper_index') || '0', 10);
+		var container = document.currentScript.parentElement;
+		if (!container) return;
+		container.querySelectorAll('.hidden.md\\:block, .block.md\\:hidden').forEach(function(group) {
+			var items = group.querySelectorAll('[data-carousel-item]');
+			if (items.length === 0) return;
+			var safeIndex = (savedIndex >= 0 && savedIndex < items.length) ? savedIndex : 0;
+			for (var i = 0; i < items.length; i++) {
+				items[i].style.opacity = i === safeIndex ? '1' : '0';
+			}
+		});
+	})();
+	</script>
 </div>
 
 {isCarouselEnabled && (

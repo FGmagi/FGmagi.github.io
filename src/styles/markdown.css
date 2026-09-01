@@ -1,6 +1,6 @@
 /* 26.08.30修改，内容为：md 阅读页正文使用 思源黑体（占位字体，后续替换） */
 .markdown-content {
-  font-family: "思源黑体", "萝莉体 第二版", "ZenMaruGothic-Medium", sans-serif;
+  font-family: system-ui,"思源黑体", "萝莉体 第二版", "ZenMaruGothic-Medium", sans-serif;
 }
 
 .custom-md {

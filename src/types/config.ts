@@ -73,6 +73,7 @@ export type SiteConfig = {
 	postListLayout: {
 		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式
 		allowSwitch: boolean; // 是否允许用户切换布局
+		pageSize?: number; // 每页文章数量，范围 5-10
 	};
 
 	// 顶栏标题配置
@@ -103,6 +104,7 @@ export type SiteConfig = {
 			localFonts: string[];
 			enableCompress: boolean;
 		};
+		useSegoeUI?: boolean;
 	};
 
 	// 添加bangumi配置

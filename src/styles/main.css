@@ -26,10 +26,10 @@
   font-display: swap;
 }
 
-/* 26.08.30修改，内容为：新增 思源黑体 字体（占位字体，先复制 ZenMaruGothic 命名，后续由用户替换正式文件） */
+/* md 文本字体 */
 @font-face {
   font-family: "思源黑体";
-  src: url("/assets/font/思源黑体.ttc") format("truetype");
+  src: url("/assets/font/思源黑体.woff2") format("woff2"), url("/assets/font/思源黑体.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;

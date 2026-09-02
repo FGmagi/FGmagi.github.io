@@ -9,11 +9,22 @@ const CONFIG_PATH = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../src/config.ts",
 );
-const OUTPUT_FILE = path.join(
-	path.dirname(fileURLToPath(import.meta.url)),
-	// 26.08.31修改，内容为：生成数据写入 public/data（网页路径 /data/bilibili-data.json），与番剧页读取位置一致
-	"../public/data/bilibili-data.json",
-);
+
+// 26.09.02 [7]：输出路径改读 config（dataFiles.bilibiliDataJson，相对项目根）
+async function getOutputFile() {
+	const configContent = await fs.readFile(CONFIG_PATH, "utf-8");
+	const match = configContent.match(/bilibiliDataJson:\s*["']([^"']+)["']/);
+	if (!match || !match[1]) {
+		throw new Error(
+			"Could not find dataFiles.bilibiliDataJson in src/config.ts",
+		);
+	}
+	const projectRoot = path.join(
+		path.dirname(fileURLToPath(import.meta.url)),
+		"..",
+	);
+	return path.join(projectRoot, match[1]);
+}
 
 // 状态映射: 1=想看, 2=在看, 3=已看
 const STATUS_MAP = {
@@ -105,6 +116,7 @@ async function getAnimeModeFromConfig() {
 	}
 }
 
+// 26.09.01 [4]：修改返回值为接口真实 total（原为按 PAGE_SIZE=30 计算的页数），页数改由 processData 按实际返回条数循环推算
 async function getDataPage(vmid, status, typeNum = 1) {
 	const response = await withRetry(() =>
 		axios.get(
@@ -118,7 +130,7 @@ async function getDataPage(vmid, status, typeNum = 1) {
 	) {
 		return {
 			success: true,
-			data: Math.ceil(response.data.data.total / PAGE_SIZE) + 1,
+			total: response.data.data.total,
 		};
 	}
 	return {
@@ -286,6 +298,7 @@ async function getData(
 	});
 }
 
+// 26.09.01 [4]：修复分页不足——原按 Math.ceil(total/PAGE_SIZE) 计算页数，若接口单页实际返回 < PAGE_SIZE（历史上限 15/20 条）会翻页不足漏采；现逐页拉取直到收集数达到接口 total 或返回空页，确保采集全部番剧
 async function processData(
 	vmid,
 	status,
@@ -300,22 +313,36 @@ async function processData(
 		return [];
 	}
 
+	const total = page.total || 0;
 	const list = [];
-	const totalPages = page.data - 1;
+	let pn = 1;
+	let collected = 0;
+	// 安全上限，防止接口异常（total 不收敛/重复返回）时无限翻页
+	const MAX_PAGES = 200;
 
-	for (let i = 1; i < page.data; i++) {
-		process.stdout.write(`   Fetching page ${i}/${totalPages}...\r`);
+	while (pn <= MAX_PAGES && collected < total) {
+		process.stdout.write(
+			`   Fetching page ${pn} (${collected}/${total})...\r`,
+		);
 		const data = await getData(
 			vmid,
 			status,
 			typeNum,
-			i,
+			pn,
 			useWebp,
 			coverMirror,
 			SESSDATA,
 		);
+		if (data.length === 0) break;
 		list.push(...data);
+		collected += data.length;
+		pn += 1;
 		await delay(300); // 延迟避免请求过快
+	}
+	if (collected < total) {
+		console.warn(
+			`   Warning: expected ${total} items but collected ${collected}, stopped at page ${pn - 1}.`,
+		);
 	}
 	console.log("");
 	return list;
@@ -344,6 +371,7 @@ async function main() {
 	const SESSDATA = await getSessdataFromConfig();
 	const coverMirror = await getCoverMirrorFromConfig();
 	const useWebp = await getUseWebpFromConfig();
+	const OUTPUT_FILE = await getOutputFile();
 
 	// 获取三种状态的数据 (1=想看, 2=在看, 3=已看)
 	console.log("\nFetching Bilibili bangumi data...");

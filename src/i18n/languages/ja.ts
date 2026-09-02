@@ -15,6 +15,8 @@ export const ja: Translation = {
 	[Key.navOthers]: "その他",
 
 	[Key.tags]: "タグ",
+	// 26.09.02 [13]：タグ絞り込みカードのタイトル
+	[Key.tagFilter]: "タグ絞り込み",
 	[Key.categories]: "カテゴリー",
 	[Key.recentPosts]: "最近の投稿",
 	[Key.postList]: "投稿の一覧",
@@ -69,6 +71,8 @@ export const ja: Translation = {
 	[Key.animeStatusOnHold]: "保留中",
 	[Key.animeStatusDropped]: "中断",
 	[Key.animeFilterAll]: "すべて",
+	[Key.animeLayoutRegular]: "通常",
+	[Key.animeLayoutCompact]: "コンパクト",
 	[Key.animeYear]: "年",
 	[Key.animeStudio]: "スタジオ",
 	[Key.animeEmpty]: "アニメのデータはありません",
@@ -210,6 +214,7 @@ export const ja: Translation = {
 	[Key.wallpaperBanner]: "バナーモード",
 	[Key.wallpaperFullscreen]: "フルスクリーンモード",
 	[Key.wallpaperNone]: "壁紙を隠す",
+	[Key.wallpaperCycle]: "壁紙を切り替え",
 
 	// スキルページ
 	[Key.skills]: "スキル",

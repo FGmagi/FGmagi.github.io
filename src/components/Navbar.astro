@@ -1,6 +1,11 @@
 ---
 import { Icon } from "astro-icon/components";
-import { navBarConfig, siteConfig } from "../config";
+import {
+	navBarConfig,
+	navbarIconFallback,
+	navbarLogoFallback,
+	siteConfig,
+} from "../config";
 import { LinkPresets } from "../constants/link-presets";
 import { LinkPreset, type NavBarLink } from "../types/config";
 import { url } from "../utils/url-utils";
@@ -42,10 +47,10 @@ const [homeLink, ...restLinks] = links;
 				{/* 使用navbarTitle配置或默认配置 */}
                 {siteConfig.navbarTitle ? (
                     siteConfig.navbarTitle.mode === "logo" ? (
-                        <img src={url(siteConfig.navbarTitle.logo || "/assets/home/default-logo.png")} alt={siteConfig.navbarTitle.text} class="h-[2.25rem] max-w-full object-contain" loading="lazy" />
+                        <img src={url(siteConfig.navbarTitle.logo || navbarLogoFallback)} alt={siteConfig.navbarTitle.text} class="h-[2.25rem] max-w-full object-contain" loading="lazy" />
                     ) : (
                         <>
-                            <img src={url(siteConfig.navbarTitle.icon || "/assets/home/home.png")} alt={siteConfig.navbarTitle.text} class="h-[1.75rem] w-[1.75rem] mb-1 mr-2 object-contain" loading="lazy" />
+                            <img src={url(siteConfig.navbarTitle.icon || navbarIconFallback)} alt={siteConfig.navbarTitle.text} class="h-[1.75rem] w-[1.75rem] mb-1 mr-2 object-contain" loading="lazy" />
                             <span class="dark:text-white text-black">{siteConfig.navbarTitle.text}</span>
                         </>
                     )

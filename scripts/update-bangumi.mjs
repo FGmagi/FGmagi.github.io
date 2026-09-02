@@ -7,10 +7,22 @@ const CONFIG_PATH = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
 	"../src/config.ts",
 );
-const OUTPUT_FILE = path.join(
-	path.dirname(fileURLToPath(import.meta.url)),
-	"../src/data/bangumi-data.json",
-);
+
+// 26.09.02 [7]：输出路径改读 config（dataFiles.bangumiDataJson，相对项目根）
+async function getOutputFile() {
+	const configContent = await fs.readFile(CONFIG_PATH, "utf-8");
+	const match = configContent.match(/bangumiDataJson:\s*["']([^"']+)["']/);
+	if (!match || !match[1]) {
+		throw new Error(
+			"Could not find dataFiles.bangumiDataJson in src/config.ts",
+		);
+	}
+	const projectRoot = path.join(
+		path.dirname(fileURLToPath(import.meta.url)),
+		"..",
+	);
+	return path.join(projectRoot, match[1]);
+}
 
 async function getUserIdFromConfig() {
 	try {
@@ -213,6 +225,7 @@ async function main() {
 
 	const USER_ID = await getUserIdFromConfig();
 	console.log(`Read User ID: ${USER_ID}`);
+	const OUTPUT_FILE = await getOutputFile();
 
 	const collections = [
 		{ type: 3, status: "watching" },

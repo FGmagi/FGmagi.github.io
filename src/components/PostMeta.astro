@@ -1,10 +1,11 @@
 ---
+// 26.09.02 [11]修改，内容为：移除"文章分类"渲染（categories 区块、category/hideUncategorized props、getCategoryUrl 引用），全站不再展示分类；日期/字数/标签/访问量等元数据能力与 meta-date 类保持不变
+// 26.09.02修改，内容为：md 阅读页标签链接改跳 /archive/?q= 搜索筛选（原跳标签归档路径），移除 getTagUrl 引用
 import { Icon } from "astro-icon/components";
 import { umamiConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
-import { getCategoryUrl, getTagUrl } from "../utils/url-utils";
 
 // 解析 umami
 const umamiEnabled = umamiConfig.enabled || false;
@@ -16,7 +17,6 @@ const umamiBaseUrl = umamiConfig.baseUrl || "";
 export interface Props {
 	published: Date;
 	updated?: Date;
-	category?: string;
 	tags?: string[];
 	hideUpdateDate?: boolean;
 	hideTagsForMobile?: boolean;
@@ -25,8 +25,7 @@ export interface Props {
 	id?: string;
 	showOnlyBasicMeta?: boolean; // 新增属性，控制是否只显示基本元数据
 	hideTags?: boolean; // 26.08.30修改，内容为：新增 hideTags 属性，标签已移至标题右侧展示时隐藏元数据区的标签
-	hideUncategorized?: boolean; // 26.08.31修改，内容为：新增 hideUncategorized 属性，分类为空时不再渲染“未分类”
-	hideMetaIcons?: boolean; // 26.08.31修改，内容为：新增 hideMetaIcons 属性，隐藏日期/分类左侧的图标
+	hideMetaIcons?: boolean; // 26.08.31修改，内容为：新增 hideMetaIcons 属性，隐藏日期左侧的图标（分类图标随分类展示一并移除，26.09.02 [11]）
 	words?: number; // 字数统计
 	minutes?: number; // 阅读时间（分钟）
 	showWordCount?: boolean; // 是否显示字数统计
@@ -35,7 +34,6 @@ export interface Props {
 const {
 	published,
 	updated,
-	category,
 	tags,
 	hideUpdateDate,
 	hideTagsForMobile,
@@ -44,7 +42,6 @@ const {
 	id,
 	showOnlyBasicMeta = false, // 默认为false，保持原有行为
 	hideTags = false,
-	hideUncategorized = false,
 	hideMetaIcons = false,
 	words,
 	// minutes,
@@ -54,7 +51,7 @@ const {
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
     <!-- publish date -->
-    <div class="flex items-center">
+    <div class="flex items-center meta-date">
         {!hideMetaIcons && (
             <div class="meta-icon">
                 <Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl"></Icon>
@@ -70,24 +67,6 @@ const {
                 <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl"></Icon>
             </div>
             <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(updated)}</span>
-        </div>
-    )}
-
-    <!-- categories -->
-    {(!hideUncategorized || category) && (
-        <div class="flex items-center">
-            {!hideMetaIcons && (
-                <div class="meta-icon">
-                    <Icon name="material-symbols:book-2-outline-rounded" class="text-xl"></Icon>
-                </div>
-            )}
-            <div class="flex flex-row flex-nowrap items-center">
-                <a href={getCategoryUrl(category || '')} aria-label={`View all posts in the ${category} category`}
-                   class="link-lg transition text-50 text-sm font-medium
-                                hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
-                    {category || i18n(I18nKey.uncategorized)}
-                </a>
-            </div>
         </div>
     )}
 
@@ -113,7 +92,7 @@ const {
                 {(tags && tags.length > 0) && tags.map((tag, i) => (
                     <>
                         <div class:list={[{"hidden": i == 0}, "mx-1.5 text-[var(--meta-divider)] text-sm"]}>/</div>
-                        <a href={getTagUrl(tag)} aria-label={`View all posts with the ${tag.trim()} tag`}
+                        <a href={`/archive/?q=${encodeURIComponent(tag.trim())}`} aria-label={`Search posts tagged with ${tag.trim()}`}
                            class="link-lg transition text-50 text-sm font-medium
                                         hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
                             {tag.trim()}

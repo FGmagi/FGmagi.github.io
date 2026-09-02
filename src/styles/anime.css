@@ -82,6 +82,7 @@
 .anime-filter-container {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -106,6 +107,125 @@
   background: var(--primary);
   color: white;
   border-color: var(--primary);
+}
+
+/* 26.09.02 [8] + [12]：常规/紧凑 切换控件——12 起由两个独立按钮改为分段滑动条：
+   圆角轨道（随 --btn-regular-bg/--line-divider 适配深/浅主题）+ 绝对定位滑块 thumb（宽约 50%、translateX(0%/100%) 0.25s 滑动、底色 --primary、可点击切向另一布局）
+   + 两个等宽透明点击段（flex:1 1 0；激活段文字白色 z-index:3 且 pointer-events:none，点击穿透到下层 thumb；未激活段 z-index:1 正常接收点击） */
+.anime-layout-switch {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: fit-content;
+  min-width: 12rem;
+  height: 2.25rem;
+  padding: 0.125rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  border: 1px solid var(--line-divider);
+  border-radius: 9999px;
+  background: var(--btn-regular-bg);
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.anime-layout-thumb {
+  position: absolute;
+  top: 0.125rem;
+  bottom: 0.125rem;
+  left: 0.125rem;
+  z-index: 2;
+  width: calc(50% - 0.125rem);
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transform: translateX(0);
+  transition: transform 0.25s ease, background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.anime-layout-switch[data-layout="compact"] .anime-layout-thumb {
+  transform: translateX(100%);
+}
+
+.anime-layout-btn {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 0.625rem;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--btn-content);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.anime-layout-btn:hover:not(.anime-active) {
+  color: var(--primary);
+}
+.anime-layout-btn.anime-active {
+  z-index: 3;
+  color: white;
+  pointer-events: none;
+}
+
+/* === Compact Mode（紧凑模式，26.09.02 [8] 新增）===
+   仅展示 封面 + 右上评分 + 左上追番状态 + 整卡跳转 + 封面正下方标题；
+   隐藏 说明/年份/制作/类型/追番进度条；封面 8.5rem 移动 / 11rem 桌面，宽高比 2:3；
+   列数由 JS 按容器宽度计算写入 --anime-cols（2~6），窗口 resize 实时重算。 */
+.anime-grid-container.anime-compact-mode {
+  grid-template-columns: repeat(var(--anime-cols, 6), 1fr);
+}
+
+.anime-grid-container.anime-compact-mode .group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0.5rem 0.625rem;
+}
+
+.anime-grid-container.anime-compact-mode .anime-cover-container {
+  width: 8.5rem;
+  height: auto;
+  aspect-ratio: 2/3;
+  flex-shrink: 0;
+}
+@media (min-width: 768px) {
+  .anime-grid-container.anime-compact-mode .anime-cover-container {
+    width: 11rem;
+  }
+}
+
+.anime-grid-container.anime-compact-mode .p-3 {
+  width: 100%;
+  display: block;
+  padding: 0.5rem 0.25rem 0;
+  text-align: center;
+}
+
+.anime-grid-container.anime-compact-mode .p-3 h3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.anime-grid-container.anime-compact-mode .group p.text-xs,
+.anime-grid-container.anime-compact-mode .group .space-y-1,
+.anime-grid-container.anime-compact-mode .anime-progress {
+  display: none;
 }
 
 .anime-grid-container [data-anime-status].anime-hidden {

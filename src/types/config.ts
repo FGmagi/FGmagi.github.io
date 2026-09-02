@@ -92,6 +92,8 @@ export type SiteConfig = {
 
 	// 添加字体配置
 	font: {
+		webDir?: string; // 字体文件目录（相对 public/ 的网页路径，@font-face 使用）
+		faces?: FontFaceConfig[]; // @font-face 注册列表（由 Layout.astro 按配置注入）
 		asciiFont: {
 			fontFamily: string;
 			fontWeight: string | number;
@@ -125,7 +127,12 @@ export type SiteConfig = {
 	// 添加番剧页面配置
 	anime?: {
 		mode?: "bangumi" | "local" | "bilibili"; // 番剧页面模式
+		defaultLayout?: "regular" | "compact"; // 追番页默认布局：regular=常规列表，compact=紧凑封面网格
+		emptyMessages?: AnimeEmptyMessages; // 番剧页空状态文案
 	};
+
+	// 友链页面卡片布局配置
+	friendCardLayout?: FriendCardLayoutConfig;
 
 	// 标签样式配置
 	tagStyle?: {
@@ -196,6 +203,51 @@ export type Favicon = {
 	src: string;
 	theme?: "light" | "dark";
 	sizes?: string;
+};
+
+// 数据文件与资源路径配置（src/config.ts 的 dataFiles）
+// 统一语义：文件系统路径相对项目根目录；网页路径以 "/" 开头、相对 public/。
+export type DataFilesConfig = {
+	animeJson: string; // 番剧-本地模式数据文件
+	bilibiliDataJson: string; // bilibili 番剧数据（update-bilibili 输出 + 页面读取）
+	bilibiliDataJsonLegacy: string; // bilibili 旧数据位置（src 内兜底）
+	bangumiDataJson: string; // bangumi 番剧数据（update-bangumi 输出 + 页面读取）
+	friendsJson: string; // 友链数据文件
+	postsDir: string; // 文章内容目录（glob base）
+	specDir: string; // 独立页面内容目录（glob base）
+	albumsDir: string; // 相册图片目录（文件系统路径）
+	albumsWebDir: string; // 相册网页路径前缀（相对 public/，以 / 开头）
+	faviconIco: string; // 默认 favicon 文件（相对项目根）
+	fontDir: string; // 字体文件目录（相对项目根，compress-fonts.js 读取）
+};
+
+// @font-face 注册项（siteConfig.font.faces）
+export type FontFaceConfig = {
+	family: string; // 字体族名（与 CSS font-family 一致）
+	files: string[]; // 字体文件名列表（相对 font.webDir，按顺序降级）
+	weight?: string | number; // 字重
+	style?: "normal" | "italic"; // 字体样式
+};
+
+// 番剧页空状态文案（siteConfig.anime.emptyMessages）
+export type AnimeEmptyMessages = {
+	noBilibiliVmid?: string; // bilibili 模式未配置 vmid 时显示
+	noBangumiUserId?: string; // bangumi 模式未配置 userId 时显示
+	bilibiliEmpty?: string; // bilibili 数据为空时显示
+	localEmpty?: string; // local 模式数据为空时显示
+	bangumiEmpty?: string; // bangumi 数据为空时显示
+};
+
+// 友链卡片响应式档位（siteConfig.friendCardLayout.breakpoints）
+// minWidth：浏览器视口宽度临界值（px，数组内需递增）；columns：达到该宽度后同一行显示的卡片数（取值 1-4，页面会夹紧）
+export type FriendCardBreakpoint = {
+	minWidth: number;
+	columns: number;
+};
+
+// 友链卡片布局配置（siteConfig.friendCardLayout）
+export type FriendCardLayoutConfig = {
+	breakpoints: FriendCardBreakpoint[];
 };
 
 export enum LinkPreset {
@@ -317,13 +369,27 @@ export type AnnouncementConfig = {
 	content: string; // 公告栏内容
 	icon?: string; // 公告栏图标
 	type?: "info" | "warning" | "success" | "error"; // 公告类型
-	closable?: boolean; // 是否可关闭
+	closable?: boolean; // [死代码]：右侧 X 关闭按钮已取消（26.09.02），字段保留兼容
 	link?: {
 		enable: boolean; // 是否启用链接
+		showLearnMore?: boolean; // 是否显示 Learn More 链接（true=显示，false=隐藏；26.09.02 新增 bool 开关）
 		text: string; // 链接文字
 		url: string; // 链接地址
 		external?: boolean; // 是否外部链接
 	};
+};
+
+// 26.09.02 [13]：标签筛选卡片配置（首页左下角卡片，点击标签 DOM 过滤中间文章卡片）
+export type TagFilterConfig = {
+	showCount: boolean; // 是否在标签 chip 内显示文章数（"标签名：N"）；false=仅显示标签名
+};
+
+// 26.09.02：首页中间内容卡片悬停变暗参数（供 PostCard 悬停遮罩使用，百分比暗度按 0-100 取值）
+export type PostCardHoverConfig = {
+	hoverDarkness: number; // 悬停时暗度（%，0=不变暗，100=全黑；默认 10）
+	holdDuration: number; // 停顿时间（ms，到达悬停暗度后保持多久再开始回落）
+	restoredDarkness: number; // 停顿后恢复到的暗度（%，默认 5，即"悬停暗度的一半"）
+	restoreDuration: number; // 恢复速度（ms，从悬停暗度过渡到恢复暗度所用时长；鼠标移出恢复 0 亦用此时长）
 };
 
 export type MusicPlayerConfig = {
@@ -351,6 +417,7 @@ export type WidgetComponentType =
 	| "pio" // 添加 pio 组件类型
 	| "site-stats" // 站点统计组件
 	| "calendar" // 日历组件
+	| "tag-filter" // 26.09.02 [13]：标签筛选卡片组件类型
 	| "custom";
 
 export type WidgetComponentConfig = {

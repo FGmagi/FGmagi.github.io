@@ -15,6 +15,8 @@ export const zh_CN: Translation = {
 	[Key.navOthers]: "其他",
 
 	[Key.tags]: "标签",
+	// 26.09.02 [13]：标签筛选卡片标题
+	[Key.tagFilter]: "标签筛选",
 	[Key.categories]: "分类",
 	[Key.recentPosts]: "最新文章",
 	[Key.postList]: "文章列表",
@@ -69,6 +71,8 @@ export const zh_CN: Translation = {
 	[Key.animeStatusOnHold]: "搁置",
 	[Key.animeStatusDropped]: "抛弃",
 	[Key.animeFilterAll]: "全部",
+	[Key.animeLayoutRegular]: "常规",
+	[Key.animeLayoutCompact]: "紧凑",
 	[Key.animeYear]: "年份",
 	[Key.animeStudio]: "制作",
 	[Key.animeEmpty]: "暂无追番数据",
@@ -277,6 +281,7 @@ export const zh_CN: Translation = {
 	[Key.wallpaperBanner]: "横幅模式",
 	[Key.wallpaperFullscreen]: "全屏模式",
 	[Key.wallpaperNone]: "隐藏壁纸",
+	[Key.wallpaperCycle]: "切换壁纸",
 
 	// 站点统计
 	[Key.siteStats]: "站点统计",

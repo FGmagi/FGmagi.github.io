@@ -15,6 +15,8 @@ export const en: Translation = {
 	[Key.navOthers]: "Others",
 
 	[Key.tags]: "Tags",
+	// 26.09.02 [13]: Tag filter card title
+	[Key.tagFilter]: "Tag Filter",
 	[Key.categories]: "Categories",
 	[Key.recentPosts]: "Recent Posts",
 	[Key.postList]: "Post List",
@@ -69,6 +71,8 @@ export const en: Translation = {
 	[Key.animeStatusOnHold]: "On Hold",
 	[Key.animeStatusDropped]: "Dropped",
 	[Key.animeFilterAll]: "All",
+	[Key.animeLayoutRegular]: "Regular",
+	[Key.animeLayoutCompact]: "Compact",
 	[Key.animeYear]: "Year",
 	[Key.animeStudio]: "Studio",
 	[Key.animeEmpty]: "No anime data available",
@@ -208,6 +212,7 @@ export const en: Translation = {
 	[Key.wallpaperBanner]: "Banner Mode",
 	[Key.wallpaperFullscreen]: "Fullscreen Mode",
 	[Key.wallpaperNone]: "Hide Wallpaper",
+	[Key.wallpaperCycle]: "Switch Wallpaper",
 
 	// Skills Page
 	[Key.skills]: "Skills",

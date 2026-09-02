@@ -18,6 +18,8 @@ export const WIDGET_COMPONENT_MAP = {
 	pio: "../components/widget/Pio.astro", // 添加 Pio 组件映射
 	"site-stats": "../components/widget/SiteStats.astro", // 站点统计组件
 	calendar: "../components/widget/Calendar.astro", // 日历组件
+	// 26.09.02 [13]：标签筛选卡片组件映射
+	"tag-filter": "../components/widget/TagFilter.astro",
 	custom: null, // 自定义组件需要在配置中指定路径
 } as const;
 

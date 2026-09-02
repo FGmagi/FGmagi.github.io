@@ -170,13 +170,36 @@ if (siteConfig.font) {
 	// 组合成完整的 font-family 字符串
 	bodyFontFamily = fonts.join(", ");
 }
+
+// 26.09.02 [7]：@font-face 由 config 驱动——按 siteConfig.font.faces/webDir 生成 CSS 注入 head（原硬编码于 main.css）
+let fontFaceCss = "";
+const fontFaces = siteConfig.font?.faces || [];
+if (fontFaces.length > 0) {
+	const fontWebDir = siteConfig.font?.webDir || "/assets/font";
+	const formatOf = (file: string) =>
+		file.toLowerCase().endsWith(".woff2")
+			? "woff2"
+			: file.toLowerCase().endsWith(".woff")
+				? "woff"
+				: "truetype";
+	fontFaceCss = fontFaces
+		.map((face) => {
+			const srcList = (face.files || [])
+				.map(
+					(file) =>
+						`url("${fontWebDir}/${file}") format("${formatOf(file)}")`,
+				)
+				.join(", ");
+			return `@font-face{font-family:"${face.family}";src:${srcList};font-style:${face.style || "normal"};font-weight:${face.weight ?? "400"};font-display:swap}`;
+		})
+		.join("\n");
+}
 ---
 
 <!doctype html>
 <html
 	lang={siteLang}
 	class="bg-[var(--page-bg)] text-[14px] md:text-[16px]"
-	data-overlayscrollbars-initialize
 >
 	<head>
 		<!-- 第三方分析脚本 - 延迟加载优化 -->
@@ -367,6 +390,8 @@ if (siteConfig.font) {
 			}}
 		></style>
 
+		{fontFaceCss && <Fragment set:html={`<style>${fontFaceCss}</style>`} />}
+
 		<!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 		<slot name="head" />
 
@@ -393,7 +418,6 @@ if (siteConfig.font) {
 			{ "lg:is-home": isHomePage, "enable-banner": enableBanner },
 		]}
 		style={bodyFontFamily ? `font-family: ${bodyFontFamily};` : ""}
-		data-overlayscrollbars-initialize
 	>
 		<noscript
 			><iframe
@@ -471,7 +495,7 @@ if (siteConfig.font) {
 
 <script>
 	// import { animationManager } from '../utils/animation-utils';
-	import "overlayscrollbars/overlayscrollbars.css";
+	// 26.09.02 [6]：OverlayScrollbars 已彻底停用——移除其 CSS import 与 html/body 上的 data-overlayscrollbars-initialize，恢复页面原生滚动条（无任何 JS 初始化调用、无 .os-* 运行时元素依赖）
 	// import {
 	//  OverlayScrollbars,
 	//  // ScrollbarsHidingPlugin,

@@ -1,12 +1,11 @@
 ---
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
-import { siteConfig } from "../config";
+import { dataFiles, siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import fs from "node:fs";
 import path from "node:path";
-import { widgetManager } from "../utils/widget-manager";
 import "../styles/anime.css";
 
 interface AnimeItem {
@@ -27,23 +26,50 @@ if (!siteConfig.featurePages.anime) {
 	return Astro.redirect("/404/");
 }
 
-const hasRightSidebars =
-	widgetManager.getComponentsByPosition("top", "right", "desktop").length > 0 ||
-	widgetManager.getComponentsByPosition("sticky", "right", "desktop").length > 0;
+// 26.09.02 [8]：追番页默认布局（无 localStorage 存储时生效），读 config anime.defaultLayout
+const DEFAULT_ANIME_LAYOUT =
+	siteConfig.anime?.defaultLayout === "compact" ? "compact" : "regular";
 const BANGUMI_USER_ID = siteConfig.bangumi?.userId || "your-user-id";
 const BILIBILI_VMID = siteConfig.bilibili?.vmid || "";
 const ANIME_MODE = siteConfig.anime?.mode || "bangumi";
+const ANIME_EMPTY = siteConfig.anime?.emptyMessages || {};
 
 let animeList: AnimeItem[] = [];
 
-// 26.08.30修改，内容为：新增本地番剧数据回退读取函数，bilibili 数据缺失/加载失败或开发模式跳过时回退 public/data/anime.json，保证页面始终有内容
-function loadLocalAnimeList(): AnimeItem[] {
-	const animeJsonPath = path.join(process.cwd(), "public/data/anime.json");
+// 26.09.02 [7]：统一字段映射函数（26.09.01 [4] 新增）——补全缺省值（cover/link 等字段缺失给兜底，不整条丢弃），bilibili 与本地数据共用
+function mapAnimeItems(rawData: any[]): AnimeItem[] {
+	const FALLBACK_COVER =
+		"data:image/svg+xml;charset=utf-8," +
+		encodeURIComponent(
+			'<svg xmlns="http://www.w3.org/2000/svg" width="220" height="300"><rect width="100%" height="100%" fill="#e5e7eb"/><text x="50%" y="50%" fill="#9ca3af" font-size="18" text-anchor="middle" dominant-baseline="middle">No Cover</text></svg>',
+		);
+	return rawData.map((item: any): AnimeItem => ({
+		title: item.title || "Unknown",
+		cover: item.cover || FALLBACK_COVER,
+		link: item.link || "#",
+		status: item.status || "planned",
+		rating: Number(item.rating) || 0,
+		progress: Number(item.progress) || 0,
+		totalEpisodes: Number(item.totalEpisodes) || 12,
+		description: item.description || "",
+		year: item.year || "",
+		studio: item.studio || "",
+		genre: Array.isArray(item.genre) ? item.genre : [],
+	}));
+}
+
+// 26.09.02 [7]：本地模式专用读取——数据路径改读 config（dataFiles.animeJson），保持 local 模式语义不变，字段统一走 mapAnimeItems
+function loadLocalAnimeJson(): AnimeItem[] {
+	const animeJsonPath = path.join(process.cwd(), dataFiles.animeJson);
 	if (fs.existsSync(animeJsonPath)) {
 		try {
-			return JSON.parse(fs.readFileSync(animeJsonPath, "utf-8"));
+			const rawData = JSON.parse(fs.readFileSync(animeJsonPath, "utf-8"));
+			if (Array.isArray(rawData)) {
+				return mapAnimeItems(rawData);
+			}
+			console.warn(`Anime data file is not an array at ${animeJsonPath}.`);
 		} catch (error) {
-			console.error("Failed to parse public/data/anime.json:", error);
+			console.error(`Failed to parse ${animeJsonPath}:`, error);
 		}
 	} else {
 		console.warn(`Anime data file not found at ${animeJsonPath}.`);
@@ -51,43 +77,62 @@ function loadLocalAnimeList(): AnimeItem[] {
 	return [];
 }
 
-// 26.08.30修改，内容为：本地番剧列表从 public/data/anime.json 读取（原为 src/data/anime 静态导入）
+// 26.09.02 [7]：本地番剧数据回退读取函数（26.08.30 新增，26.09.01 [4] 调整兜底链）——优先读取更完整的 bilibili-data.json（存在且非空），其次 anime.json；数据路径改读 config（dataFiles）
+function loadLocalAnimeList(): AnimeItem[] {
+	const fallbackPaths = [
+		path.join(process.cwd(), dataFiles.bilibiliDataJson),
+		path.join(process.cwd(), dataFiles.animeJson),
+	];
+	for (const fallbackPath of fallbackPaths) {
+		if (!fs.existsSync(fallbackPath)) {
+			console.warn(`Anime data file not found at ${fallbackPath}.`);
+			continue;
+		}
+		try {
+			const rawData = JSON.parse(fs.readFileSync(fallbackPath, "utf-8"));
+			if (Array.isArray(rawData) && rawData.length > 0) {
+				return mapAnimeItems(rawData);
+			}
+			console.warn(
+				`Anime data file is empty or not an array at ${fallbackPath}.`,
+			);
+		} catch (error) {
+			console.error(`Failed to parse ${fallbackPath}:`, error);
+		}
+	}
+	return [];
+}
+
+// 26.09.02 [7]：本地番剧列表改读 config（dataFiles）；local 模式走 loadLocalAnimeJson，loadLocalAnimeList 仅作 bilibili 兜底（26.08.30/26.09.01 [4] 调整）
 if (ANIME_MODE === "local") {
-	animeList = loadLocalAnimeList();
+	animeList = loadLocalAnimeJson();
 } else if (ANIME_MODE === "bilibili") {
 	const isDev = import.meta.env.DEV;
 	const shouldFetchOnDev = siteConfig.bilibili?.fetchOnDev ?? false;
 	const skipLoad = isDev && !shouldFetchOnDev;
 
 	if (skipLoad) {
-		console.log("[Dev] Skipping Bilibili data load (fetchOnDev is off), fallback to local anime.json");
+		console.log("[Dev] Skipping Bilibili data load (fetchOnDev is off), fallback to local data (bilibili-data.json → anime.json)");
 		animeList = loadLocalAnimeList();
 	} else {
 		try {
-			// 26.08.31修改，内容为：bilibili 数据优先读取 public/data/bilibili-data.json（public 网页路径 /data/bilibili-data.json），其次 src/data/bilibili-data.json，均缺失时回退 public/data/anime.json
+			// 26.09.02 [7]：bilibili 数据路径改读 config（dataFiles.bilibiliDataJson → bilibiliDataJsonLegacy），均缺失时回退本地数据；读取后统一走 mapAnimeItems 字段映射（26.09.01 [4]）
 			const dataPaths = [
-				path.join(process.cwd(), "public/data/bilibili-data.json"),
-				path.join(process.cwd(), "src/data/bilibili-data.json"),
+				path.join(process.cwd(), dataFiles.bilibiliDataJson),
+				path.join(process.cwd(), dataFiles.bilibiliDataJsonLegacy),
 			];
 			const dataPath = dataPaths.find((p) => fs.existsSync(p));
 			if (dataPath) {
 				const fileContent = fs.readFileSync(dataPath, "utf-8");
 				const rawData = JSON.parse(fileContent);
-				animeList = rawData.map((item: any) => ({
-					title: item.title || "Unknown",
-					cover: item.cover || "",
-					link: item.link || "",
-					status: item.status || "planned",
-					rating: Number(item.rating) || 0,
-					progress: Number(item.progress) || 0,
-					totalEpisodes: Number(item.totalEpisodes) || 12,
-					description: item.description || "",
-					year: item.year || "",
-					studio: item.studio || "",
-					genre: Array.isArray(item.genre) ? item.genre : [],
-				}));
+				if (Array.isArray(rawData)) {
+					animeList = mapAnimeItems(rawData);
+				} else {
+					console.warn(`Bilibili data file is not an array at ${dataPath}, fallback to local data`);
+					animeList = loadLocalAnimeList();
+				}
 			} else {
-				console.warn(`Bilibili data file not found (${dataPaths.join(" / ")}), fallback to local anime.json`);
+				console.warn(`Bilibili data file not found (${dataPaths.join(" / ")}), fallback to local data (bilibili-data.json → anime.json)`);
 				animeList = loadLocalAnimeList();
 			}
 		} catch (error) {
@@ -105,10 +150,7 @@ if (ANIME_MODE === "local") {
 		animeList = [];
 	} else {
 		try {
-			const dataPath = path.join(
-				process.cwd(),
-				"src/data/bangumi-data.json",
-			);
+			const dataPath = path.join(process.cwd(), dataFiles.bangumiDataJson);
 			if (fs.existsSync(dataPath)) {
 				const fileContent = fs.readFileSync(dataPath, "utf-8");
 				const rawData = JSON.parse(fileContent);
@@ -205,39 +247,65 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 				</div>
 
 				<div class="mb-6">
-					<div class="anime-filter-container flex flex-wrap gap-2">
-						<button
-							class="anime-filter-tag anime-active"
-							data-status="all"
-							>{i18n(I18nKey.animeFilterAll)}</button
+					<!-- 26.09.02 [8]：筛选行改为两端布局——左侧筛选标签（可换行），右侧新增 常规/紧凑 布局切换按钮（所有设备显示） -->
+					<div class="anime-filter-container">
+						<div class="flex flex-wrap gap-2">
+							<button
+								class="anime-filter-tag anime-active"
+								data-status="all"
+								>{i18n(I18nKey.animeFilterAll)}</button
+							>
+							<button class="anime-filter-tag" data-status="watching"
+								>{i18n(I18nKey.animeStatusWatching)}</button
+							>
+							<button class="anime-filter-tag" data-status="planned"
+								>{i18n(I18nKey.animeStatusPlanned)}</button
+							>
+							<button class="anime-filter-tag" data-status="completed"
+								>{i18n(I18nKey.animeStatusCompleted)}</button
+							>
+							{
+								(ANIME_MODE === "bangumi" || ANIME_MODE === "bilibili") && (
+									<>
+										<button
+											class="anime-filter-tag"
+											data-status="onhold"
+										>
+											{i18n(I18nKey.animeStatusOnHold)}
+										</button>
+										<button
+											class="anime-filter-tag"
+											data-status="dropped"
+										>
+											{i18n(I18nKey.animeStatusDropped)}
+										</button>
+									</>
+								)
+							}
+						</div>
+						<!-- 26.09.02 [12]：常规/紧凑 切换改为分段滑动条——轨道内保留两个可点击段 + 绝对定位滑块 thumb（点击滑块切向另一布局），data-layout 由 JS 同步驱动 thumb 滑动 -->
+						<div
+							class="anime-layout-switch"
+							role="group"
+							aria-label={i18n(I18nKey.animeTitle)}
+							data-layout={DEFAULT_ANIME_LAYOUT}
 						>
-						<button class="anime-filter-tag" data-status="watching"
-							>{i18n(I18nKey.animeStatusWatching)}</button
-						>
-						<button class="anime-filter-tag" data-status="planned"
-							>{i18n(I18nKey.animeStatusPlanned)}</button
-						>
-						<button class="anime-filter-tag" data-status="completed"
-							>{i18n(I18nKey.animeStatusCompleted)}</button
-						>
-						{
-							(ANIME_MODE === "bangumi" || ANIME_MODE === "bilibili") && (
-								<>
-									<button
-										class="anime-filter-tag"
-										data-status="onhold"
-									>
-										{i18n(I18nKey.animeStatusOnHold)}
-									</button>
-									<button
-										class="anime-filter-tag"
-										data-status="dropped"
-									>
-										{i18n(I18nKey.animeStatusDropped)}
-									</button>
-								</>
-							)
-						}
+							<span class="anime-layout-thumb" aria-hidden="true"></span>
+							<button
+								type="button"
+								class="anime-layout-btn"
+								data-layout="regular"
+							>
+								{i18n(I18nKey.animeLayoutRegular)}
+							</button>
+							<button
+								type="button"
+								class="anime-layout-btn"
+								data-layout="compact"
+							>
+								{i18n(I18nKey.animeLayoutCompact)}
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -252,8 +320,8 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 									{i18n(I18nKey.animeEmpty)}
 								</h3>
 								<p class="text-black/60 dark:text-white/60">
-									Please set your Bilibili vmid in the
-									src/config.ts file
+									{ANIME_EMPTY.noBilibiliVmid ||
+										"Please set your Bilibili vmid in the src/config.ts file"}
 								</p>
 							</div>
 						) : ANIME_MODE !== "local" &&
@@ -265,8 +333,8 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 								{i18n(I18nKey.animeEmpty)}
 							</h3>
 							<p class="text-black/60 dark:text-white/60">
-								Please set your Bangumi userId in the
-								src/config.ts file
+								{ANIME_EMPTY.noBangumiUserId ||
+									"Please set your Bangumi userId in the src/config.ts file"}
 							</p>
 						</div>
 					) : visibleAnimeList.length > 0 ? (
@@ -342,7 +410,7 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 
 												{anime.status ===
 													"watching" && (
-													<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+													<div class="anime-progress absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
 														<div class="w-full bg-white/20 rounded-full h-1.5 mb-1">
 															<div
 																class="bg-gradient-to-r from-emerald-400 to-teal-400 h-1.5 rounded-full transition-all duration-300"
@@ -483,7 +551,7 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 
 												{anime.status ===
 													"watching" && (
-													<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+													<div class="anime-progress absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
 														<div class="w-full bg-white/20 rounded-full h-1.5 mb-1">
 															<div
 																class="bg-gradient-to-r from-emerald-400 to-teal-400 h-1.5 rounded-full transition-all duration-300"
@@ -573,10 +641,13 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 							</h3>
 							<p class="text-black/60 dark:text-white/60">
 								{ANIME_MODE === "local"
-									? i18n(I18nKey.animeEmptyLocal)
+									? ANIME_EMPTY.localEmpty ||
+										i18n(I18nKey.animeEmptyLocal)
 									: ANIME_MODE === "bilibili"
-										? "Bilibili数据为空，请运行 pnpm run update-bilibili 获取数据"
-										: i18n(I18nKey.animeEmptyBangumi)}
+										? ANIME_EMPTY.bilibiliEmpty ||
+											"Bilibili数据为空，请运行 pnpm run update-bilibili 获取数据"
+										: ANIME_EMPTY.bangumiEmpty ||
+											i18n(I18nKey.animeEmptyBangumi)}
 							</p>
 						</div>
 					)
@@ -585,16 +656,29 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 		</div>
 	</div>
 
-	<script is:inline define:vars={{ hasRightSidebars }}>
+	<script is:inline define:vars={{ defaultAnimeLayout: DEFAULT_ANIME_LAYOUT }}>
 		(function () {
+			const ANIME_LAYOUT_KEY = "animeLayoutMode";
+			// 紧凑模式量测常量（与 anime.css 保持一致）：封面宽 移动 8.5rem / 桌面 11rem，列间距 1.5rem
+			const COVER_WIDTH_MOBILE = 136;
+			const COVER_WIDTH_DESKTOP = 176;
+			const COLUMN_GAP = 24;
+			const MOBILE_BREAKPOINT = 768;
+
+			// 26.09.02 [8]：读取追番布局——localStorage 键 animeLayoutMode，无存储时取 config anime.defaultLayout（默认 regular）
+			function getStoredLayout() {
+				const stored = localStorage.getItem(ANIME_LAYOUT_KEY);
+				if (stored === "regular" || stored === "compact") return stored;
+				return defaultAnimeLayout === "compact" ? "compact" : "regular";
+			}
+
+			// 26.09.02 [8]：追番布局初始化——先应用布局类与紧凑列数计算（容器仍为 opacity-0 预渲染阶段），再在 rAF 中移除 opacity-0 统一淡入，避免先渲染错误列数再跳变
 			function initAnimeLayout() {
 				const animeListContainer = document.getElementById(
 					"anime-list-container",
 				);
 				if (!animeListContainer) return false;
-				const currentLayout =
-					localStorage.getItem("postListLayout") || "list";
-				updateAnimeListLayout(currentLayout, false);
+				updateAnimeLayout(getStoredLayout(), false);
 				requestAnimationFrame(() => {
 					animeListContainer.classList.remove("opacity-0");
 				});
@@ -618,10 +702,7 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 							"anime-list-container",
 						);
 						if (animeListContainer) {
-							const currentLayout =
-								localStorage.getItem("postListLayout") ||
-								"list";
-							updateAnimeListLayout(currentLayout, false);
+							updateAnimeLayout(getStoredLayout(), false);
 							animeListContainer.classList.remove("opacity-0");
 						}
 					}, 2000);
@@ -634,37 +715,91 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 				tryInit();
 			}
 
-			function updateAnimeListLayout(layout, shouldAnimate = true) {
+			// 26.09.02 [8]：紧凑列数计算——cols = clamp(floor((容器渲染宽度 + 列间距) / (封面宽 + 列间距)), 2, 6)
+			// 封面宽取首个可见封面的渲染宽度、列间距取容器计算样式 columnGap、容器宽取渲染宽度：
+			// 三者均为实际渲染值，兼容 pageScaling 的 html 字号缩放与移动/桌面 gap 差异；实测不到时回退常量
+			function computeCompactCols(animeListContainer) {
+				const covers = Array.from(
+					animeListContainer.querySelectorAll(
+						".anime-cover-container",
+					),
+				).filter((item) => item.offsetParent !== null);
+
+				let coverWidth = 0;
+				if (covers.length > 0) {
+					coverWidth = covers[0].getBoundingClientRect().width;
+				}
+
+				if (!(coverWidth > 0)) {
+					coverWidth = window.matchMedia(
+						`(min-width: ${MOBILE_BREAKPOINT}px)`,
+					).matches
+						? COVER_WIDTH_DESKTOP
+						: COVER_WIDTH_MOBILE;
+				}
+				const computedGap = parseFloat(
+					getComputedStyle(animeListContainer).columnGap,
+				);
+				const gap =
+					Number.isFinite(computedGap) && computedGap > 0
+						? computedGap
+						: COLUMN_GAP;
+
+				const containerWidth =
+					animeListContainer.getBoundingClientRect().width;
+				return Math.min(
+					6,
+					Math.max(
+						2,
+						Math.floor(
+							(containerWidth + gap) / (coverWidth + gap),
+						),
+					),
+				);
+			}
+
+			// 26.09.02 [8]：写入紧凑列数——内联 CSS 变量 --anime-cols 驱动 anime.css 的 grid-template-columns
+			function applyCompactColumns(animeListContainer) {
+				const cols = computeCompactCols(animeListContainer);
+				animeListContainer.style.setProperty(
+					"--anime-cols",
+					String(cols),
+				);
+			}
+
+			// 26.09.02 [8]：窗口 resize 时仅 compact 模式实时重算列数
+			function updateCompactColumns() {
 				const animeListContainer = document.getElementById(
 					"anime-list-container",
 				);
-				if (!animeListContainer) return;
-				animeListContainer.dataset.currentLayout = layout;
+				if (
+					!animeListContainer ||
+					animeListContainer.dataset.currentLayout !== "compact"
+				)
+					return;
+				applyCompactColumns(animeListContainer);
+			}
 
-				const animeItems = Array.from(
-					document.querySelectorAll("[data-anime-status]"),
-				);
-				const visibleItems = animeItems.filter(
-					(item) => item.offsetParent !== null,
-				);
-				const firstPositions = new Map();
-				if (shouldAnimate) {
-					visibleItems.forEach((item) => {
-						const rect = item.getBoundingClientRect();
-						firstPositions.set(item, {
-							left: rect.left,
-							top: rect.top,
-							width: rect.width,
-							height: rect.height,
-						});
-					});
-				}
+			// 26.09.02 [12]：同步 常规/紧凑 分段滑动条状态——容器 data-layout 驱动 thumb 的 translateX（regular=0% / compact=100%），段激活态仅保留文字高亮（底色由 thumb 表达）
+			function updateLayoutSwitchButtons(layout) {
+				const switchEl = document.querySelector(".anime-layout-switch");
+				if (switchEl) switchEl.dataset.layout = layout;
+				document.querySelectorAll(".anime-layout-btn").forEach((btn) => {
+					const isActive =
+						btn.getAttribute("data-layout") === layout;
+					btn.classList.toggle("anime-active", isActive);
+					btn.setAttribute("aria-pressed", String(isActive));
+				});
+			}
 
+			// 26.09.02 [12]：切换期间应用目标布局——保留 08 的"禁用 item transition"防跳变 style 注入，删除原 firstPositions/deltaX/deltaY/scale 形变动画段（改用容器淡出淡入）
+			function applyAnimeLayout(animeListContainer, nextLayout) {
 				const style = document.createElement("style");
 				style.innerHTML = `.anime-grid-container .group { transition: none !important; }`;
 				document.head.appendChild(style);
 				animeListContainer.classList.remove(
 					"anime-list-mode",
+					"anime-compact-mode",
 					"anime-grid-mode",
 				);
 				animeListContainer.classList.remove(
@@ -672,96 +807,123 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 					"md:grid-cols-2",
 					"lg:grid-cols-3",
 				);
+				animeListContainer.style.removeProperty("grid-template-columns");
+				animeListContainer.style.removeProperty("--anime-cols");
 
-				if (layout === "grid") {
-					animeListContainer.classList.add("anime-grid-mode");
-					const rightSidebar = document.querySelector(
-						".right-sidebar-container",
-					);
-					if (rightSidebar) {
-						rightSidebar.style.display = "none";
-						rightSidebar.classList.add("hidden-in-grid-mode");
-					}
-					const mainGrid = document.getElementById("main-grid");
-					if (mainGrid) {
-						mainGrid.style.gridTemplateColumns = "17.5rem 1fr";
-						mainGrid.classList.add("two-column-layout");
-					}
+				if (nextLayout === "compact") {
+					animeListContainer.classList.add("anime-compact-mode");
+					applyCompactColumns(animeListContainer);
 				} else {
-					animeListContainer.classList.add("anime-list-mode");
 					animeListContainer.classList.add(
+						"anime-list-mode",
 						"grid-cols-1",
 						"lg:grid-cols-2",
 					);
-					const rightSidebar = document.querySelector(
-						".right-sidebar-container",
-					);
-					if (rightSidebar) {
-						rightSidebar.style.display = "";
-						rightSidebar.classList.remove("hidden-in-grid-mode");
-					}
-					const mainGrid = document.getElementById("main-grid");
-					if (mainGrid) {
-						mainGrid.style.gridTemplateColumns = "";
-						mainGrid.classList.remove("two-column-layout");
-					}
 				}
 
 				void animeListContainer.offsetHeight;
+				if (style.parentNode) style.parentNode.removeChild(style);
+			}
+
+			// 26.09.02 [12] + [8]：更新追番布局——动画切换由 08 形变（位移/缩放）改为渐变：快速淡出（150ms）→ 期间切换布局类并重算 compact 列数 → 淡入（250ms），thumb 立即滑到目标位；
+			// shouldAnimate=false（首次打开/预渲染帧/切页进入）保持 08 语义：先应用布局与列数、容器维持 opacity-0，由 init 在 rAF 中统一移除 opacity-0 淡入
+			let animeLayoutSwitching = false;
+			function updateAnimeLayout(layout, shouldAnimate = true) {
+				const animeListContainer = document.getElementById(
+					"anime-list-container",
+				);
+				if (!animeListContainer) return;
+				const nextLayout =
+					layout === "compact" ? "compact" : "regular";
+
 				if (!shouldAnimate) {
-					if (style.parentNode) style.parentNode.removeChild(style);
+					animeListContainer.dataset.currentLayout = nextLayout;
+					updateLayoutSwitchButtons(nextLayout);
+					applyAnimeLayout(animeListContainer, nextLayout);
+					return;
+				}
+				if (animeLayoutSwitching) return;
+				if (animeListContainer.dataset.currentLayout === nextLayout) {
+					updateLayoutSwitchButtons(nextLayout);
 					return;
 				}
 
-				requestAnimationFrame(() => {
-					if (style.parentNode) style.parentNode.removeChild(style);
+				animeLayoutSwitching = true;
+				animeListContainer.dataset.currentLayout = nextLayout;
+				updateLayoutSwitchButtons(nextLayout);
 
-					visibleItems.forEach((item) => {
-						const first = firstPositions.get(item);
-						if (!first) return;
-						const last = item.getBoundingClientRect();
+				// 淡出 150ms：先强制回流确认当前 opacity=1，再置 0 触发过渡
+				animeListContainer.style.transition = "opacity 150ms ease";
+				void animeListContainer.offsetHeight;
+				animeListContainer.style.opacity = "0";
 
-						const deltaX = Math.round(first.left - last.left);
-						const deltaY = Math.round(first.top - last.top);
-						const deltaW = first.width / last.width;
-						const deltaH = first.height / last.height;
-
-						if (
-							Math.abs(deltaX) < 1 &&
-							Math.abs(deltaY) < 1 &&
-							Math.abs(deltaW - 1) < 0.01 &&
-							Math.abs(deltaH - 1) < 0.01
-						)
-							return;
-
-						item.style.willChange = "transform";
-						item.style.transition = "none";
-						item.style.transformOrigin = "top left";
-						item.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${deltaW}, ${deltaH})`;
-					});
-
-					void animeListContainer.offsetHeight;
+				setTimeout(() => {
+					applyAnimeLayout(animeListContainer, nextLayout);
 					requestAnimationFrame(() => {
-						visibleItems.forEach((item) => {
-							item.style.transition =
-								"transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)";
-							item.style.transform = "";
-						});
+						animeListContainer.style.transition =
+							"opacity 250ms ease";
+						animeListContainer.style.opacity = "1";
 						setTimeout(() => {
-							visibleItems.forEach((item) => {
-								item.style.transition = "";
-								item.style.transformOrigin = "";
-								item.style.transform = "";
-								item.style.willChange = "";
-							});
-						}, 500);
+							animeListContainer.style.transition = "";
+							animeListContainer.style.opacity = "";
+							animeLayoutSwitching = false;
+						}, 250);
 					});
-				});
+				}, 150);
 			}
 
-			window.addEventListener("layoutChange", (event) => {
-				updateAnimeListLayout(event.detail.layout);
-			});
+			// 26.09.02 [12] + [8]：统一切换入口——持久化 animeLayoutMode 并广播 animeLayoutChange（detail 携带 "regular" | "compact"）
+			function switchAnimeLayout(layout) {
+				if (layout !== "regular" && layout !== "compact") return;
+				const animeListContainer = document.getElementById(
+					"anime-list-container",
+				);
+				const currentLayout = animeListContainer
+					? animeListContainer.dataset.currentLayout
+					: getStoredLayout();
+				if (currentLayout === layout) return;
+				localStorage.setItem(ANIME_LAYOUT_KEY, layout);
+				window.dispatchEvent(
+					new CustomEvent("animeLayoutChange", {
+						detail: { layout },
+					}),
+				);
+			}
+
+			// 26.09.02 [12]：分段滑动条事件绑定——点击任一段切换到该布局；点击 thumb 切向另一布局（激活段 pointer-events:none，点击穿透到 thumb）
+			function setupLayoutSwitchButtons() {
+				document.querySelectorAll(".anime-layout-btn").forEach((btn) => {
+					btn.addEventListener("click", () => {
+						switchAnimeLayout(btn.getAttribute("data-layout"));
+					});
+				});
+				const thumb = document.querySelector(".anime-layout-thumb");
+				if (thumb) {
+					thumb.addEventListener("click", () => {
+						const animeListContainer = document.getElementById(
+							"anime-list-container",
+						);
+						const currentLayout = animeListContainer
+							? animeListContainer.dataset.currentLayout
+							: getStoredLayout();
+						switchAnimeLayout(
+							currentLayout === "compact" ? "regular" : "compact",
+						);
+					});
+				}
+			}
+			setupLayoutSwitchButtons();
+
+			// 26.09.02 [8]：全局事件只绑定一次（swup 多次切入不重复累加监听）——animeLayoutChange 触发布局切换，resize 实时重算 compact 列数
+			if (!window.__animeLayoutBound) {
+				window.__animeLayoutBound = true;
+				window.addEventListener("animeLayoutChange", (event) => {
+					const layout = event.detail && event.detail.layout;
+					if (layout !== "regular" && layout !== "compact") return;
+					updateAnimeLayout(layout);
+				});
+				window.addEventListener("resize", () => updateCompactColumns());
+			}
 		})();
 	</script>
 

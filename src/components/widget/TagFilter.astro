@@ -1,0 +1,265 @@
+---
+// 26.09.02 [13]：标签筛选卡片——接管首页左下角空位。SSR：读取 getTagList()（10 已保证不含 active:false），
+// 按字母序渲染标签 chip（复用 btn-regular 标签 chip 视觉；showCount 开启时同 chip 显示"标签名：N"）。
+// 客户端：点击 chip 激活/取消（OR 交集 DOM 过滤当前页卡片），切页/原地跳回主页/翻页自动复位（全局钩子只绑一次）。
+import { tagFilterConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import { getTagList } from "../../utils/content-utils";
+import { widgetManager } from "../../utils/widget-manager";
+import WidgetLayout from "./WidgetLayout.astro";
+
+const tags = await getTagList();
+const showCount = tagFilterConfig.showCount === true;
+
+const COLLAPSED_HEIGHT = "7.5rem";
+
+// 与 Categories/Tags 一致：通过 widget-manager 读取折叠配置（collapseThreshold）
+const tagFilterComponent = widgetManager
+	.getConfig()
+	.properties.find((p) => p.type === "tag-filter");
+const isCollapsed = tagFilterComponent
+	? widgetManager.isCollapsed(tagFilterComponent, tags.length)
+	: false;
+
+interface Props {
+	class?: string;
+	style?: string;
+}
+const className = Astro.props.class;
+const style = Astro.props.style;
+---
+
+{tags.length > 0 && (
+	<WidgetLayout
+		name={i18n(I18nKey.tagFilter)}
+		id="tag-filter"
+		isCollapsed={isCollapsed}
+		collapsedHeight={COLLAPSED_HEIGHT}
+		class={className}
+		style={style}
+	>
+		<div class="tag-filter-list" data-tag-filter-root>
+			{
+				tags.map((t) => {
+					const label = t.name.trim();
+					const key = label.toLowerCase();
+					return (
+						<button
+							type="button"
+							class="tag-filter-chip btn-regular h-6 text-xs px-2 rounded-lg"
+							data-tag={key}
+							aria-pressed="false"
+						>
+							<span class="tag-filter-label max-w-full truncate">
+								{label}{showCount && `: ${t.count}`}
+							</span>
+						</button>
+					);
+				})
+			}
+			{/* 26.09.02 [13]：末行占位——flex-grow 吸走最后一行剩余空间，使 space-between 的末行视觉靠左 */}
+			<span class="tag-filter-filler" aria-hidden="true"></span>
+		</div>
+	</WidgetLayout>
+)}
+
+<style>
+	/* 26.09.02 [13]：行内拉伸（space-between 占满行宽）+ 末行占位（filler）实现最后一行靠左；字母序由 getTagList 保证 */
+	.tag-filter-list {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.tag-filter-chip {
+		flex: 0 1 auto;
+		max-width: 100%;
+		cursor: pointer;
+	}
+	.tag-filter-filler {
+		flex: 1 1 0;
+		min-width: 0;
+		height: 0;
+		visibility: hidden;
+		pointer-events: none;
+	}
+	/* 26.09.02 [13]：激活高亮——primary 底 + 白字（随主题），再次点击取消恢复 btn-regular */
+	.tag-filter-chip.active,
+	.tag-filter-chip[aria-pressed="true"] {
+		background: var(--primary);
+		color: #fff;
+	}
+	.tag-filter-chip.active:hover,
+	.tag-filter-chip[aria-pressed="true"]:hover {
+		background: var(--primary);
+		color: #fff;
+	}
+</style>
+
+<script is:inline>
+	// 26.09.02 [13]：标签筛选卡客户端逻辑——chip 点击激活/取消、OR 交集 DOM 过滤当前页卡片、导航复位。
+	// 侧边栏随 swup 每次注入新 DOM（内联脚本随注入执行），chip 直接绑定在新 DOM 上；全局钩子以 __tagFilterBound 防重复累加。
+	(function () {
+		var root = document.querySelector('[data-tag-filter-root]');
+		if (!root) return;
+
+		// 26.09.02 [13]：激活集合挂在 window 级（__tagFilterActive），跨 swup 注入期间保存、复位时清空
+		function getActiveTags() {
+			if (!window.__tagFilterActive) window.__tagFilterActive = new Set();
+			return window.__tagFilterActive;
+		}
+
+		// 26.09.02 [13]：应用过滤——激活集为空恢复全量；卡片 data-tags 为 trim+小写、空格分隔的标签列表；
+		// 命中任一激活标签即显示（OR）；仅操作带 data-tags 的真实卡，空白占位卡/分隔线不受影响
+		function applyTagFilter() {
+			var container = document.getElementById('post-list-container');
+			if (!container) return;
+			var active = getActiveTags();
+			var cards = container.querySelectorAll('[data-tags]');
+			for (var i = 0; i < cards.length; i++) {
+				var card = cards[i];
+				var tags = (card.getAttribute('data-tags') || '').split(/\s+/);
+				var visible = active.size === 0;
+				if (!visible) {
+					for (var j = 0; j < tags.length; j++) {
+						if (tags[j] && active.has(tags[j])) {
+							visible = true;
+							break;
+						}
+					}
+				}
+				setCardVisible(card, visible);
+			}
+		}
+
+		// 26.09.02 [13]：卡片显隐（无动画 display 切换）；卡片隐藏时同步隐藏紧随其后的移动端分隔线，恢复时一并恢复
+		function setCardVisible(card, visible) {
+			card.style.display = visible ? '' : 'none';
+			var next = card.nextElementSibling;
+			if (next && next.classList.contains('post-card-divider')) {
+				next.style.display = visible ? '' : 'none';
+			}
+		}
+
+		// 26.09.02 [13]：清空激活态并恢复全量（切页/原地跳回主页/翻页时调用）
+		function clearTagFilter() {
+			getActiveTags().clear();
+			document
+				.querySelectorAll('[data-tag-filter-root] .tag-filter-chip')
+				.forEach(function (chip) {
+					chip.classList.remove('active');
+					chip.setAttribute('aria-pressed', 'false');
+				});
+			applyTagFilter();
+		}
+
+		// 26.09.02 [13]：点击未激活 chip 加入激活集（高亮）并过滤；点击已激活 chip 取消激活并恢复
+		function bindTagFilterChips() {
+			document
+				.querySelectorAll('[data-tag-filter-root] .tag-filter-chip')
+				.forEach(function (chip) {
+					chip.addEventListener('click', function () {
+						var tag = (chip.getAttribute('data-tag') || '').trim();
+						if (!tag) return;
+						var active = getActiveTags();
+						if (chip.classList.contains('active')) {
+							chip.classList.remove('active');
+							chip.setAttribute('aria-pressed', 'false');
+							active.delete(tag);
+						} else {
+							chip.classList.add('active');
+							chip.setAttribute('aria-pressed', 'true');
+							active.add(tag);
+						}
+						applyTagFilter();
+					});
+				});
+		}
+		bindTagFilterChips();
+
+		// 26.09.02 [13]：末行占位同步——filler 若因整行恰好填满而落到独立行则隐藏，避免产生空行；resize 时重算
+		function syncTagFilterFiller() {
+			var list = root.querySelectorAll('.tag-filter-chip');
+			var filler = root.querySelector('.tag-filter-filler');
+			if (!filler || list.length === 0) return;
+			var last = list[list.length - 1];
+			filler.style.display = '';
+			// 用垂直重叠判断同一 flex 行（filler 高度为 0 且 align-items:center，offsetTop 会差半个行高）
+			var lastRect = last.getBoundingClientRect();
+			var fillerRect = filler.getBoundingClientRect();
+			if (
+				fillerRect.top >= lastRect.bottom ||
+				fillerRect.bottom <= lastRect.top
+			) {
+				filler.style.display = 'none';
+			}
+		}
+		function scheduleFillerSync() {
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', function () {
+					requestAnimationFrame(syncTagFilterFiller);
+				});
+			} else {
+				requestAnimationFrame(syncTagFilterFiller);
+			}
+		}
+		scheduleFillerSync();
+
+		// 26.09.02 [13]：全局复位钩子只绑一次（__tagFilterBound）——
+		// ①Layout 对同路径链接原地淡出刷新（原地跳回主页）时清空；
+		// ②swup content:replace / page:view / popstate 统一复位（切其它页、回主页、/page/N/ 翻页均覆盖）
+		if (!window.__tagFilterBound) {
+			window.__tagFilterBound = true;
+
+			document.addEventListener('click', function (e) {
+				var anchor =
+					e.target && e.target.closest
+						? e.target.closest('a[href]')
+						: null;
+				if (!anchor) return;
+				var href = anchor.getAttribute('href') || '';
+				if (
+					href.charAt(0) === '#' ||
+					href.indexOf('http') === 0 ||
+					href.indexOf('//') === 0 ||
+					anchor.getAttribute('target') === '_blank'
+				) {
+					return;
+				}
+				try {
+					if (
+						new URL(anchor.href, window.location.origin).pathname ===
+						window.location.pathname
+					) {
+						clearTagFilter();
+					}
+				} catch (err) {
+					/* 忽略无法解析的链接 */
+				}
+			});
+
+			document.addEventListener('swup:page:view', clearTagFilter);
+			window.addEventListener('popstate', clearTagFilter);
+			window.addEventListener('resize', function () {
+				requestAnimationFrame(syncTagFilterFiller);
+			});
+
+			// 26.09.02 [13]：swup 模块晚于本脚本初始化时重试绑定 content:replace 复位
+			var swupTries = 0;
+			function tryBindSwupClear() {
+				if (window.swup && window.swup.hooks) {
+					window.swup.hooks.on('content:replace', clearTagFilter);
+					return true;
+				}
+				if (swupTries < 20) {
+					swupTries++;
+					setTimeout(tryBindSwupClear, 100);
+				}
+				return false;
+			}
+			tryBindSwupClear();
+		}
+	})();
+</script>

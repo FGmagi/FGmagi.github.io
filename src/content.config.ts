@@ -1,10 +1,11 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from 'astro/zod';
+import { dataFiles } from "./config";
 
 const postsCollection = defineCollection({
-	// 26.08.30修改，内容为：文章集合路径由 src/content/posts 改为 public/data/posts（spec 同步改为 public/data/spec），并新增 active 字段控制文章是否对外显示
-	loader: glob({ pattern: "**/*.md", base: "./public/data/posts" }),
+	// 26.09.02 [7]：posts 集合 glob base 改读 config（dataFiles.postsDir）；active 字段控制文章是否对外显示
+	loader: glob({ pattern: "**/*.md", base: dataFiles.postsDir }),
 	schema: z.object({
 		title: z.string(),
 		published: z.date(),
@@ -44,7 +45,8 @@ const postsCollection = defineCollection({
 	}),
 });
 const specCollection = defineCollection({
-	loader: glob({ pattern: "**/*.md", base: "./public/data/spec" }),
+	// 26.09.02 [7]：spec 集合 glob base 改读 config（dataFiles.specDir）
+	loader: glob({ pattern: "**/*.md", base: dataFiles.specDir }),
 	schema: z.object({}),
 });
 export const collections = {

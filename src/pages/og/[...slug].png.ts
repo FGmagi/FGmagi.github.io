@@ -6,7 +6,7 @@ import satori from "satori";
 import sharp from "sharp";
 import { removeFileExtension } from "@/utils/url-utils";
 
-import { profileConfig, siteConfig } from "../../config";
+import { dataFiles, profileConfig, siteConfig } from "../../config";
 
 type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
 type FontStyle = "normal" | "italic";
@@ -110,7 +110,8 @@ export async function GET({
 	const avatarBuffer = fs.readFileSync(`./src/${profileConfig.avatar}`);
 	const avatarBase64 = `data:image/png;base64,${avatarBuffer.toString("base64")}`;
 
-	let iconPath = "./public/favicon/favicon.ico";
+	// 26.09.02 [7]：favicon 兜底路径改读 config（dataFiles.faviconIco）
+	let iconPath = `./${dataFiles.faviconIco}`;
 	if (siteConfig.favicon.length > 0) {
 		iconPath = `./public${siteConfig.favicon[0].src}`;
 	}

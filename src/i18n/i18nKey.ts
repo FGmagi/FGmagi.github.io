@@ -12,6 +12,8 @@ enum I18nKey {
 	navOthers = "navOthers",
 
 	tags = "tags",
+	// 26.09.02 [13]：标签筛选卡片标题
+	tagFilter = "tagFilter",
 	categories = "categories",
 	recentPosts = "recentPosts",
 	postList = "postList",
@@ -67,6 +69,8 @@ enum I18nKey {
 	animeStatusOnHold = "animeStatusOnHold",
 	animeStatusDropped = "animeStatusDropped",
 	animeFilterAll = "animeFilterAll",
+	animeLayoutRegular = "animeLayoutRegular",
+	animeLayoutCompact = "animeLayoutCompact",
 	animeYear = "animeYear",
 	animeStudio = "animeStudio",
 	animeEmpty = "animeEmpty",
@@ -270,6 +274,8 @@ enum I18nKey {
 	wallpaperBanner = "wallpaperBanner",
 	wallpaperFullscreen = "wallpaperFullscreen",
 	wallpaperNone = "wallpaperNone",
+	// 26.09.02 [14]：新增“切换壁纸”按钮文案键
+	wallpaperCycle = "wallpaperCycle",
 
 	// 站点统计
 	siteStats = "siteStats",

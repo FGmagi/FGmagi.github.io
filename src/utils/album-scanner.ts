@@ -1,9 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { dataFiles } from "../config";
 import type { AlbumGroup, Photo } from "../types/album";
 
+// 26.09.02 [7]：相册目录改读 config（dataFiles.albumsDir）
 export async function scanAlbums(): Promise<AlbumGroup[]> {
-	const albumsDir = path.join(process.cwd(), "public/images/albums");
+	const albumsDir = path.join(process.cwd(), dataFiles.albumsDir);
 	const albums: AlbumGroup[] = [];
 
 	// 检查目录是否存在
@@ -74,7 +76,8 @@ async function processAlbumFolder(
 			return null;
 		}
 
-		cover = `/images/albums/${folderName}/cover.jpg`;
+		// 26.09.02 [7]：相册封面网页路径改读 config（dataFiles.albumsWebDir）
+		cover = `${dataFiles.albumsWebDir}/${folderName}/cover.jpg`;
 		photos = scanPhotos(folderPath, folderName);
 	}
 
@@ -130,9 +133,10 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 		// 解析文件名中的标签
 		const { baseName, tags } = parseFileName(file);
 
+		// 26.09.02 [7]：照片网页路径改读 config（dataFiles.albumsWebDir）
 		photos.push({
 			id: `${albumId}-photo-${index}`,
-			src: `/images/albums/${albumId}/${file}`,
+			src: `${dataFiles.albumsWebDir}/${albumId}/${file}`,
 			alt: baseName,
 			title: baseName,
 			tags: tags,

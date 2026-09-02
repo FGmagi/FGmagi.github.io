@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFiles } from "../config";
 
 export interface FriendItem {
 	id: number;
@@ -11,12 +11,8 @@ export interface FriendItem {
 	tags: string[];
 }
 
-// 26.08.31修改，内容为：friendsData 改为从 public/data/friends.json 读取（fs 读取 + JSON.parse），删除硬编码数组，保证单一数据源
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const friendsJsonPath = path.join(
-	__dirname,
-	"../../public/data/friends.json",
-);
+// 26.09.02 [7]：friendsData 路径改读 config（dataFiles.friendsJson，基于 process.cwd()，与 anime.astro 一致）
+const friendsJsonPath = path.join(process.cwd(), dataFiles.friendsJson);
 export const friendsData: FriendItem[] = JSON.parse(
 	fs.readFileSync(friendsJsonPath, "utf-8"),
 );

@@ -109,13 +109,19 @@ const getBannerImages = async () => {
 		};
 	}
 	// 如果是字符串或字符串数组，同时用于桌面端和移动端
+	// 26.09.02 [7]：bannerSrc 在 imageApi 分支被重新赋值，TS 无法收窄掉对象分支，显式断言修复 astro check 类型错误（行为不变）
+	const flatBannerSrc = bannerSrc as string | string[];
 	return {
-		desktop: normalizeAssetPath(bannerSrc),
-		mobile: normalizeAssetPath(bannerSrc),
+		desktop: normalizeAssetPath(flatBannerSrc),
+		mobile: normalizeAssetPath(flatBannerSrc),
 	};
 };
 
 const bannerImages = await getBannerImages();
+
+// 26.09.01 [3]：默认 fullscreen 时强制横幅桌面图源为空，从源头杜绝 wideBanner.desktop 首帧渲染/闪现（F-01）
+const isFullscreenDefault = siteConfig.wallpaperMode.defaultMode === "fullscreen";
+const bannerDesktopImages = isFullscreenDefault ? [] : bannerImages.desktop;
 
 const {
 	title,
@@ -366,133 +372,166 @@ const mainContentClass = `
 		applyWallpaperMode();
 	}
 	
-	function applyWallpaperMode() {
-		var wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+	// 26.09.02 [14]：全屏↔隐藏壁纸模式切换增加背景渐变过渡——全屏→隐藏先淡出壁纸再切终态，
+	// 隐藏→全屏先 display:block + opacity:0 强制一帧再淡入并加回透明类；
+	// 时长与 [data-fullscreen-wallpaper] 既有 opacity 0.6s 过渡一致；prefers-reduced-motion 下直接切换；
+	// 初始加载 / swup 切页不传 animate，保持任务D 首帧缓冲与 F-02 门控语义
+	var wallpaperModeTransitionMs = 600;
+	var wallpaperModeTimer = null;
+
+	function cancelWallpaperModeTransition() {
+		if (wallpaperModeTimer) {
+			clearTimeout(wallpaperModeTimer);
+			wallpaperModeTimer = null;
+		}
+		document.body.classList.remove('wallpaper-mode-transition');
+	}
+
+	function prefersReducedWallpaperMotion() {
+		return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+	}
+
+	function applyWallpaperBannerState() {
 		var bannerWrapper = document.getElementById('banner-wrapper');
 		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
 		var navbar = document.getElementById('navbar');
 		var body = document.body;
 		var mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
 		var tocWrapper = document.getElementById('toc-wrapper');
-		
-		// 强制重排以确保样式正确应用
-		var forceReflow = function() {
+		var forceReflow = function() { void document.body.offsetHeight; };
+
+		if (bannerWrapper) bannerWrapper.style.display = 'block';
+		if (fullscreenWallpaper) fullscreenWallpaper.style.display = 'none';
+		if (tocWrapper) {
+			var scrollTop = document.documentElement.scrollTop;
+			var bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
+			if (scrollTop <= bannerHeight) tocWrapper.classList.add('toc-hide');
+		}
+		body.classList.remove('wallpaper-transparent');
+		body.classList.remove('no-banner-mode');
+		forceReflow();
+		if (mainContent) mainContent.style.removeProperty('top');
+		body.classList.add('enable-banner');
+		if (navbar) {
+			navbar.removeAttribute('data-dynamic-transparent');
+			navbar.setAttribute('data-transparent-mode', navbarTransparentMode);
+			if (navbarTransparentMode === 'semifull' && window.initSemifullScrollDetection) {
+				window.initSemifullScrollDetection();
+			}
+		}
+		forceReflow();
+	}
+
+	function applyWallpaperFullscreenState() {
+		var bannerWrapper = document.getElementById('banner-wrapper');
+		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
+		var navbar = document.getElementById('navbar');
+		var body = document.body;
+		var mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
+		var tocWrapper = document.getElementById('toc-wrapper');
+		var forceReflow = function() { void document.body.offsetHeight; };
+
+		if (bannerWrapper) bannerWrapper.style.display = 'none';
+		if (fullscreenWallpaper) fullscreenWallpaper.style.display = 'block';
+		if (tocWrapper) tocWrapper.classList.remove('toc-hide');
+		body.classList.remove('enable-banner');
+		forceReflow();
+		if (mainContent) mainContent.style.removeProperty('top');
+		body.classList.add('wallpaper-transparent');
+		body.classList.add('no-banner-mode');
+		if (navbar) {
+			navbar.setAttribute('data-dynamic-transparent', 'semi');
+			navbar.removeAttribute('data-transparent-mode');
+		}
+		forceReflow();
+	}
+
+	function applyWallpaperNoneState() {
+		var bannerWrapper = document.getElementById('banner-wrapper');
+		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
+		var navbar = document.getElementById('navbar');
+		var body = document.body;
+		var mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
+		var tocWrapper = document.getElementById('toc-wrapper');
+		var forceReflow = function() { void document.body.offsetHeight; };
+
+		if (bannerWrapper) bannerWrapper.style.display = 'none';
+		if (fullscreenWallpaper) fullscreenWallpaper.style.display = 'none';
+		if (tocWrapper) tocWrapper.classList.remove('toc-hide');
+		body.classList.remove('enable-banner');
+		body.classList.remove('wallpaper-transparent');
+		forceReflow();
+		if (mainContent) mainContent.style.removeProperty('top');
+		body.classList.add('no-banner-mode');
+		if (navbar) {
+			navbar.setAttribute('data-dynamic-transparent', 'none');
+			navbar.removeAttribute('data-transparent-mode');
+		}
+		forceReflow();
+	}
+
+	function applyWallpaperMode(animate) {
+		cancelWallpaperModeTransition();
+		var wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
+		var canAnimate = !!animate && !!fullscreenWallpaper && !prefersReducedWallpaperMotion();
+
+		// 全屏 → 隐藏壁纸：壁纸先淡出，过渡结束再切到 none 终态（display:none + 移除透明类），避免生硬跳变
+		if (wallpaperMode === 'none' && canAnimate && fullscreenWallpaper.style.display !== 'none') {
+			document.body.classList.add('wallpaper-mode-transition');
+			fullscreenWallpaper.style.setProperty('opacity', '0', 'important');
+			wallpaperModeTimer = setTimeout(function() {
+				wallpaperModeTimer = null;
+				document.body.classList.remove('wallpaper-mode-transition');
+				applyWallpaperNoneState();
+				fullscreenWallpaper.style.removeProperty('opacity');
+			}, wallpaperModeTransitionMs + 40);
+			return;
+		}
+
+		// 隐藏壁纸 → 全屏：先 display:block + opacity:0 并强制一帧，再淡入并加回 wallpaper-transparent 等类
+		if (wallpaperMode === 'fullscreen' && canAnimate && fullscreenWallpaper.style.display === 'none') {
+			document.body.classList.add('wallpaper-mode-transition');
+			var bannerWrapper = document.getElementById('banner-wrapper');
+			if (bannerWrapper) bannerWrapper.style.display = 'none';
+			fullscreenWallpaper.style.display = 'block';
+			fullscreenWallpaper.style.setProperty('opacity', '0', 'important');
+			applyWallpaperFullscreenState();
 			void document.body.offsetHeight;
-		};
-		
-		switch(wallpaperMode) {
+			requestAnimationFrame(function() {
+				if (fullscreenWallpaper.style.display !== 'none') {
+					fullscreenWallpaper.style.removeProperty('opacity');
+				}
+			});
+			wallpaperModeTimer = setTimeout(function() {
+				wallpaperModeTimer = null;
+				document.body.classList.remove('wallpaper-mode-transition');
+				if (fullscreenWallpaper.style.display !== 'none') {
+					fullscreenWallpaper.style.removeProperty('opacity');
+				}
+			}, wallpaperModeTransitionMs + 40);
+			return;
+		}
+
+		switch (wallpaperMode) {
 			case 'banner':
-				// 显示 banner，隐藏全屏壁纸
-				if (bannerWrapper) {
-					bannerWrapper.style.display = 'block';
-				}
-				if (fullscreenWallpaper) {
-					fullscreenWallpaper.style.display = 'none';
-				}
-				// 恢复 TOC 在 banner 模式下的隐藏状态，让滚动逻辑接管
-				if (tocWrapper) {
-					const scrollTop = document.documentElement.scrollTop;
-					const bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
-					if (scrollTop <= bannerHeight) {
-						tocWrapper.classList.add('toc-hide');
-					}
-				}
-				// 先移除body类，避免CSS冲突
-				body.classList.remove('wallpaper-transparent');
-				body.classList.remove('no-banner-mode');
-				// 强制重排
-				forceReflow();
-				// 移除内联样式，让CSS完全接管
-				if (mainContent) {
-					mainContent.style.removeProperty('top');
-				}
-				// 再添加enable-banner类
-				body.classList.add('enable-banner');
-				// navbar 恢复原始透明模式（从 config 读取）
-				if (navbar) {
-					navbar.removeAttribute('data-dynamic-transparent');
-					// 恢复 config 中设置的 data-transparent-mode
-					navbar.setAttribute('data-transparent-mode', navbarTransparentMode);
-					// 如果是 semifull 模式，重新初始化滚动检测
-					if (navbarTransparentMode === 'semifull' && window.initSemifullScrollDetection) {
-						window.initSemifullScrollDetection();
-					}
-				}
-				// 强制重排以确保CSS变量正确更新
-				forceReflow();
+				applyWallpaperBannerState();
+				if (fullscreenWallpaper) fullscreenWallpaper.style.removeProperty('opacity');
 				break;
-				
 			case 'fullscreen':
-				// 隐藏 banner，显示全屏壁纸
-				if (bannerWrapper) {
-					bannerWrapper.style.display = 'none';
-				}
-				if (fullscreenWallpaper) {
-					fullscreenWallpaper.style.display = 'block';
-				}
-				// 在全屏模式下始终显示 TOC
-				if (tocWrapper) {
-					tocWrapper.classList.remove('toc-hide');
-				}
-				// 先移除body类，避免CSS冲突
-				body.classList.remove('enable-banner');
-				// 强制重排
-				forceReflow();
-				// 移除内联样式，让CSS完全接管
-				if (mainContent) {
-					mainContent.style.removeProperty('top');
-				}
-				// 再添加wallpaper-transparent和no-banner-mode类
-				body.classList.add('wallpaper-transparent');
-				body.classList.add('no-banner-mode');
-				// navbar 强制设置为 semi 透明模式（忽略 config 配置）
-				if (navbar) {
-					navbar.setAttribute('data-dynamic-transparent', 'semi');
-					// 强制移除 config 中的 data-transparent-mode 影响
-					navbar.removeAttribute('data-transparent-mode');
-				}
-				// 强制重排以确保CSS变量正确更新
-				forceReflow();
+				applyWallpaperFullscreenState();
+				if (fullscreenWallpaper) fullscreenWallpaper.style.removeProperty('opacity');
 				break;
-				
 			case 'none':
-				// 隐藏所有壁纸
-				if (bannerWrapper) {
-					bannerWrapper.style.display = 'none';
-				}
-				if (fullscreenWallpaper) {
-					fullscreenWallpaper.style.display = 'none';
-				}
-				// 在无壁纸模式下也始终显示 TOC
-				if (tocWrapper) {
-					tocWrapper.classList.remove('toc-hide');
-				}
-				// 先移除body类，避免CSS冲突
-				body.classList.remove('enable-banner');
-				body.classList.remove('wallpaper-transparent');
-				// 强制重排
-				forceReflow();
-				// 移除内联样式，让CSS完全接管
-				if (mainContent) {
-					mainContent.style.removeProperty('top');
-				}
-				// 再添加no-banner-mode类
-				body.classList.add('no-banner-mode');
-				// navbar 强制设置为不透明（忽略 config 配置）
-				if (navbar) {
-					navbar.setAttribute('data-dynamic-transparent', 'none');
-					// 强制移除 config 中的 data-transparent-mode 影响
-					navbar.removeAttribute('data-transparent-mode');
-				}
-				// 强制重排以确保CSS变量正确更新
-				forceReflow();
+				applyWallpaperNoneState();
+				if (fullscreenWallpaper) fullscreenWallpaper.style.removeProperty('opacity');
 				break;
 		}
 	}
 	
-	// 监听壁纸模式变化，立即应用（不重载页面）
+	// 监听壁纸模式变化，立即应用（不重载页面）；用户切换时播放背景渐变过渡（animate=true）
 	window.addEventListener('wallpaper-mode-change', function(_event) {
-		applyWallpaperMode();
+		applyWallpaperMode(true);
 	});
 	
 	// 26.08.30修改，内容为：新增监听 simple-mode-change 事件，实时切换 body 的 simple-mode 类（无需刷新页面）
@@ -530,6 +569,16 @@ const mainContentClass = `
 					// @ts-ignore
 					window.__pendingLayoutMode = savedLayout;
 				}
+			});
+
+			// 26.09.01 [3]：visit:start 阶段记录目标页是否为主页（content:replace 阶段 location 可能尚未更新），供主页背景切换判断
+			// @ts-ignore
+			window.swup.hooks.on('visit:start', function(visit) {
+				var targetPath = visit && visit.to ? visit.to.url : '';
+				try {
+					targetPath = new URL(visit.to.url, window.location.origin).pathname;
+				} catch (e) { /* 保持原始字符串 */ }
+				window.__pendingTargetHome = targetPath === '/' || targetPath === '';
 			});
 			
 			// 在内容替换后立即应用布局，不等待其他脚本
@@ -579,6 +628,12 @@ const mainContentClass = `
 					// @ts-ignore
 					delete window.__pendingLayoutMode;
 				}
+
+				// 26.09.01 [3]：目标页为主页时触发全屏壁纸随机切换（F-02），新主页已开始渲染、渐变与新页淡入同步
+				if (window.__pendingTargetHome && typeof window.__mizukiSwitchWallpaper === 'function') {
+					window.__mizukiSwitchWallpaper();
+				}
+				delete window.__pendingTargetHome;
 			});
 			
 			return true;
@@ -674,19 +729,19 @@ const mainContentClass = `
 <!-- Banner - 始终渲染，通过 JS 控制显示隐藏 -->
 <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
 
-    {siteConfig.banner.carousel?.enable && ((bannerImages.desktop && Array.isArray(bannerImages.desktop) && bannerImages.desktop.length > 1) || (bannerImages.mobile && Array.isArray(bannerImages.mobile) && bannerImages.mobile.length > 1)) ? (
+    {siteConfig.banner.carousel?.enable && ((bannerDesktopImages && Array.isArray(bannerDesktopImages) && bannerDesktopImages.length > 1) || (bannerImages.mobile && Array.isArray(bannerImages.mobile) && bannerImages.mobile.length > 1)) ? (
         <!-- Carousel mode for multiple images -->
         <div id="banner-carousel" class="relative h-full w-full">
             <ul class="carousel-list h-full w-full">
                 {Math.max(
-                    Array.isArray(bannerImages.desktop) ? bannerImages.desktop.length : 0,
+                    Array.isArray(bannerDesktopImages) ? bannerDesktopImages.length : 0,
                     Array.isArray(bannerImages.mobile) ? bannerImages.mobile.length : 0
                 ) && Array.from({ length: Math.max(
-                    Array.isArray(bannerImages.desktop) ? bannerImages.desktop.length : 0,
+                    Array.isArray(bannerDesktopImages) ? bannerDesktopImages.length : 0,
                     Array.isArray(bannerImages.mobile) ? bannerImages.mobile.length : 0
                 ) }).map((_, index) => {
                     // 确保至少有一个平台有对应索引的图片
-                    const hasDesktopImage = Array.isArray(bannerImages.desktop) && bannerImages.desktop[index];
+                    const hasDesktopImage = Array.isArray(bannerDesktopImages) && bannerDesktopImages[index];
                     const hasMobileImage = Array.isArray(bannerImages.mobile) && bannerImages.mobile[index];
                     
                     // 如果两个平台都没有对应索引的图片，跳过这个轮播项
@@ -712,7 +767,7 @@ const mainContentClass = `
                                 <ImageWrapper 
                                     alt={`Desktop banner image ${index + 1}`} 
                                     class:list={["hidden md:block object-cover h-full w-full transition-transform duration-500 ease-out"]}
-                                    src={Array.isArray(bannerImages.desktop) ? bannerImages.desktop[index] : (typeof bannerImages.desktop === 'string' ? bannerImages.desktop : '')} 
+                                    src={Array.isArray(bannerDesktopImages) ? bannerDesktopImages[index] : (typeof bannerDesktopImages === 'string' ? bannerDesktopImages : '')} 
                                     position={siteConfig.banner.position}
                                     loading={index === 0 ? "eager" : "lazy"}
                                 />
@@ -725,7 +780,7 @@ const mainContentClass = `
     ) : (
         <!-- Single image mode -->
         <div id="banner-single-container" class="relative h-full w-full">
-            <script is:inline define:vars={{ desktopImages: bannerImages.desktop, mobileImages: bannerImages.mobile, position: siteConfig.banner.position }}>
+            <script is:inline define:vars={{ desktopImages: bannerDesktopImages, mobileImages: bannerImages.mobile, position: siteConfig.banner.position }}>
                 (function() {
                     const getRandomImage = (images, storageKey) => {
                         if (Array.isArray(images)) {

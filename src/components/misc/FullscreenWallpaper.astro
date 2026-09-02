@@ -99,6 +99,7 @@ const renderGroups = [
 ];
 ---
 
+<!-- 26.09.02 [14]：容器暴露 SSR 解析后的桌面/移动组实际图数（含 desktop↔mobile 回退与 imageApi 分支），供“切换壁纸”按钮判断当前设备可用壁纸数 -->
 <div 
 	class:list={[
 		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none",
@@ -106,6 +107,8 @@ const renderGroups = [
 	]}
 	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0); perspective: 1000px;`}
 	data-fullscreen-wallpaper
+	data-wp-desktop-count={imageSources.desktop.length}
+	data-wp-mobile-count={imageSources.mobile.length}
 >
 	<script is:inline>
 	// 立即执行脚本：防止闪烁
@@ -214,108 +217,69 @@ const renderGroups = [
 </div>
 
 {isCarouselEnabled && (
-	<script is:inline define:vars={{ carouselInterval }}>
-		function initFullscreenWallpaperCarousel() {
+	<script is:inline define:vars={{ carouselInterval, carouselEnabled: config.carousel?.enable }}>
+		/**
+		 * 26.09.01 [3]：移除 setInterval 定时自动轮播，改为暴露 window.__mizukiSwitchWallpaper 手动切换接口
+		 * 由 MainGridLayout 的 swup 钩子在“页面切换且目标页为主页”时调用：随机换图（>2 张时保证前后不同）、
+		 * 复用图片的 transition-opacity duration-1000 实现 1s 渐变淡出/淡入；
+		 * 距上次切换不足 carousel.interval 秒则跳过；carousel.enable 仍为总开关（false 时直接返回）
+		 * 26.09.02 [14]：新增可选参数 force——true 时跳过最小间隔检查（“切换壁纸”按钮手动触发），
+		 * 仍执行随机换图/渐变并写回 mizuki_wallpaper_index/last_switch；swup 自动触发不传 force，保持原间隔门控
+		 */
+		function initFullscreenWallpaperSwitch() {
 			const container = document.querySelector('[data-fullscreen-wallpaper]');
 			if (!container) return;
 
-			if (window.__wallpaper_cleanup) {
-				window.__wallpaper_cleanup();
-				window.__wallpaper_cleanup = null;
-			}
+			const INDEX_KEY = 'mizuki_wallpaper_index';
+			const LAST_SWITCH_KEY = 'mizuki_wallpaper_last_switch';
 
-			const STORAGE_KEY = 'mizuki_wallpaper_index';
-			let savedIndex = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0');
+			// 手动切换接口：页面切至主页时由 swup 钩子触发；force=true 由“切换壁纸”按钮触发（绕过间隔门控）
+			window.__mizukiSwitchWallpaper = function(force) {
+				// 总开关：enable=false 时完全不切换
+				if (!carouselEnabled) return;
+				if (!container || !document.body.contains(container)) return;
 
-			const groups = [
-				container.querySelectorAll('.hidden.md\\:block [data-carousel-item]'),
-				container.querySelectorAll('.block.md\\:hidden [data-carousel-item]')
-			];
+				// 最小切换间隔检查（首次/无记录时允许切换）
+				const lastSwitch = parseInt(sessionStorage.getItem(LAST_SWITCH_KEY) || '0', 10);
+				// 26.09.02 [14]：force=true 时跳过间隔检查（切换后仍写回 last_switch，重新计时）
+				if (!force && lastSwitch && Date.now() - lastSwitch < carouselInterval * 1000) return;
 
-			const state = groups.map(items => {
-				const safeIndex = (savedIndex >= 0 && savedIndex < items.length) ? savedIndex : 0;
-				return {
-					items,
-					currentIndex: safeIndex,
-					timer: null,
-					active: items.length > 1
-				};
-			});
+				// 按设备类型确定目标组（md 断点：桌面组 hidden.md:block / 移动组 block.md:hidden）
+				const isDesktop = window.matchMedia && window.matchMedia('(min-width: 768px)').matches;
+				const items = isDesktop
+					? container.querySelectorAll('.hidden.md\\:block [data-carousel-item]')
+					: container.querySelectorAll('.block.md\\:hidden [data-carousel-item]');
+				const length = items.length;
+				// 长度 1 或空则忽略
+				if (length <= 1) return;
 
-			// 初始化显示：根据 savedIndex 立即修正图片显示
-			function initImage(stateItem) {
-				const { items, currentIndex } = stateItem;
-				// 立即设置样式，防止视觉上跳回第一张
-				for (let i = 0; i < items.length; i++) {
-					items[i].style.opacity = i === currentIndex ? '1' : '0';
-				}
-			}
+				const savedIndex = parseInt(sessionStorage.getItem(INDEX_KEY) || '0', 10);
+				const currentIndex = (savedIndex >= 0 && savedIndex < length) ? savedIndex : 0;
 
-			// 切换下一张
-			function switchNextImage(stateItem) {
-				const { items, currentIndex } = stateItem;
-				const nextIndex = (currentIndex + 1) % items.length;
-				
-				items[currentIndex].style.opacity = '0';
-				items[nextIndex].style.opacity = '1';
-				
-				stateItem.currentIndex = nextIndex;
-
-				sessionStorage.setItem(STORAGE_KEY, nextIndex.toString());
-			}
-
-			function start() {
-				state.forEach(s => {
-					if (s.active && !s.timer) {
-						s.timer = setInterval(() => {
-							if (!document.body.contains(s.items[0])) {
-								stop();
-								return;
-							}
-							switchNextImage(s);
-						}, carouselInterval * 1000);
-					}
-				});
-			}
-
-			function stop() {
-				state.forEach(s => {
-					if (s.timer) {
-						clearInterval(s.timer);
-						s.timer = null;
-					}
-				});
-			}
-
-			const handleVisibilityChange = () => {
-				if (document.hidden) {
-					stop();
+				let newIndex;
+				if (length === 2) {
+					// 两张图直接互切，保证必定换图
+					newIndex = 1 - currentIndex;
 				} else {
-					const exists = state.some(s => s.items.length > 0 && document.body.contains(s.items[0]));
-					if (exists) start();
+					// >2 张：循环随机直到与当前索引不同，保证前后两次不选同一张
+					do {
+						newIndex = Math.floor(Math.random() * length);
+					} while (newIndex === currentIndex);
 				}
-			};
 
-			// 初始化状态
-			state.forEach(s => {
-				if (s.items.length > 0) initImage(s);
-			});
+				// 渐变切换：旧图淡出、新图淡入（复用 transition-opacity duration-1000）
+				items[currentIndex].style.opacity = '0';
+				items[newIndex].style.opacity = '1';
 
-			start();
-
-			document.addEventListener('visibilitychange', handleVisibilityChange);
-
-			window.__wallpaper_cleanup = () => {
-				stop();
-				document.removeEventListener('visibilitychange', handleVisibilityChange);
+				sessionStorage.setItem(INDEX_KEY, newIndex.toString());
+				sessionStorage.setItem(LAST_SWITCH_KEY, Date.now().toString());
 			};
 		}
 
-		// 页面加载完成后初始化轮播
 		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', initFullscreenWallpaperCarousel);
+			document.addEventListener('DOMContentLoaded', initFullscreenWallpaperSwitch);
 		} else {
-			initFullscreenWallpaperCarousel();
+			initFullscreenWallpaperSwitch();
 		}
 	</script>
 )}

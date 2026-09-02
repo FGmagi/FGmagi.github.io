@@ -1,4 +1,5 @@
 <script lang="ts">
+// 26.09.02 [11]修改，内容为：移除目录抽屉对卡片分类链接的解析（a[href*="/categories/"]）与 .post-category 展示，文章列表仅保留标题/置顶信息；分类相关样式一并清理
 import Icon from "@iconify/svelte";
 import { onMount } from "svelte";
 import I18nKey from "../i18n/i18nKey";
@@ -15,7 +16,6 @@ let tocItems: Array<{
 let postItems: Array<{
 	title: string;
 	url: string;
-	category?: string;
 	pinned?: boolean;
 }> = [];
 let activeId = "";
@@ -104,26 +104,22 @@ const generatePostList = () => {
 	const items: Array<{
 		title: string;
 		url: string;
-		category?: string;
 		pinned?: boolean;
 	}> = [];
 
 	postCards.forEach((card) => {
 		// 查找标题链接
 		const titleLink = card.querySelector('a[href*="/posts/"].transition.group');
-		// 查找分类链接
-		const categoryLink = card.querySelector('a[href*="/categories/"].link-lg');
 		// 查找置顶图标
 		const pinnedIcon = titleLink?.querySelector('svg[data-icon="mdi:pin"]');
 
 		if (titleLink) {
 			const href = titleLink.getAttribute("href");
 			const title = titleLink.textContent?.replace(/\s+/g, " ").trim() || "";
-			const category = categoryLink?.textContent?.trim() || "";
 			const pinned = !!pinnedIcon;
 
 			if (href && title) {
-				items.push({ title, url: href, category, pinned });
+				items.push({ title, url: href, pinned });
 			}
 		}
 	});
@@ -364,9 +360,6 @@ if (typeof window !== "undefined") {
 							{/if}
 							{post.title}
 						</div>
-						{#if post.category}
-							<div class="post-category">{post.category}</div>
-						{/if}
 					</button>
 				{/each}
 			</div>
@@ -598,18 +591,6 @@ if (typeof window !== "undefined") {
 		color: rgba(255, 255, 255, 0.75);
 	}
 
-	.post-category {
-		font-size: 0.75rem;
-		color: rgba(0, 0, 0, 0.5);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	:global(.dark) .post-category {
-		color: rgba(255, 255, 255, 0.5);
-	}
-
 	:global(.pinned-icon) {
 		display: inline;
 		color: var(--primary);
@@ -621,14 +602,6 @@ if (typeof window !== "undefined") {
 
 	.post-item:hover .post-title {
 		color: var(--primary);
-	}
-
-	.post-item:hover .post-category {
-		color: rgba(0, 0, 0, 0.75);
-	}
-
-	:global(.dark) .post-item:hover .post-category {
-		color: rgba(255, 255, 255, 0.75);
 	}
 
 	/* 滚动条样式 */

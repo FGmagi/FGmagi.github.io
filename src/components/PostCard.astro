@@ -2,8 +2,9 @@
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
-import { getFileDirFromPath, getTagUrl, getPostUrl } from "@/utils/url-utils";
-import { siteConfig } from "../config";
+import { getFileDirFromPath, getPostUrl } from "@/utils/url-utils";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { postCardHoverConfig, siteConfig } from "../config";
 import ImageWrapper from "./misc/ImageWrapper.astro";
 import PostMetadata from "./PostMeta.astro";
 
@@ -16,13 +17,16 @@ interface Props {
 const { entry, style } = Astro.props;
 const className = Astro.props.class;
 
-// 26.08.30修改，内容为：卡片改为悬停整体变暗10%、移除封面悬停箭头与标题变色、无标签不渲染、无说明时显示正文首行半宽省略号、日期/字数/分类移至标题同行靠右底对齐、简洁模式隐藏封面
+// 26.09.02修改，内容为：首页中间内容卡片标签改为纯展示（span，不可点击/不可复制，悬停不变色）；悬停变暗参数全部写入 config postCardHoverConfig（悬停暗度→停顿→按恢复速度回落到恢复暗度，动画 CSS 由下方 set:html 注入，避免复制到每张卡）
+// 26.09.02 [13]修改，内容为：卡片根节点输出 data-tags（trim+小写、空格分隔）供标签筛选卡 DOM 过滤；移动端分隔线追加 post-card-divider 类（过滤隐藏卡片时同步隐藏相邻分隔线）
+// 26.09.02 [11]修改，内容为：全站取消分类展示——不再向 PostMetadata 传 category/hideUncategorized，标题行常规模式只剩标题；常规模式底部日期追加 btn-regular chip 样式（复用标签 chip 视觉，简洁模式标题行日期保持不变）
+// 26.09.02 [9]修改，内容为：常规模式日期从标题行下移至底部标签行（标签靠左、日期靠右），无标签时日期仍靠右；简洁模式保持日期在标题行、无标签时底部行折叠；PostMeta 日期块新增 meta-date 类供 CSS 区分模式
+// 26.08.30修改，内容为：卡片改为悬停整体变暗10%、移除封面悬停箭头与标题变色、无标签不渲染、无说明时显示正文首行半宽省略号、日期/字数移至标题同行靠右底对齐（分类展示已于 26.09.02 [11] 移除）、简洁模式隐藏封面
 const {
 	title,
 	published,
 	updated,
 	tags,
-	category,
 	image,
 	description,
 	pinned,
@@ -31,6 +35,45 @@ const {
 const url = getPostUrl(entry);
 const hasCover = image !== undefined && image !== null && image !== "";
 const coverWidth = "28%";
+const hasTags = !!tags && tags.length > 0;
+const tagFilterData = hasTags
+	? tags.map((tag) => tag.trim().toLowerCase()).join(" ")
+	: "";
+// 26.09.02：悬停变暗参数来自 postCardHoverConfig——进入暗度用时固定 150ms，到达后停顿 holdDuration，再按 restoreDuration 回落到 restoredDarkness
+const hoverEntryMs = 150;
+const hoverOpacity = (postCardHoverConfig.hoverDarkness / 100).toFixed(3);
+const restOpacity = (postCardHoverConfig.restoredDarkness / 100).toFixed(3);
+const hoverTotalMs =
+	hoverEntryMs +
+	postCardHoverConfig.holdDuration +
+	postCardHoverConfig.restoreDuration;
+const hoverHoldEndPct = (
+	((hoverEntryMs + postCardHoverConfig.holdDuration) / hoverTotalMs) *
+	100
+).toFixed(2);
+const hoverEntryEndPct = ((hoverEntryMs / hoverTotalMs) * 100).toFixed(2);
+const hoverDimCss = `
+<style data-post-card-hover>
+.post-card-hover-dim {
+  opacity: 0;
+  transition: opacity ${postCardHoverConfig.restoreDuration}ms ease;
+}
+.group:hover .post-card-hover-dim {
+  animation: post-card-hover-pulse ${hoverTotalMs}ms ease-out forwards;
+}
+@keyframes post-card-hover-pulse {
+  0% { opacity: 0; }
+  ${hoverEntryEndPct}% { opacity: ${hoverOpacity}; }
+  ${hoverHoldEndPct}% { opacity: ${hoverOpacity}; }
+  100% { opacity: ${restOpacity}; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .post-card-hover-dim {
+    animation: none;
+    opacity: ${restOpacity};
+  }
+}
+</style>`;
 
 const { remarkPluginFrontmatter } = await render(entry);
 ---
@@ -41,8 +84,9 @@ const { remarkPluginFrontmatter } = await render(entry);
 		className,
 	]}
 	style={style}
+	data-tags={tagFilterData || undefined}
 >
-	<div class="absolute inset-0 z-30 pointer-events-none transition rounded-[var(--radius-large)] bg-black/10 opacity-0 group-hover:opacity-100"></div>
+	<div class="post-card-hover-dim absolute inset-0 z-30 pointer-events-none rounded-[var(--radius-large)] bg-black"></div>
 	<!-- 26.08.31修改，内容为：整卡可点击跳转——覆盖全卡的链接锚点，点击卡片任意位置进入文章 -->
 	<a href={url} aria-label={title} tabindex="-1" class="absolute inset-0 z-10 rounded-[var(--radius-large)]"></a>
 	<!-- 26.09.01修改，内容为：内容区垂直内边距改为 pt-4 md:pt-5 pb-4（移动端 3rem->2rem、桌面端 3.25rem->2.25rem，各恰减 1rem），字体大小不变；空白卡槽位高度已在 PostPage.astro 同步校准 -->
@@ -78,14 +122,12 @@ const { remarkPluginFrontmatter } = await render(entry);
 				published={published}
 				updated={updated}
 				tags={tags}
-				category={category || ""}
 				hideTagsForMobile={true}
 				hideUpdateDate={true}
 				className="shrink-0 post-card-meta mr-4"
 				showOnlyBasicMeta={true}
 				words={remarkPluginFrontmatter.words}
 				showWordCount={true}
-				hideUncategorized
 				hideMetaIcons
 			/>
 		</div>
@@ -101,28 +143,32 @@ const { remarkPluginFrontmatter } = await render(entry);
 			{description || remarkPluginFrontmatter.excerpt}
 		</div>
 
-		{
-			tags && tags.length > 0 && (
-				<div class="flex flex-wrap gap-2 mt-2">
+		<div
+			class:list={[
+				"post-card-bottom-row flex flex-wrap items-center justify-between gap-2 mt-2",
+				{ "has-tags": hasTags },
+			]}
+		>
+			{hasTags && (
+				<div class="flex flex-wrap gap-2">
 					{tags.map((tag) => (
-						<a
-							href={getTagUrl(tag)}
+						<span
 							class:list={[
-								"relative z-20",
+								"post-card-tag relative z-20",
 								siteConfig.tagStyle?.useNewStyle
-									? "link-lg transition text-50 text-xs font-medium px-2 py-1 rounded-lg hover:text-[var(--primary)] dark:hover:text-[var(--primary)] active:text-[var(--primary)] dark:active:text-[var(--primary)] group/tag whitespace-nowrap"
+									? "link-lg text-50 text-xs font-medium px-2 py-1 rounded-lg whitespace-nowrap"
 									: "btn-regular h-6 text-xs px-2 rounded-lg",
 							]}
-							aria-label={`View all posts tagged with ${tag.trim()}`}
 						>
-							<span class="transition-transform group-hover/tag:translate-x-0.5">
-								# {tag.trim()}
-							</span>
-						</a>
+							# {tag.trim()}
+						</span>
 					))}
 				</div>
-			)
-		}
+			)}
+			<span class="post-card-bottom-date btn-regular h-6 px-2 rounded-lg text-xs shrink-0 ml-auto">
+				{formatDateToYYYYMMDD(published)}
+			</span>
+		</div>
 	</div>
 
 	{
@@ -166,9 +212,11 @@ const { remarkPluginFrontmatter } = await render(entry);
 	}
 </div>
 <div
-	class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"
+	class="post-card-divider transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"
 >
 </div>
+
+<Fragment set:html={hoverDimCss} />
 
 <style define:vars={{ coverWidth }}>
 	/* 26.08.30修改，内容为：简洁模式下主页不渲染封面图，内容区恢复全宽 */
@@ -183,8 +231,30 @@ const { remarkPluginFrontmatter } = await render(entry);
 	:global(.post-cover-link img.cover-portrait) {
 		object-fit: contain !important;
 	}
-	/* 26.08.31修改，内容为：常规模式下隐藏字数统计（简洁模式保留），日期/分类保持在封面左侧 2rem 处 */
+	/* 26.08.31修改，内容为：常规模式下隐藏字数统计（简洁模式保留），日期保持在封面左侧 2rem 处（分类展示已于 26.09.02 [11] 移除） */
 	:global(body:not(.simple-mode) .post-card-meta .meta-words) {
 		display: none !important;
+	}
+	/* 26.09.02 [9]+[11]修改，内容为：常规模式隐藏标题行日期（标题行只剩标题，分类已移除），底部标签行渲染日期 chip 靠右（26.09.02 [11] 对底部日期追加 btn-regular h-6 px-2 rounded-lg text-xs chip 类）；简洁模式隐藏底部日期、无标签时折叠底部空行 */
+	:global(body:not(.simple-mode) .post-card-meta .meta-date) {
+		display: none !important;
+	}
+	:global(body.simple-mode .post-card-bottom-date) {
+		display: none !important;
+	}
+	:global(body.simple-mode .post-card-bottom-row:not(.has-tags)) {
+		display: none !important;
+	}
+	/* 26.09.02修改，内容为：首页中间卡片标签取消悬停变色（btn-regular 自带 hover:bg 变色在此中和），且不可选中复制（user-select:none）、无手型光标；悬停变暗动画已改为 config postCardHoverConfig 驱动（见上方 set:html 注入的 data-post-card-hover 样式，动画时序参数全部来自该配置） */
+	.post-card-tag {
+		user-select: none;
+		-webkit-user-select: none;
+		cursor: default;
+		transition: none !important;
+	}
+	.post-card-tag:hover,
+	.post-card-tag:active {
+		background-color: var(--btn-regular-bg) !important;
+		transform: none !important;
 	}
 </style>

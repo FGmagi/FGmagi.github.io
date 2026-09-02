@@ -15,6 +15,8 @@ export const zh_TW: Translation = {
 	[Key.navOthers]: "其他",
 
 	[Key.tags]: "標籤",
+	// 26.09.02 [13]：標籤篩選卡片標題
+	[Key.tagFilter]: "標籤篩選",
 	[Key.categories]: "分類",
 	[Key.recentPosts]: "最新文章",
 	[Key.postList]: "文章列表",
@@ -74,6 +76,8 @@ export const zh_TW: Translation = {
 	[Key.animeStatusOnHold]: "擱置",
 	[Key.animeStatusDropped]: "拋棄",
 	[Key.animeFilterAll]: "全部",
+	[Key.animeLayoutRegular]: "常規",
+	[Key.animeLayoutCompact]: "緊湊",
 	[Key.animeYear]: "年份",
 	[Key.animeStudio]: "製作",
 	[Key.animeEmpty]: "暫無追番資料",
@@ -279,6 +283,7 @@ export const zh_TW: Translation = {
 	[Key.wallpaperBanner]: "橫幅模式",
 	[Key.wallpaperFullscreen]: "全屏模式",
 	[Key.wallpaperNone]: "隱藏壁紙",
+	[Key.wallpaperCycle]: "切換壁紙",
 
 	// 站點統計
 	[Key.siteStats]: "站點統計",

@@ -182,14 +182,13 @@ const jsonLd = {
                 </div>
             </div>
 
-            <!-- metadata -->
+            <!-- metadata（26.09.02 [11]：移除 PostMetadata 的 category 传参，详情页不再展示分类） -->
             <div class="onload-animation">
                 <PostMetadata
                     className="mb-5"
                     published={entry.data.published}
                     updated={entry.data.updated}
                     tags={entry.data.tags}
-                    category={entry.data.category || undefined}
                     id={entry.id}
                 />
                 {

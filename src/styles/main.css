@@ -9,39 +9,40 @@
 @import "./gradient-buttons.css";
 /* 加密内容样式已移除，现在直接使用非加密文章的样式 */
 
-/* 导入 ZenMaruGothic-Medium 字体 */
-@font-face {
-  font-family: "ZenMaruGothic-Medium";
-  src: url("/assets/font/ZenMaruGothic-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-display: swap;
-}
-
-/* 导入 萝莉体 第二版 字体 */
-@font-face {
-  font-family: "萝莉体 第二版";
-  src: url("/assets/font/萝莉体 第二版.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-/* md 文本字体 */
-@font-face {
-  font-family: "思源黑体";
-  src: url("/assets/font/思源黑体.woff2") format("woff2"), url("/assets/font/思源黑体.ttf") format("truetype");
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
+/* 字体 @font-face 已由 src/config.ts 的 font.faces 配置驱动（Layout.astro 注入页面），此处不再硬编码字体路径 */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* 26.09.02 [6]：恢复页面原生滚动条并定制细样式——WebKit 6px 圆角滑块（半透明，悬停/按下加深），Firefox thin；颜色经 --scrollbar-bg* 变量随浅色/深色主题自适应；scrollbar-gutter: stable 预留槽位，避免滚动条出现/消失引起布局偏移 */
 /* 确保平滑滚动 */
 html {
   scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-bg) transparent;
+  scrollbar-gutter: stable;
+}
+
+html::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-bg);
+  border-radius: 4px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-bg-hover);
+}
+
+html::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-bg-active);
 }
 
 /* 页面顶部渐变高光效果 */
@@ -258,6 +259,14 @@ html {
     -webkit-backdrop-filter: blur(8px) !important;
   }
 
+  /* 26.09.01 [5]：常规模式主页文章列表容器背景统一为右侧小部件卡片背景——容器改透明，避免与文章卡片 .card-base 的 0.8 半透明叠加成近似不透明（实测叠加后纯白、右侧为毛玻璃透壁纸）；容器透明后文章卡片单层玻璃效果与右侧一致；仅主页、不影响简洁模式/其他页面/移动端规则 */
+  body[class~="lg:is-home"]:not(.simple-mode) #post-list-container {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
   /* 26.08.30修改，内容为：新增简洁模式下卡片样式——除导航栏区域（最上方主页/全部等背景卡片）外，其余卡片变为透明背景、圆角矩形边框，左/下边框有向左下的阴影效果（3px，悬停9px） */
   body.simple-mode .card-base {
     background: transparent !important;
@@ -291,6 +300,18 @@ html {
   }
   body.simple-mode [data-fullscreen-wallpaper] {
     opacity: 0.14 !important;
+  }
+
+  /* 26.09.02 [14]：全屏↔隐藏壁纸模式切换的背景渐变——脚本以 important 内联透明度驱动淡出/淡入，
+     沿用本容器既有 opacity 0.6s 过渡；隐藏模式下 display:none 与 body 类切换均在淡出结束后执行，
+     避免瞬时显隐造成生硬跳变 */
+  body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
+    transition: opacity 0.6s ease !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
+      transition: none !important;
+    }
   }
 
   .wallpaper-transparent .float-panel {

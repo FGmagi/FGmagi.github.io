@@ -1,4 +1,5 @@
 <script lang="ts">
+// 26.09.02 [11]修改，内容为：移除分类筛选入口/逻辑——category URL 参数筛选、uncategorized 特殊分支与 categories prop 全部删除，关键词搜索与标签筛选不受影响
 import { onMount } from "svelte";
 
 import I18nKey from "../i18n/i18nKey";
@@ -6,14 +7,11 @@ import { i18n } from "../i18n/translation";
 import PostSearchBar from "./PostSearchBar.svelte";
 
 export let tags: string[];
-export let categories: string[];
 export let sortedPosts: Post[] = [];
 export let postsContent: Record<string, string> = {};
 
 const params = new URLSearchParams(window.location.search);
 tags = params.has("tag") ? params.getAll("tag") : [];
-categories = params.has("category") ? params.getAll("category") : [];
-const uncategorized = params.get("uncategorized");
 const searchKeyword = params.get("q") || "";
 
 interface Post {
@@ -23,7 +21,6 @@ interface Post {
 		title: string;
 		description?: string;
 		tags: string[];
-		category?: string;
 		published: Date;
 		alias?: string;
 		permalink?: string; // 自定义固定链接
@@ -58,17 +55,7 @@ onMount(async () => {
 		);
 	}
 
-	if (categories.length > 0) {
-		filteredPosts = filteredPosts.filter(
-			(post) => post.data.category && categories.includes(post.data.category),
-		);
-	}
-
-	if (uncategorized) {
-		filteredPosts = filteredPosts.filter((post) => !post.data.category);
-	}
-
-	// 26.08.30修改，内容为：新增关键字搜索——匹配标题/说明/标签/正文，空格分词、大小写不敏感、任意关键字命中即匹配，与标签/分类筛选互不影响
+	// 26.08.30修改，内容为：新增关键字搜索——匹配标题/说明/标签/正文，空格分词、大小写不敏感、任意关键字命中即匹配（分类筛选已于 26.09.02 [11] 移除，现与标签筛选互不影响）
 	const keywords = searchKeyword
 		.trim()
 		.toLowerCase()

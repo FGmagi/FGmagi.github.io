@@ -1,7 +1,7 @@
 ---
 import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
-import { siteConfig } from "../config";
+import { dataFiles, siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -21,12 +21,8 @@ if (!friendsPost) {
 
 const { Content } = await render(friendsPost);
 
-// 26.08.31修改，内容为：友链数据改为从 public/data/friends.json 读取（public 网页路径为 /data/friends.json），并按 flag 升序、相同 flag 按 id 升序排序
-// 从 JSON 读取友链数据，按 flag 升序、相同 flag 按 id 升序排序
-const friendsJsonPath = path.join(
-	process.cwd(),
-	"public/data/friends.json",
-);
+// 26.09.02 [7]：友链数据路径改读 config（dataFiles.friendsJson，网页路径 /data/friends.json）；按 flag 升序、相同 flag 按 id 升序排序
+const friendsJsonPath = path.join(process.cwd(), dataFiles.friendsJson);
 const rawFriends = JSON.parse(fs.readFileSync(friendsJsonPath, "utf-8"));
 const friendsList = rawFriends
 	.map((item: any) => ({
@@ -40,6 +36,36 @@ const friendsList = rawFriends
 
 // 获取所有标签
 const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
+
+// 26.09.02 [12]：友链卡片响应式列数——按 config friendCardLayout.breakpoints（minWidth 升序、单位为 px，columns 夹紧 1-4）在构建期生成媒体查询 CSS：
+// 最小区间（minWidth<=0）作为无媒体查询的基础兜底；窗口宽度跨档位时由媒体查询天然实时生效（无需 JS）
+const FRIEND_BREAKPOINTS = (
+	siteConfig.friendCardLayout?.breakpoints?.length
+		? siteConfig.friendCardLayout.breakpoints
+		: [{ minWidth: 0, columns: 1 }]
+)
+	.slice()
+	.sort((a, b) => a.minWidth - b.minWidth)
+	.filter(
+		(bp, index, arr) =>
+			index === 0 || bp.minWidth > arr[index - 1].minWidth,
+	);
+let friendGridCss = "";
+const appendFriendGridRule = (minWidth: number, columns: number) => {
+	const cols = Math.min(4, Math.max(1, Math.round(columns) || 1));
+	const rule = `#friends-grid{grid-template-columns:repeat(${cols},minmax(0,1fr));}`;
+	friendGridCss +=
+		minWidth > 0
+			? `@media (min-width:${Math.max(1, Math.floor(minWidth))}px){${rule}}`
+			: rule;
+};
+if (
+	FRIEND_BREAKPOINTS.length === 0 ||
+	FRIEND_BREAKPOINTS[0].minWidth > 0
+) {
+	appendFriendGridRule(0, 1);
+}
+FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns));
 ---
 
 <MainGridLayout title={i18n(I18nKey.friends)} description={i18n(I18nKey.friends)}>
@@ -107,8 +133,9 @@ const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 				</div>
 			</div>
 
-			<!-- 友链卡片网格 -->
-			<div id="friends-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+			<!-- 26.09.02 [12]：友链网格列数由 config 生成的媒体查询驱动（原固定 sm:grid-cols-2 xl:grid-cols-3 移除；默认 <640=1、640-1280=2、1280-1600=3、≥1600=4） -->
+			{friendGridCss && <Fragment set:html={`<style>${friendGridCss}</style>`} />}
+			<div id="friends-grid" class="grid gap-6 mb-6">
 				{friendsList.map((item) => (
 					<div 
 						class="friend-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10

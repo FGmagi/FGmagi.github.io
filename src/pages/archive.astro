@@ -8,32 +8,19 @@ import { getSortedPostsList } from "@utils/content-utils";
 import fs from "node:fs";
 import path from "node:path";
 
+// 26.09.02 [11]修改，内容为：取消全站分类展示——停止对文章 category 的 null 兼容转换与 categories 列表提取，ArchivePanel 不再接收/筛选分类；文章数据、标签提取与正文搜索映射保持不变
 const sortedPostsList = await getSortedPostsList();
 
-// 26.08.30修改，内容为：归档页过滤 active: false 的文章，不在归档页显示
-// 过滤 active: false 的文章，不在归档页显示
-const activePostsList = sortedPostsList.filter(
-	(post) => post.data.active !== false,
-);
+// 26.09.02 [10、H-01]：getSortedPostsList 已在数据源过滤 active:false，删除原 26.08.30 归档页重复过滤
+const posts = sortedPostsList;
 
-// 1. 修复类型兼容性：将 category 的 null 转换为 undefined
-const posts = activePostsList.map((post) => ({
-    ...post,
-    data: {
-        ...post.data,
-        category: post.data.category === null ? undefined : post.data.category,
-    },
-}));
-
-// 2. 提取所有标签 (去重)
+// 提取所有标签 (去重)
 const tags = [...new Set(posts.flatMap(post => post.data.tags))];
 
-// 3. 提取所有分类 (去重且过滤掉 undefined)
-const categories = [...new Set(posts.map(post => post.data.category).filter((c): c is string => typeof c === "string"))];
-
-// 26.08.30修改，内容为：构建文章正文内容映射（id -> 原始 md 文本），供归档页关键字搜索使用
+// 26.08.30/26.09.02 [10、H-01]修改，内容为：构建文章正文内容映射（id -> 原始 md 文本），供归档页关键字搜索使用；与归档列表一致仅保留 active 文章
 const rawPosts = await getCollection("posts", ({ data }) => {
-	return import.meta.env.PROD ? data.draft !== true : true;
+	const draftOk = import.meta.env.PROD ? data.draft !== true : true;
+	return draftOk && data.active !== false;
 });
 const postsContent: Record<string, string> = {};
 for (const rawPost of rawPosts) {
@@ -53,11 +40,10 @@ for (const rawPost of rawPosts) {
         import('../scripts/right-sidebar-layout.js');
     </script>
 
-    <!-- 修复：补全缺失的 tags 和 categories 属性 -->
+    <!-- 修复：补全缺失的 tags 属性 -->
     <ArchivePanel
             sortedPosts={posts}
             tags={tags}
-            categories={categories}
             postsContent={postsContent}
             client:only="svelte"
     ></ArchivePanel>

@@ -58,7 +58,7 @@ async function processAlbumFolder(
 	const isExternalMode = info.mode === "external";
 	let photos: Photo[] = [];
 	let cover: string;
-
+	let cover_name = dataFiles.albumsCover;
 	if (isExternalMode) {
 		// 外链模式：从 info.json 中获取封面和照片
 		if (!info.cover) {
@@ -70,14 +70,14 @@ async function processAlbumFolder(
 		photos = processExternalPhotos(info.photos || [], folderName);
 	} else {
 		// 本地模式：检查本地文件
-		const coverPath = path.join(folderPath, "cover.jpg");
+		const coverPath = path.join(folderPath, cover_name);
 		if (!fs.existsSync(coverPath)) {
-			console.warn(`相册 ${folderName} 缺少 cover.jpg 文件`);
+			console.warn(`相册 ${folderName} 缺少 ${cover_name} 文件`);
 			return null;
 		}
 
 		// 26.09.02 [7]：相册封面网页路径改读 config（dataFiles.albumsWebDir）
-		cover = `${dataFiles.albumsWebDir}/${folderName}/cover.jpg`;
+		cover = `${dataFiles.albumsWebDir}/${folderName}/${cover_name}`;
 		photos = scanPhotos(folderPath, folderName);
 	}
 
@@ -107,6 +107,7 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 	const files = fs.readdirSync(folderPath);
 
 	// 过滤出图片文件
+	let cover_name = dataFiles.albumsCover;
 	const imageFiles = files.filter((file) => {
 		const ext = path.extname(file).toLowerCase();
 		return (
@@ -121,7 +122,7 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 				".bmp",
 				".tiff",
 				".tif",
-			].includes(ext) && file !== "cover.jpg"
+			].includes(ext)// && file !== cover_name
 		);
 	});
 

@@ -43,8 +43,9 @@ export const dataFiles: DataFilesConfig = {
 	friendsJson: "public/data/friends.json", // 友链数据（网页路径 /data/friends.json）
 	postsDir: "./public/data/posts", // 文章内容目录（content 集合 glob base）
 	specDir: "./public/data/spec", // 独立页面内容目录（content 集合 glob base）
-	albumsDir: "public/images/albums", // 相册图片目录（文件系统路径）
-	albumsWebDir: "/images/albums", // 相册网页路径前缀（相对 public/）
+	albumsDir: "public/assets/images", // 相册图片目录（文件系统路径）
+	albumsWebDir: "/assets/images", // 相册网页路径前缀（相对 public/）
+	albumsCover:"cover.webp",
 	faviconIco: "public/favicon/favicon.ico", // 默认 favicon（OG 图片兜底；网页路径 /favicon/favicon.ico）
 	fontDir: "public/assets/font", // 字体文件目录（compress-fonts.js 按此读取 TTF）
 };

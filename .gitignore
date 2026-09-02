@@ -3,6 +3,7 @@ Mizuki-Content-Manager-main/
 任务书.md
 *任务日志.log
 *.prompt.md
+rename_uuid.bat
 
 # build output
 dist/

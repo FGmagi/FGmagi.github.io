@@ -58,6 +58,7 @@
     onDestroy(() => {
         cycleFontsCanceled = true;
         window.clearTimeout(cycleHideTimer);
+        cycleResizeObserver?.disconnect();
         if (cycleModeHandler) window.removeEventListener("wallpaper-mode-change", cycleModeHandler);
         if (cycleResizeHandler) window.removeEventListener("resize", cycleResizeHandler);
         if (cyclePageViewHandler) document.removeEventListener("swup:page:view", cyclePageViewHandler);
@@ -143,7 +144,11 @@
     function showCycleButton(animate: boolean): void {
         window.clearTimeout(cycleHideTimer);
         cycleHideTimer = undefined;
-        applyCycleHostWidth();
+        
+        // 修复点4：先强制浏览器同步布局，再下一帧测量，避免拿旧值
+        if (cycleHostEl) void cycleHostEl.offsetWidth;
+        requestAnimationFrame(() => applyCycleHostWidth());
+        
         cycleSuppressAnim = !animate || !cycleAnimReady || cycleReducedMotion;
         cyclePhase = "shown";
     }
@@ -196,12 +201,19 @@
         handleCycleVisibilityChange(false);
     }
 
+    // 2026.9.2 修复“切换壁纸”字体显示不全
+    let cycleResizeObserver: ResizeObserver | undefined;
     function initCycleButton(): void {
         cycleReducedMql = window.matchMedia("(prefers-reduced-motion: reduce)");
         cycleReducedMotion = cycleReducedMql.matches;
         cycleSuppressAnim = true;
         cyclePhase = canShowCycleButton() ? "shown" : "hidden";
-        if (cyclePhase === "shown") applyCycleHostWidth();
+        if (cyclePhase === "shown") {
+            requestAnimationFrame(() => {
+                applyCycleHostWidth();
+                // 再补一次：等字体 ready 后如果宽度有变化，ResizeObserver 会兜底
+            });
+        }   
 
         cycleModeHandler = handleWallpaperModeChange;
         cycleResizeHandler = handleCycleResize;
@@ -221,11 +233,25 @@
         if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
             document.fonts.ready
                 .then(() => {
-                    if (!cycleFontsCanceled && cyclePhase === "shown") applyCycleHostWidth();
+                    if (!cycleFontsCanceled) applyCycleHostWidth();
                 })
-                .catch(() => { /* 字体加载失败忽略 */ });
+                .catch(() => { /* 忽略 */ });
         }
-
+        if (typeof ResizeObserver !== "undefined" && cycleHostEl) {
+            const inner = cycleHostEl.querySelector(".wallpaper-cycle-inner") as HTMLElement | null;
+            if (inner) {
+                cycleResizeObserver = new ResizeObserver((entries) => {
+                    if (cyclePhase !== "shown") return;
+                    for (const entry of entries) {
+                        const w = entry.borderBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
+                        if (w > 0 && cycleHostEl) {
+                            cycleHostEl.style.setProperty("--cycle-btn-w", `${w}px`);
+                        }
+                    }
+                });
+                cycleResizeObserver.observe(inner);
+            }
+        }
         // 首帧布局完成后开放位移动画（仅模式切换引起出现/消失时播放）
         requestAnimationFrame(() => {
             cycleAnimReady = true;

@@ -51,10 +51,7 @@ export const dataFiles: DataFilesConfig = {
 
 // 横幅图片来源：fullBanner 用于全屏壁纸，wideBanner 用于顶部横幅
 const fullBanner = {
-	desktop: [
-		"/assets/images/A-FS.webp",
-		"/assets/images/A-BA.jpg",
-	], // 桌面横幅图片
+	desktop: ["/assets/images/A-FS.webp", "/assets/images/A-BA.jpg"], // 桌面横幅图片
 	mobile: [
 		"/assets/images/C-SK-0.webp",
 		"/assets/images/C-SK-1.webp",
@@ -82,7 +79,7 @@ export const siteConfig: SiteConfig = {
 	lang: SITE_LANG,
 
 	themeColor: {
-		hue: 60, // 主题色色相（0-360）：红 0、青 200、蓝绿 250、粉 345
+		hue: 185, // 主题色色相（0-360）：红 0、青 200、蓝绿 250、粉 345
 		fixed: false, // true=对访问者隐藏主题色选择器
 	},
 
@@ -130,9 +127,12 @@ export const siteConfig: SiteConfig = {
 		defaultLayout: "regular", // 追番页默认布局："regular" 常规（列表板式）| "compact" 紧凑（封面网格，每行列数按容器宽度 2~6 自动计算）
 		// 番剧页空状态文案（数据缺失/为空时显示，可按需修改）
 		emptyMessages: {
-			noBilibiliVmid: "Please set your Bilibili vmid in the src/config.ts file",
-			noBangumiUserId: "Please set your Bangumi userId in the src/config.ts file",
-			bilibiliEmpty: "Bilibili数据为空，请运行 pnpm run update-bilibili 获取数据",
+			noBilibiliVmid:
+				"Please set your Bilibili vmid in the src/config.ts file",
+			noBangumiUserId:
+				"Please set your Bangumi userId in the src/config.ts file",
+			bilibiliEmpty:
+				"Bilibili数据为空，请运行 pnpm run update-bilibili 获取数据",
 			localEmpty: "请在 src/data/anime.ts 文件中添加番剧信息",
 			bangumiEmpty: "请检查 Bangumi 配置或网络连接",
 		},
@@ -395,10 +395,10 @@ export const tagFilterConfig: TagFilterConfig = {
 
 // 首页中间内容卡片悬停变暗参数（百分比暗度；数值越大越暗）
 export const postCardHoverConfig: PostCardHoverConfig = {
-	hoverDarkness: 10, // 悬停时暗度：鼠标悬停先变暗到 10%
-	holdDuration: 600, // 停顿时间：在悬停暗度保持 600ms 后再开始回落
-	restoredDarkness: 5, // 停顿后恢复到的暗度：回落并保持 5%（"悬停暗度的一半"）
-	restoreDuration: 400, // 恢复速度：从 10% 过渡到 5% 用时 400ms（鼠标移出恢复 0 亦用此时长）
+	startDuration: 150, // 开始悬停变暗时间
+	endDuration: 150, //离开恢复时间
+	hoverDarkness: 10, // 悬停时暗度 10%
+	restoredDarkness: 0, // 恢复后的暗度
 };
 
 export const musicPlayerConfig: MusicPlayerConfig = {
@@ -574,3 +574,4 @@ export const umamiConfig = {
 <script defer src="XXXX.XXX" data-website-id="ABCD1234"></script>
   `.trim(), // 要插入的统计脚本（无需再去 Layout 中插入）
 } as const;
+

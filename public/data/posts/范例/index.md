@@ -24,7 +24,7 @@ author: "FGmagi"
 
 sourceLink: "[fgmagi.pages.dev](https://fgmagi.pages.dev/)"
 
-image: './image/cover.jpg'
+image: './image/cover.webp'
 
 image_model: 'up'
 

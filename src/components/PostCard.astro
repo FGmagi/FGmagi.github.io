@@ -40,36 +40,24 @@ const tagFilterData = hasTags
 	? tags.map((tag) => tag.trim().toLowerCase()).join(" ")
 	: "";
 // 26.09.02：悬停变暗参数来自 postCardHoverConfig——进入暗度用时固定 150ms，到达后停顿 holdDuration，再按 restoreDuration 回落到 restoredDarkness
-const hoverEntryMs = 150;
+
 const hoverOpacity = (postCardHoverConfig.hoverDarkness / 100).toFixed(3);
 const restOpacity = (postCardHoverConfig.restoredDarkness / 100).toFixed(3);
-const hoverTotalMs =
-	hoverEntryMs +
-	postCardHoverConfig.holdDuration +
-	postCardHoverConfig.restoreDuration;
-const hoverHoldEndPct = (
-	((hoverEntryMs + postCardHoverConfig.holdDuration) / hoverTotalMs) *
-	100
-).toFixed(2);
-const hoverEntryEndPct = ((hoverEntryMs / hoverTotalMs) * 100).toFixed(2);
+
 const hoverDimCss = `
 <style data-post-card-hover>
 .post-card-hover-dim {
   opacity: 0;
-  transition: opacity ${postCardHoverConfig.restoreDuration}ms ease;
+  transition: opacity ${postCardHoverConfig.startDuration ?? 150}ms ease;
 }
 .group:hover .post-card-hover-dim {
-  animation: post-card-hover-pulse ${hoverTotalMs}ms ease-out forwards;
-}
-@keyframes post-card-hover-pulse {
-  0% { opacity: 0; }
-  ${hoverEntryEndPct}% { opacity: ${hoverOpacity}; }
-  ${hoverHoldEndPct}% { opacity: ${hoverOpacity}; }
-  100% { opacity: ${restOpacity}; }
+  opacity: ${hoverOpacity};
 }
 @media (prefers-reduced-motion: reduce) {
+  .post-card-hover-dim {
+  transition: opacity ${postCardHoverConfig.endDuration ?? 150}ms ease;
+  }
   .group:hover .post-card-hover-dim {
-    animation: none;
     opacity: ${restOpacity};
   }
 }
@@ -154,7 +142,7 @@ const { remarkPluginFrontmatter } = await render(entry);
 					{tags.map((tag) => (
 						<span
 							class:list={[
-								"post-card-tag relative z-20",
+								//"post-card-tag relative z-20",
 								siteConfig.tagStyle?.useNewStyle
 									? "link-lg text-50 text-xs font-medium px-2 py-1 rounded-lg whitespace-nowrap"
 									: "btn-regular h-6 text-xs px-2 rounded-lg",
@@ -250,7 +238,7 @@ const { remarkPluginFrontmatter } = await render(entry);
 		user-select: none;
 		-webkit-user-select: none;
 		cursor: default;
-		transition: none !important;
+		transition: none;
 	}
 	.post-card-tag:hover,
 	.post-card-tag:active {

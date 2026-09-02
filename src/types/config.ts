@@ -386,10 +386,10 @@ export type TagFilterConfig = {
 
 // 26.09.02：首页中间内容卡片悬停变暗参数（供 PostCard 悬停遮罩使用，百分比暗度按 0-100 取值）
 export type PostCardHoverConfig = {
+	startDuration: number;
+	endDuration:number;
 	hoverDarkness: number; // 悬停时暗度（%，0=不变暗，100=全黑；默认 10）
-	holdDuration: number; // 停顿时间（ms，到达悬停暗度后保持多久再开始回落）
 	restoredDarkness: number; // 停顿后恢复到的暗度（%，默认 5，即"悬停暗度的一半"）
-	restoreDuration: number; // 恢复速度（ms，从悬停暗度过渡到恢复暗度所用时长；鼠标移出恢复 0 亦用此时长）
 };
 
 export type MusicPlayerConfig = {

@@ -144,8 +144,9 @@ export const siteConfig: SiteConfig = {
 		breakpoints: [
 			{ minWidth: 0, columns: 1 }, // 基础档：<640px 每行 1 张
 			{ minWidth: 640, columns: 2 }, // ≥640px 每行 2 张
-			{ minWidth: 1280, columns: 3 }, // ≥1280px 每行 3 张
-			{ minWidth: 1600, columns: 4 }, // ≥1600px 每行 4 张
+			{ minWidth: 960, columns: 3 }, // ≥1280px 每行 3 张
+			{ minWidth: 1280, columns: 4 }, // ≥1600px 每行 4 张
+			{ minWidth: 1600, columns: 5 }, // ≥1600px 每行 4 张
 		],
 	},
 

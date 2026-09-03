@@ -1,6 +1,7 @@
 # FGmagi Blog
 
 个人博客，收录技术笔记、生活随笔与常用工具索引。
+magi.pages.dev/
 
 ## 技术栈
 

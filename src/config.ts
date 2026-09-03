@@ -43,30 +43,32 @@ export const dataFiles: DataFilesConfig = {
 	friendsJson: "public/data/friends.json", // 友链数据（网页路径 /data/friends.json）
 	postsDir: "./public/data/posts", // 文章内容目录（content 集合 glob base）
 	specDir: "./public/data/spec", // 独立页面内容目录（content 集合 glob base）
-	albumsDir: "public/assets/images", // 相册图片目录（文件系统路径）
-	albumsWebDir: "/assets/images", // 相册网页路径前缀（相对 public/）
-	albumsCover:"cover.webp",
+	albumsDir: "public/images", // 相册图片目录（文件系统路径）
+	albumsWebDir: "/images", // 相册网页路径前缀（相对 public/）
+	albumsCover: "cover.webp",
 	faviconIco: "public/favicon/favicon.ico", // 默认 favicon（OG 图片兜底；网页路径 /favicon/favicon.ico）
 	fontDir: "public/assets/font", // 字体文件目录（compress-fonts.js 按此读取 TTF）
 };
 
 // 横幅图片来源：fullBanner 用于全屏壁纸，wideBanner 用于顶部横幅
+const banner_dir = dataFiles.albumsDir;
 const fullBanner = {
-	desktop: ["/assets/images/A-FS.webp", "/assets/images/A-BA.jpg"], // 桌面横幅图片
-	mobile: [
-		"/assets/images/C-SK-0.webp",
-		"/assets/images/C-SK-1.webp",
-		"/assets/images/C-SK-2.webp",
-	], // 移动横幅图片
+	desktop: [
+		"/芙兰朵露-光.webp",
+		"/阿罗娜-普拉娜.webp",
+		"/AcgExample/伊尔莎.webp",
+		"/AcgExample/芙兰朵露-黑.webp",
+	].map((s) => banner_dir + s), // 桌面横幅图片
+	mobile: ["/C-SK-0.webp", "/C-SK-1.webp", "/C-SK-2.webp"].map(
+		(s) => banner_dir + s,
+	), // 移动横幅图片
 };
 const wideBanner = {
 	// [死代码]：桌面横幅图源已清空（首帧闪现修复），保留结构供后续启用
 	desktop: [],
-	mobile: [
-		"/assets/images/C-SK-0.webp",
-		"/assets/images/C-SK-1.webp",
-		"/assets/images/C-SK-2.webp",
-	],
+	mobile: ["/C-SK-0.webp", "/C-SK-1.webp", "/C-SK-2.webp"].map(
+		(s) => banner_dir + s,
+	),
 };
 
 export const siteConfig: SiteConfig = {
@@ -331,7 +333,7 @@ export const navBarConfig: NavBarConfig = {
 
 // 个人资料（侧边栏头像/简介）
 export const profileConfig: ProfileConfig = {
-	avatar: "/assets/images/head-image.webp", // 头像路径（以 "/" 开头相对 public/，否则相对 /src）
+	avatar: "/images/head-image.webp", // 头像路径（以 "/" 开头相对 public/，否则相对 /src）
 	name: "FGmagi",
 	bio: "弱水三千，只取一瓢",
 	typewriter: {

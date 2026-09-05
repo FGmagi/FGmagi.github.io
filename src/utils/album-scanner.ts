@@ -49,7 +49,9 @@ const WHITE_COVER_PLACEHOLDER_URL = (() => {
 		raw.startsWith("public/") || raw.startsWith("public\\")
 			? raw.slice("public".length)
 			: raw;
-	const withSlash = withoutPublic.startsWith("/") ? withoutPublic : "/" + withoutPublic;
+	const withSlash = withoutPublic.startsWith("/")
+		? withoutPublic
+		: "/" + withoutPublic;
 	const ext = path.extname(withSlash);
 	return /^\.[^/\\]+$/.test(ext) ? withSlash : `${withSlash}.webp`;
 })();
@@ -184,14 +186,16 @@ async function buildAlbumFromRootEntry(
 	// 本地源：albumsDir/<title> 存在且为目录才读取
 	const localFolderPath = path.join(albumsDir, title);
 	const hasLocalFolder =
-		fs.existsSync(localFolderPath) && fs.statSync(localFolderPath).isDirectory();
+		fs.existsSync(localFolderPath) &&
+		fs.statSync(localFolderPath).isDirectory();
 	// id：有匹配本地子文件夹时用文件夹名（保 URL 稳定），否则用 title 的 ascii slug
 	let id = hasLocalFolder ? title : toAsciiSlug(title);
 	if (!id) id = `album-${index + 1}`;
 	id = toSafeSegment(id);
 
 	const maxImagesPerFolder =
-		dataFiles.albumsMaxImagesPerExternalFolder ?? DEFAULT_MAX_IMAGES_PER_FOLDER;
+		dataFiles.albumsMaxImagesPerExternalFolder ??
+		DEFAULT_MAX_IMAGES_PER_FOLDER;
 	const maxAlbumSizeBytes =
 		dataFiles.albumsMaxAlbumSizeBytes ?? DEFAULT_MAX_ALBUM_SIZE_BYTES;
 
@@ -215,7 +219,9 @@ async function buildAlbumFromRootEntry(
 		}
 	});
 	if (droppedUrls > 0) {
-		console.warn(`相册 ${id} 有 ${droppedUrls} 条 photo_urls 非 http(s) 地址，已跳过`);
+		console.warn(
+			`相册 ${id} 有 ${droppedUrls} 条 photo_urls 非 http(s) 地址，已跳过`,
+		);
 	}
 
 	const photoDirUrls = collectDirUrlStrings(entry);
@@ -224,7 +230,9 @@ async function buildAlbumFromRootEntry(
 		MAX_REMOTE_CONCURRENCY,
 		async (dirUrl, i) => {
 			if (typeof dirUrl !== "string" || !isHttpUrl(dirUrl)) {
-				console.warn(`相册 ${id} 的外链文件夹不是 http(s) 地址，已跳过: ${dirUrl}`);
+				console.warn(
+					`相册 ${id} 的外链文件夹不是 http(s) 地址，已跳过: ${dirUrl}`,
+				);
 				return [] as Photo[];
 			}
 			return fetchPhotoDirUrl(dirUrl.trim(), id, i, maxImagesPerFolder);
@@ -255,15 +263,23 @@ async function buildAlbumFromRootEntry(
 	}
 
 	// 封面：显式 http 直链 → 本地 cover 文件 / 外链文件名匹配；均未命中 → 白色占位（不再回退首张照片）
-	const cover = resolveCover(localFolderPath, hasLocalFolder, id, entry.cover, finalPhotos);
+	const cover = resolveCover(
+		localFolderPath,
+		hasLocalFolder,
+		id,
+		entry.cover,
+		finalPhotos,
+	);
 
 	return {
 		id,
 		title,
-		description: typeof entry.description === "string" ? entry.description : "",
+		description:
+			typeof entry.description === "string" ? entry.description : "",
 		cover,
 		date:
-			typeof entry.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(entry.date)
+			typeof entry.date === "string" &&
+			/^\d{4}-\d{2}-\d{2}$/.test(entry.date)
 				? entry.date
 				: DEFAULT_DATE(),
 		location: typeof entry.location === "string" ? entry.location : "",
@@ -371,7 +387,9 @@ async function fetchPhotoDirUrl(
 				`相册 ${albumId} GitHub 目录 ${dirUrl} 图片数 ${found.length} 超上限 ${maxImages}，已截断`,
 			);
 		}
-		return list.map((u, i) => makeUrlPhoto(u, albumId, `dir-${dirIndex}-${i}`));
+		return list.map((u, i) =>
+			makeUrlPhoto(u, albumId, `dir-${dirIndex}-${i}`),
+		);
 	}
 
 	// 阶段2（回退）：HTML 目录索引解析
@@ -437,14 +455,18 @@ interface GitHubFolderSpec {
 
 // owner/repo 命名段校验：非空、不得为 "." / ".."、不得含路径穿越
 function isPlainSegment(s: unknown): s is string {
-	return typeof s === "string" && s.length > 0 && s !== "." && s !== ".." && !s.includes("\\");
+	return (
+		typeof s === "string" &&
+		s.length > 0 &&
+		s !== "." &&
+		s !== ".." &&
+		!s.includes("\\")
+	);
 }
 
 // 目录相对路径各段：过滤空 / "." / ".."（路径穿越防御）
 function cleanFolderSegments(parts: string[]): string {
-	return parts
-		.filter((s) => s !== "" && s !== "." && s !== "..")
-		.join("/");
+	return parts.filter((s) => s !== "" && s !== "." && s !== "..").join("/");
 }
 
 // 识别并规约 GitHub / jsDelivr 的文件夹 URL（纯字符串，不发起网络）。识别失败返回 null（交 HTML 回退）。
@@ -473,7 +495,11 @@ export function parseGitHubFolderUrl(url: string): GitHubFolderSpec | null {
 
 	if (host === "api.github.com") {
 		// api.github.com/repos/<owner>/<repo>/contents/<path>[?ref=<branch>]
-		if (parts[1] !== "repos" || parts.length < 5 || parts[4] !== "contents") {
+		if (
+			parts[1] !== "repos" ||
+			parts.length < 5 ||
+			parts[4] !== "contents"
+		) {
 			return null;
 		}
 		const owner = parts[2];
@@ -513,7 +539,11 @@ export function parseGitHubFolderUrl(url: string): GitHubFolderSpec | null {
 		const owner = parts[1];
 		const repo = parts[2];
 		const branch = parts[3];
-		if (!isPlainSegment(owner) || !isPlainSegment(repo) || !isPlainSegment(branch)) {
+		if (
+			!isPlainSegment(owner) ||
+			!isPlainSegment(repo) ||
+			!isPlainSegment(branch)
+		) {
 			return null;
 		}
 		return {
@@ -562,7 +592,8 @@ async function resolveDefaultBranch(
 			if (
 				data &&
 				typeof data === "object" &&
-				typeof (data as Record<string, any>).default_branch === "string" &&
+				typeof (data as Record<string, any>).default_branch ===
+					"string" &&
 				(data as Record<string, any>).default_branch
 			) {
 				return (data as Record<string, any>).default_branch as string;
@@ -585,7 +616,8 @@ async function enumerateGitHubFolderFiles(
 	const spec = parseGitHubFolderUrl(url);
 	if (!spec) return null;
 
-	const branch = spec.branch ?? (await resolveDefaultBranch(spec.owner, spec.repo));
+	const branch =
+		spec.branch ?? (await resolveDefaultBranch(spec.owner, spec.repo));
 	const folderSegs = spec.folderPath.split("/").filter((s) => s.length > 0);
 	const folderPathEnc = folderSegs.map(encodeURIComponent).join("/");
 	const endpoint =
@@ -616,9 +648,7 @@ async function enumerateGitHubFolderFiles(
 	}
 
 	if (!Array.isArray(items)) {
-		console.warn(
-			`相册 GitHub 目录枚举响应非数组，回退 HTML 解析: ${url}`,
-		);
+		console.warn(`相册 GitHub 目录枚举响应非数组，回退 HTML 解析: ${url}`);
 		return null;
 	}
 
@@ -708,7 +738,8 @@ async function photoByteSize(
 	// 本地照片（src 形如 /images/<id>/<file>）
 	if (p.src.startsWith(dataFiles.albumsWebDir + "/") && localFolderPath) {
 		try {
-			return fs.statSync(path.join(localFolderPath, path.basename(p.src))).size;
+			return fs.statSync(path.join(localFolderPath, path.basename(p.src)))
+				.size;
 		} catch {
 			return undefined;
 		}
@@ -760,14 +791,15 @@ async function mapLimit<T, R>(
 				results[i] = await fn(items[i], i);
 			} catch (e) {
 				results[i] = undefined as unknown as R;
-				console.warn("相册外链处理子项失败:", e instanceof Error ? e.message : e);
+				console.warn(
+					"相册外链处理子项失败:",
+					e instanceof Error ? e.message : e,
+				);
 			}
 		}
 	};
 	const workerCount = Math.min(limit, items.length);
-	await Promise.all(
-		Array.from({ length: workerCount }, () => worker()),
-	);
+	await Promise.all(Array.from({ length: workerCount }, () => worker()));
 	return results;
 }
 
@@ -795,7 +827,8 @@ function resolveCover(
 ): string {
 	const webPrefix = `${dataFiles.albumsWebDir}/${id}`;
 	// 显式 cover 若为 http(s) 直链则直接使用（外链相册常见用法）
-	const explicit = typeof explicitCover === "string" ? explicitCover.trim() : "";
+	const explicit =
+		typeof explicitCover === "string" ? explicitCover.trim() : "";
 	if (explicit && isHttpUrl(explicit)) return explicit;
 
 	if (hasLocalFolder) {
@@ -841,7 +874,10 @@ function resolveCover(
 function clampColumns(v: unknown): number {
 	const n = typeof v === "number" ? v : Number(v);
 	if (!Number.isFinite(n)) return ALBUM_DEFAULT_COLUMNS;
-	return Math.min(ALBUM_MAX_COLUMNS, Math.max(ALBUM_MIN_COLUMNS, Math.round(n)));
+	return Math.min(
+		ALBUM_MAX_COLUMNS,
+		Math.max(ALBUM_MIN_COLUMNS, Math.round(n)),
+	);
 }
 
 function isImageFile(file: string): boolean {
@@ -861,7 +897,10 @@ function normalizeUrlKey(url: string): string {
 		const u = new URL(url);
 		u.hash = "";
 		// 去掉默认端口，便于同资源 http/https 等价归并
-		if ((u.protocol === "http:" && u.port === "80") || (u.protocol === "https:" && u.port === "443")) {
+		if (
+			(u.protocol === "http:" && u.port === "80") ||
+			(u.protocol === "https:" && u.port === "443")
+		) {
 			u.port = "";
 		}
 		return u.href;
@@ -910,7 +949,7 @@ async function processAlbumFolder(
 	const isExternalAutoMode = info.mode === "external_auto";
 	let photos: Photo[] = [];
 	let cover: string;
-	let cover_name = dataFiles.albumsCover;
+	let cover_name = dataFiles.white_webp;
 	if (isExternalMode) {
 		// 外链模式：从 info.json 中获取封面和照片
 		if (!info.cover) {
@@ -923,7 +962,9 @@ async function processAlbumFolder(
 	} else if (isExternalAutoMode) {
 		// 外链自动模式：从 link_src 路径自动读取所有图片
 		if (!info.link_src) {
-			console.warn(`相册 ${folderName} external_auto 模式缺少 link_src 字段`);
+			console.warn(
+				`相册 ${folderName} external_auto 模式缺少 link_src 字段`,
+			);
 			return null;
 		}
 
@@ -934,11 +975,15 @@ async function processAlbumFolder(
 		photos = scanExternalPhotos(linkSrc, folderName);
 
 		// 查找封面图片
-		const coverPhoto = photos.find((p) => path.basename(p.src) === cover_name);
+		const coverPhoto = photos.find(
+			(p) => path.basename(p.src) === cover_name,
+		);
 		if (coverPhoto) {
 			cover = coverPhoto.src;
 		} else {
-			console.warn(`相册 ${folderName} 在 link_src 目录下未找到封面图片: ${cover_name}`);
+			console.warn(
+				`相册 ${folderName} 在 link_src 目录下未找到封面图片: ${cover_name}`,
+			);
 			return null;
 		}
 	} else {
@@ -983,20 +1028,18 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 	let cover_name = dataFiles.albumsCover;
 	const imageFiles = files.filter((file) => {
 		const ext = path.extname(file).toLowerCase();
-		return (
-			[
-				".jpg",
-				".jpeg",
-				".png",
-				".gif",
-				".webp",
-				".svg",
-				".avif",
-				".bmp",
-				".tiff",
-				".tif",
-			].includes(ext)// && file !== cover_name
-		);
+		return [
+			".jpg",
+			".jpeg",
+			".png",
+			".gif",
+			".webp",
+			".svg",
+			".avif",
+			".bmp",
+			".tiff",
+			".tif",
+		].includes(ext); // && file !== cover_name
 	});
 
 	// 处理每张照片

@@ -1,5 +1,21 @@
 [
   {
+    "title": "风灵玉秀",
+    "status": "watching",
+    "rating": 9.8,
+    "cover": "https://i0.hdslb.com/bfs/bangumi/image/c1cb16bbd7d13aa3a68c1b7a8178a4f541fab3f6.png@220w_280h.webp",
+    "description": "随着白发少女白钰袖身世的逐渐展开，越来越多的江湖异事向她而来。事件的指向总是绕不开那个叫做红阳血精的武林禁物，不单单是白钰袖，就连风铃儿、南笙、崔玉都开始与之牵连起来。一切的一切，似巧合又不是巧合……...",
+    "year": "2017",
+    "studio": "中国大陆",
+    "genre": [
+      "国创"
+    ],
+    "link": "https://www.bilibili.com/bangumi/play/ss6038",
+    "progress": 0,
+    "totalEpisodes": 26,
+    "progressPercent": 0
+  },
+  {
     "title": "葬送的芙莉莲",
     "status": "watching",
     "rating": 9.9,
@@ -17,43 +33,6 @@
     "link": "https://www.bilibili.com/bangumi/play/ss46089",
     "progress": 0,
     "totalEpisodes": 28,
-    "progressPercent": 0
-  },
-  {
-    "title": "风灵玉秀",
-    "status": "watching",
-    "rating": 9.8,
-    "cover": "https://i0.hdslb.com/bfs/bangumi/image/c1cb16bbd7d13aa3a68c1b7a8178a4f541fab3f6.png@220w_280h.webp",
-    "description": "随着白发少女白钰袖身世的逐渐展开，越来越多的江湖异事向她而来。事件的指向总是绕不开那个叫做红阳血精的武林禁物，不单单是白钰袖，就连风铃儿、南笙、崔玉都开始与之牵连起来。一切的一切，似巧合又不是巧合……...",
-    "year": "2017",
-    "studio": "中国大陆",
-    "genre": [
-      "国创"
-    ],
-    "link": "https://www.bilibili.com/bangumi/play/ss6038",
-    "progress": 0,
-    "totalEpisodes": 26,
-    "progressPercent": 0
-  },
-  {
-    "title": "Charlotte",
-    "status": "watching",
-    "rating": 9.5,
-    "cover": "https://i0.hdslb.com/bfs/bangumi/9c3e77244687a81e4b75e88ec22eeb8dbaa26380.jpg@220w_280h.webp",
-    "description": "思春期的少年少女中极少部分人会发作的特殊能力。 驱使着无人知晓的能力，过着顺风顺水学园生活的乙坂有宇。 突然出现在这样的他的面前的少女，友利奈绪。 从与她相遇的那一天起，被揭露出特殊能力者的宿命。 这...",
-    "year": "2015",
-    "studio": "日本",
-    "genre": [
-      "日常",
-      "治愈",
-      "奇幻",
-      "校园",
-      "催泪",
-      "原创"
-    ],
-    "link": "https://www.bilibili.com/bangumi/play/ss2572",
-    "progress": 0,
-    "totalEpisodes": 13,
     "progressPercent": 0
   },
   {
@@ -828,6 +807,27 @@
     "link": "https://www.bilibili.com/bangumi/play/ss24622",
     "progress": 0,
     "totalEpisodes": 12,
+    "progressPercent": 0
+  },
+  {
+    "title": "Charlotte",
+    "status": "watching",
+    "rating": 9.5,
+    "cover": "https://i0.hdslb.com/bfs/bangumi/9c3e77244687a81e4b75e88ec22eeb8dbaa26380.jpg@220w_280h.webp",
+    "description": "思春期的少年少女中极少部分人会发作的特殊能力。 驱使着无人知晓的能力，过着顺风顺水学园生活的乙坂有宇。 突然出现在这样的他的面前的少女，友利奈绪。 从与她相遇的那一天起，被揭露出特殊能力者的宿命。 这...",
+    "year": "2015",
+    "studio": "日本",
+    "genre": [
+      "日常",
+      "治愈",
+      "奇幻",
+      "校园",
+      "催泪",
+      "原创"
+    ],
+    "link": "https://www.bilibili.com/bangumi/play/ss2572",
+    "progress": 0,
+    "totalEpisodes": 13,
     "progressPercent": 0
   },
   {

@@ -1,0 +1,42 @@
+
+> fgmagi-blog@1.0.0 prebuild D:\make\Project\FGmagi.github.io
+> node scripts/sync-content.js || true
+
+Loaded .env configuration file
+
+Starting content synchronization...
+
+Content directory does not exist: D:\make\Project\FGmagi.github.io\content
+Using independent repository mode
+Warning: CONTENT_REPO_URL not set, will use local content
+Tip: Please set CONTENT_REPO_URL environment variable or manually create content directory
+
+> fgmagi-blog@1.0.0 build D:\make\Project\FGmagi.github.io
+> node scripts/update-anime.mjs && astro build && pagefind --site dist && node scripts/compress-fonts.js
+
+Detected anime mode: bilibili, running update-bilibili.mjs
+Initializing Bilibili data update script...
+Read User ID: 403250481
+
+Fetching Bilibili bangumi data...
+
+   Fetching page 1 (0/85)...   Fetching page 2 (30/85)...   Fetching page 3 (60/85)...
+
+
+Update complete! Data saved to: D:\make\Project\FGmagi.github.io\public\data\bilibili-data.json
+Total collected: 85 anime series
+  - Planned: 0
+  - Watching: 85
+  - Completed: 0
+[astro] Unable to load your Astro config
+
+spawn EPERM
+  Location:
+    D:\make\Project\FGmagi.github.io\node_modules\.pnpm\vite@6.4.1_@types+node@24.1_1c405d19228c53908ebc68ce944650ba\node_modules\vite\dist\node\chunks\dep-D4NMHUTW.js:6938:3
+  Stack trace:
+    at ChildProcess.spawn (node:internal/child_process:414:11)
+    at Object.execFile (node:child_process:351:17)
+    at optimizeSafeRealPathSync (file:///D:/make/Project/FGmagi.github.io/node_modules/.pnpm/vite@6.4.1_@types+node@24.1_1c405d19228c53908ebc68ce944650ba/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:6938:3)
+    at getRealPath (file:///D:/make/Project/FGmagi.github.io/node_modules/.pnpm/vite@6.4.1_@types+node@24.1_1c405d19228c53908ebc68ce944650ba/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:16363:16)
+    at tryCleanFsResolve (file:///D:/make/Project/FGmagi.github.io/node_modules/.pnpm/vite@6.4.1_@types+node@24.1_1c405d19228c53908ebc68ce944650ba/node_modules/vite/dist/node/chunks/dep-D4NMHUTW.js:15954:22)
+ ELIFECYCLE  Command failed with exit code 1.

@@ -1025,7 +1025,6 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 	const files = fs.readdirSync(folderPath);
 
 	// 过滤出图片文件
-	let cover_name = dataFiles.albumsCover;
 	const imageFiles = files.filter((file) => {
 		const ext = path.extname(file).toLowerCase();
 		return [

@@ -22,14 +22,26 @@ if (!friendsPost) {
 const { Content } = await render(friendsPost);
 
 // 26.09.02 [7]：友链数据路径改读 config（dataFiles.friendsJson，网页路径 /data/friends.json）；按 flag 升序、相同 flag 按 id 升序排序
+// friends.json 单条结构（flag 可选，缺失时归入默认分组）——用于给 JSON.parse 结果补类型，消除隐式 any
+interface RawFriend {
+	id: number;
+	flag?: number;
+	title: string;
+	imgurl: string;
+	desc: string;
+	siteurl: string;
+	tags: string[];
+}
 const friendsJsonPath = path.join(process.cwd(), dataFiles.friendsJson);
-const rawFriends = JSON.parse(fs.readFileSync(friendsJsonPath, "utf-8"));
+const rawFriends = JSON.parse(
+	fs.readFileSync(friendsJsonPath, "utf-8"),
+) as RawFriend[];
 const friendsList = rawFriends
-	.map((item: any) => ({
+	.map((item) => ({
 		...item,
 		flag: typeof item.flag === "number" ? item.flag : 1,
 	}))
-	.sort((a: any, b: any) => {
+	.sort((a, b) => {
 		if (a.flag !== b.flag) return a.flag - b.flag;
 		return a.id - b.id;
 	});

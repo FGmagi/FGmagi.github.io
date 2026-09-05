@@ -262,26 +262,7 @@ const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 			});
 		sizePostCovers();
 	}
-	// 26.09.01修改，内容为：主页内容不足时白色面板底部与左右磁贴下端水平对齐（测量磁贴高度设置面板最小高度）；用于对齐内容卡片，已弃用，不再被调用
-	function syncPanelHeight() {
-		const panel = document.getElementById("post-list-container");
-		if (!panel) return;
-		const panelTop = panel.getBoundingClientRect().top;
-		let maxH = 0;
-		// 26.08.31修改，内容为：测量每列最后一个磁贴元素下缘相对面板顶部的位置（容器会被网格拉伸，须以磁贴内容为准）
-		document
-			.querySelectorAll(".home-sidebar, .home-right-sidebar")
-			.forEach((sb) => {
-				const sidebar = sb as HTMLElement;
-				if (sidebar.offsetHeight === 0) return;
-				const widgets = sb.querySelectorAll(".card-base");
-				if (widgets.length === 0) return;
-				const last = widgets[widgets.length - 1];
-				const bottom = last.getBoundingClientRect().bottom - panelTop;
-				if (bottom > maxH) maxH = bottom;
-			});
-		panel.style.minHeight = maxH > 0 ? `${maxH}px` : "";
-	}
+	// 26.09.01移除 syncPanelHeight：原用于主页内容不足时面板底部对齐磁贴，已弃用且无任何调用点
 	// 26.09.01修改，内容为：resize/scroll 防抖重算封面宽度；移除已弃用的面板高度同步
 	let coverResizeRaf = 0;
 	function scheduleCoverResize() {

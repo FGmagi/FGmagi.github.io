@@ -177,7 +177,7 @@ const hasChildren = children.length > 0;
 
 			// 26.08.30修改，内容为：下拉菜单改为点击触发开关，并关闭其他下拉/浮窗面板（同一时间只显示一个）
 			// 点击触发开关（仅点击时展示），并关闭其他下拉/浮窗
-			trigger.addEventListener("click", (e) => {
+			trigger.addEventListener("click", () => {
 				// 关闭主题色、模式等浮窗面板（同一时间只显示一个）
 				if (typeof window !== "undefined" && (window as any).panelManager) {
 					(window as any).panelManager.closeAllPanelsExcept();

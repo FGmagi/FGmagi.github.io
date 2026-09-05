@@ -52,6 +52,9 @@ export const dataFiles: DataFilesConfig = {
 	albumsMaxAlbumSizeBytes: 1073741824, // 单相册总体积上限（字节；默认 1GB = 1073741824）
 	faviconIco: "public/favicon/favicon.ico", // 默认 favicon（OG 图片兜底；网页路径 /favicon/favicon.ico）
 	fontDir: "public/assets/font", // 字体文件目录（compress-fonts.js 按此读取 TTF）
+
+	white_webp:"public/images/white_webp",
+	black_webp:"public/images/black_webp",
 };
 
 // 横幅图片来源：fullBanner 用于全屏壁纸，wideBanner 用于顶部横幅

@@ -3,9 +3,11 @@
 		"title": "Acg",
 		"hidden": false,
 		"description": "祈祷明天对于你来说，也是美好的一天",
-    "photo_urls":[],
-    "photo_dir_url":["https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io/images/Acg"],
-    "cover": "cover.webp",
+		"photo_urls": [],
+		"photo_dir_urls": [
+			"https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io/images/Acg"
+		],
+		"cover": "cover.webp",
 		"date": "2026-09-01",
 		"location": "World",
 		"tags": [],

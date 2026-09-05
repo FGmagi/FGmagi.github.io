@@ -223,6 +223,10 @@ export type DataFilesConfig = {
 	albumsMaxAlbumSizeBytes?: number; // 单相册总体积上限（字节，默认 1GB=1073741824）
 	faviconIco: string; // 默认 favicon 文件（相对项目根）
 	fontDir: string; // 字体文件目录（相对项目根，compress-fonts.js 读取）
+
+	white_webp:string,
+	black_webp:string,
+
 };
 
 // @font-face 注册项（siteConfig.font.faces）

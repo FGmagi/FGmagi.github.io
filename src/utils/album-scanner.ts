@@ -11,6 +11,7 @@ import {
 	ALBUM_MIN_COLUMNS,
 } from "../types/album";
 
+// 26.09.02 [9]：photo_dir_urls 兼容旧单数键 photo_dir_url（string|string[]，scanner 归一读取并 warn 迁移提示）。
 // 26.09.02 [8]：相册模块改造——albumsDir/info.json 改为顶层对象数组（每对象一个相册），
 // 新增外链能力：photo_urls（外链单图 url 数组）与 photo_dir_urls（外链图片文件夹 url 数组，
 // 构建期自动读取其下图片直链）。仍完整保留既有 per-folder 对象模式：根 info.json 缺失或非数组时回退。
@@ -38,6 +39,20 @@ const REMOTE_TIMEOUT_MS = 15000;
 // 两上限兜底默认值（与 src/config.ts 注释一致）
 const DEFAULT_MAX_IMAGES_PER_FOLDER = 500;
 const DEFAULT_MAX_ALBUM_SIZE_BYTES = 1073741824; // 1GB
+
+// 无可用封面时的白色占位图网页 URL。映射 dataFiles.white_webp 的“文件系统路径”为“网页 URL”：
+// 该值须指向 public/ 下某资源（如 "public/images/white_webp"），剥掉开头 "public/"（或 "public\"）、
+// 前面补 "/"，若末尾无扩展名则补 ".webp"，得到 "/images/white_webp.webp"。值已带扩展名则不重复补。
+const WHITE_COVER_PLACEHOLDER_URL = (() => {
+	const raw = dataFiles.white_webp.trim();
+	const withoutPublic =
+		raw.startsWith("public/") || raw.startsWith("public\\")
+			? raw.slice("public".length)
+			: raw;
+	const withSlash = withoutPublic.startsWith("/") ? withoutPublic : "/" + withoutPublic;
+	const ext = path.extname(withSlash);
+	return /^\.[^/\\]+$/.test(ext) ? withSlash : `${withSlash}.webp`;
+})();
 
 const DEFAULT_DATE = () => new Date().toISOString().split("T")[0];
 
@@ -125,6 +140,28 @@ async function scanAlbumsFromRootArray(
 	return albums;
 }
 
+// 归一读取外链图片文件夹 url：复数键 photo_dir_urls 为主，兼容旧单数键 photo_dir_url
+// （两者均可为 string | string[]），合并去重并保持顺序；命中单数键时 warn 提示迁移。
+function collectDirUrlStrings(entry: Record<string, any>): string[] {
+	const out: string[] = [];
+	const add = (v: unknown): void => {
+		if (typeof v === "string") {
+			const s = v.trim();
+			if (s && !out.includes(s)) out.push(s);
+		} else if (Array.isArray(v)) {
+			v.forEach(add);
+		}
+	};
+	add(entry.photo_dir_urls);
+	if (entry.photo_dir_url !== undefined) {
+		console.warn(
+			"外链文件夹字段 photo_dir_url 已弃用，请改用复数 photo_dir_urls（scanner 已兼容读取）",
+		);
+		add(entry.photo_dir_url);
+	}
+	return out;
+}
+
 async function buildAlbumFromRootEntry(
 	albumsDir: string,
 	entry: Record<string, any>,
@@ -181,9 +218,7 @@ async function buildAlbumFromRootEntry(
 		console.warn(`相册 ${id} 有 ${droppedUrls} 条 photo_urls 非 http(s) 地址，已跳过`);
 	}
 
-	const photoDirUrls = Array.isArray(entry.photo_dir_urls)
-		? entry.photo_dir_urls
-		: [];
+	const photoDirUrls = collectDirUrlStrings(entry);
 	const dirFolderPhotos = await mapLimit(
 		photoDirUrls,
 		MAX_REMOTE_CONCURRENCY,
@@ -219,7 +254,7 @@ async function buildAlbumFromRootEntry(
 		return null;
 	}
 
-	// 封面：显式 cover(可 http url) → 默认名为 cover 的本地图片(多个取第一个) → 相册首张照片 src
+	// 封面：显式 http 直链 → 本地 cover 文件 / 外链文件名匹配；均未命中 → 白色占位（不再回退首张照片）
 	const cover = resolveCover(localFolderPath, hasLocalFolder, id, entry.cover, finalPhotos);
 
 	return {
@@ -309,13 +344,37 @@ function remoteName(url: string): string {
 	return ext ? path.basename(decoded, ext) : path.basename(decoded);
 }
 
-// 外链图片文件夹：fetch 目录索引并解析出图片直链（403/无目录索引→跳过并 warn；超上限截断）
+// 外链图片文件夹（两阶段）：
+//   阶段1) GitHub / jsDelivr 文件夹识别 → GitHub Contents API 枚举文件名 → 生成 jsDelivr 单文件直链。
+//   阶段2) 非 GitHub 表单或枚举失败 → 回退 HTML 目录索引解析（403/无目录索引→跳过并 warn；超上限截断）。
+// 说明：jsDelivr 整仓 >50MB 只影响 data 列表 API（data.jsdelivr.com → 403），单文件直链
+// cdn.jsdelivr.net/gh 不受整仓体积限制；jsDelivr 不提供目录列表，故须经 GitHub Contents API 拿文件名。
 async function fetchPhotoDirUrl(
 	dirUrl: string,
 	albumId: string,
 	dirIndex: number,
 	maxImages: number,
 ): Promise<Photo[]> {
+	// 阶段1：GitHub 文件夹枚举 → jsDelivr 单文件直链
+	const enumerated = await enumerateGitHubFolderFiles(dirUrl);
+	if (enumerated) {
+		const found = enumerated.urls;
+		if (found.length === 0) {
+			console.warn(
+				`相册 ${albumId} GitHub 目录 ${dirUrl} 未枚举到图片文件，跳过`,
+			);
+			return [];
+		}
+		const list = found.slice(0, maxImages);
+		if (found.length > maxImages) {
+			console.warn(
+				`相册 ${albumId} GitHub 目录 ${dirUrl} 图片数 ${found.length} 超上限 ${maxImages}，已截断`,
+			);
+		}
+		return list.map((u, i) => makeUrlPhoto(u, albumId, `dir-${dirIndex}-${i}`));
+	}
+
+	// 阶段2（回退）：HTML 目录索引解析
 	let html = "";
 	try {
 		const res = await fetchWithTimeout(dirUrl);
@@ -364,6 +423,232 @@ async function fetchPhotoDirUrl(
 		);
 	}
 	return list.map((u, i) => makeUrlPhoto(u, albumId, `dir-${dirIndex}-${i}`));
+}
+
+// GitHub 文件夹 URL 规约结果
+interface GitHubFolderSpec {
+	owner: string;
+	repo: string;
+	/** 派生不出分支时为 undefined，交由 resolveDefaultBranch 回退 */
+	branch?: string;
+	/** 已解码、规范化（去掉空/./.. 段）的目录相对路径，段间用 "/" 连接 */
+	folderPath: string;
+}
+
+// owner/repo 命名段校验：非空、不得为 "." / ".."、不得含路径穿越
+function isPlainSegment(s: unknown): s is string {
+	return typeof s === "string" && s.length > 0 && s !== "." && s !== ".." && !s.includes("\\");
+}
+
+// 目录相对路径各段：过滤空 / "." / ".."（路径穿越防御）
+function cleanFolderSegments(parts: string[]): string {
+	return parts
+		.filter((s) => s !== "" && s !== "." && s !== "..")
+		.join("/");
+}
+
+// 识别并规约 GitHub / jsDelivr 的文件夹 URL（纯字符串，不发起网络）。识别失败返回 null（交 HTML 回退）。
+export function parseGitHubFolderUrl(url: string): GitHubFolderSpec | null {
+	const trimmed = url.trim();
+	// WHATWG URL 会先把路径里的 "../" 规约掉，导致 owner/repo 段错位甚至越界；
+	// 因此在 new URL 之前先从原始路径检测并拒绝路径穿越（"." / ".." 作独立段）。
+	const rawPathOnly = trimmed.split(/[?#]/)[0];
+	if (/(^|\/)(\.\.?)(\/|$)/.test(rawPathOnly)) return null;
+
+	let parsed: URL;
+	try {
+		parsed = new URL(trimmed);
+	} catch {
+		return null;
+	}
+	const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+	let rawPath: string;
+	try {
+		rawPath = decodeURIComponent(parsed.pathname);
+	} catch {
+		rawPath = parsed.pathname;
+	}
+	// 保留空段做位置索引；原始路径必须以 "/" 开头（split 后首段为空）
+	const parts = rawPath.split("/");
+
+	if (host === "api.github.com") {
+		// api.github.com/repos/<owner>/<repo>/contents/<path>[?ref=<branch>]
+		if (parts[1] !== "repos" || parts.length < 5 || parts[4] !== "contents") {
+			return null;
+		}
+		const owner = parts[2];
+		const repo = parts[3];
+		if (!isPlainSegment(owner) || !isPlainSegment(repo)) return null;
+		const folderPath = cleanFolderSegments(parts.slice(5));
+		const ref = parsed.searchParams.get("ref");
+		return {
+			owner,
+			repo,
+			...(ref ? { branch: ref } : {}),
+			folderPath,
+		};
+	}
+
+	if (host === "github.com") {
+		// github.com/<owner>/<repo>[/(tree|blob)/<branch>/<path>]
+		const owner = parts[1];
+		const repo = parts[2];
+		if (!isPlainSegment(owner) || !isPlainSegment(repo)) return null;
+		if (parts.length === 3) {
+			return { owner, repo, folderPath: "" };
+		}
+		if (parts[3] !== "tree" && parts[3] !== "blob") return null;
+		const branch = parts[4];
+		if (!isPlainSegment(branch)) return null;
+		return {
+			owner,
+			repo,
+			branch,
+			folderPath: cleanFolderSegments(parts.slice(5)),
+		};
+	}
+
+	if (host === "raw.githubusercontent.com") {
+		// raw.githubusercontent.com/<owner>/<repo>/<branch>/<path>
+		const owner = parts[1];
+		const repo = parts[2];
+		const branch = parts[3];
+		if (!isPlainSegment(owner) || !isPlainSegment(repo) || !isPlainSegment(branch)) {
+			return null;
+		}
+		return {
+			owner,
+			repo,
+			branch,
+			folderPath: cleanFolderSegments(parts.slice(4)),
+		};
+	}
+
+	if (host === "cdn.jsdelivr.net") {
+		// cdn.jsdelivr.net/gh/<owner>/<repo>[@<branch>]/<path>
+		if (parts[1] !== "gh") return null;
+		const owner = parts[2];
+		if (!isPlainSegment(owner)) return null;
+		// repo 段可带 @branch（如 FGmagi.github.io 或 FGmagi.github.io@main）
+		const repoSpec = parts[3];
+		if (!repoSpec) return null;
+		const at = repoSpec.indexOf("@");
+		const repo = at === -1 ? repoSpec : repoSpec.slice(0, at);
+		if (!isPlainSegment(repo)) return null;
+		const branch = at === -1 ? undefined : repoSpec.slice(at + 1);
+		return {
+			owner,
+			repo,
+			...(branch ? { branch } : {}),
+			folderPath: cleanFolderSegments(parts.slice(4)),
+		};
+	}
+
+	return null;
+}
+
+// 分支未指定时查询仓库默认分支；失败 warn 回退 "main"
+async function resolveDefaultBranch(
+	owner: string,
+	repo: string,
+): Promise<string> {
+	const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+	const res = await fetchWithTimeout(apiUrl, {
+		headers: { "User-Agent": "fgmagi-album-scanner" },
+	});
+	if (res && res.ok) {
+		try {
+			const data = await res.json();
+			if (
+				data &&
+				typeof data === "object" &&
+				typeof (data as Record<string, any>).default_branch === "string" &&
+				(data as Record<string, any>).default_branch
+			) {
+				return (data as Record<string, any>).default_branch as string;
+			}
+		} catch {
+			/* 落入 warn 回退 */
+		}
+	}
+	console.warn(
+		`GitHub 仓库 ${owner}/${repo} 默认分支查询失败，回退 "main"（HTTP ${res ? res.status : "?"}）`,
+	);
+	return "main";
+}
+
+// GitHub 文件夹 → GitHub Contents API 枚举图片文件名 → 产出 jsDelivr 单文件直链。
+// 识别失败或 API 失败返回 null（交 HTML 回退）；枚举成功返回直链列表（可能为空数组）。
+async function enumerateGitHubFolderFiles(
+	url: string,
+): Promise<{ urls: string[] } | null> {
+	const spec = parseGitHubFolderUrl(url);
+	if (!spec) return null;
+
+	const branch = spec.branch ?? (await resolveDefaultBranch(spec.owner, spec.repo));
+	const folderSegs = spec.folderPath.split("/").filter((s) => s.length > 0);
+	const folderPathEnc = folderSegs.map(encodeURIComponent).join("/");
+	const endpoint =
+		`https://api.github.com/repos/${spec.owner}/${spec.repo}/contents/` +
+		`${folderPathEnc ? folderPathEnc + "/" : ""}?ref=${encodeURIComponent(branch)}`;
+
+	let items: unknown;
+	try {
+		const res = await fetchWithTimeout(endpoint, {
+			headers: {
+				"User-Agent": "fgmagi-album-scanner",
+				Accept: "application/vnd.github+json",
+			},
+		});
+		if (!res || !res.ok) {
+			console.warn(
+				`相册 GitHub 目录枚举失败（HTTP ${res ? res.status : "?"}），回退 HTML 解析: ${url}`,
+			);
+			return null;
+		}
+		items = await res.json();
+	} catch (e) {
+		console.warn(
+			`相册 GitHub 目录枚举异常（回退 HTML 解析）: ${url}`,
+			e instanceof Error ? e.message : e,
+		);
+		return null;
+	}
+
+	if (!Array.isArray(items)) {
+		console.warn(
+			`相册 GitHub 目录枚举响应非数组，回退 HTML 解析: ${url}`,
+		);
+		return null;
+	}
+
+	const seen = new Set<string>();
+	const urls: string[] = [];
+	for (const item of items) {
+		if (!item || typeof item !== "object") continue;
+		const rec = item as Record<string, any>;
+		if (rec.type !== "file") continue; // 只取文件，忽略子目录
+		const rawName = typeof rec.name === "string" ? rec.name : "";
+		if (!rawName) continue;
+		// 先解码防二次编码（中文名），再用原始 name 去重避免重名
+		let name = rawName;
+		try {
+			name = decodeURIComponent(rawName);
+		} catch {
+			/* 保持原值 */
+		}
+		if (seen.has(rawName)) continue;
+		seen.add(rawName);
+		if (!isImageFile(name)) continue;
+		// 显式带 branch 的 jsDelivr 单文件直链（不受整仓 >50MB 限制）
+		const filePathEnc = folderPathEnc
+			? `${folderPathEnc}/${encodeURIComponent(name)}`
+			: encodeURIComponent(name);
+		urls.push(
+			`https://cdn.jsdelivr.net/gh/${spec.owner}/${spec.repo}@${encodeURIComponent(branch)}/${filePathEnc}`,
+		);
+	}
+	return { urls };
 }
 
 // 按 hash 去重（保留首个）
@@ -446,7 +731,7 @@ async function photoByteSize(
 
 async function fetchWithTimeout(
 	url: string,
-	init?: { method?: string },
+	init?: { method?: string; headers?: Record<string, string> },
 ): Promise<Response | null> {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), REMOTE_TIMEOUT_MS);
@@ -486,6 +771,21 @@ async function mapLimit<T, R>(
 	return results;
 }
 
+// 将“文件名”或“照片 src 末段”统一成封面比对键：取末段(去 ?query/#hash)、decodeURIComponent、
+// 去扩展名、toLowerCase。外链照片 src 末段即 encodeURIComponent(文件名)，解码后与显式 cover 文件名可比对。
+function photoNameKey(urlOrName: string): string {
+	const clean = urlOrName.split(/[?#]/)[0];
+	const seg = clean.split("/").filter(Boolean).pop() || "";
+	let decoded = seg;
+	try {
+		decoded = decodeURIComponent(seg);
+	} catch {
+		/* 保留原值 */
+	}
+	const ext = path.extname(decoded);
+	return (ext ? decoded.slice(0, -ext.length) : decoded).toLowerCase();
+}
+
 function resolveCover(
 	localFolderPath: string,
 	hasLocalFolder: boolean,
@@ -498,10 +798,11 @@ function resolveCover(
 	const explicit = typeof explicitCover === "string" ? explicitCover.trim() : "";
 	if (explicit && isHttpUrl(explicit)) return explicit;
 
-	// 候选：显式文件名在前，随后为默认"名为 cover 的图片"（任意扩展名，多个取第一个）
-	const candidates: string[] = [];
-	if (explicit) candidates.push(explicit);
 	if (hasLocalFolder) {
+		// 本地相册：候选=显式文件名在前 + 默认“名为 cover 的本地图片”(任意扩展名，多个取第一个)。
+		// 命中即返回本地文件 web 路径；全未命中 → 末尾统一回退白色占位（不再回退首张照片）。
+		const candidates: string[] = [];
+		if (explicit) candidates.push(explicit);
 		let localFiles: string[] = [];
 		try {
 			localFiles = fs.readdirSync(localFolderPath);
@@ -515,18 +816,26 @@ function resolveCover(
 				return base.startsWith(ALBUM_COVER_NAME_PREFIX);
 			});
 		candidates.push(...coverFiles);
+
+		for (const name of candidates) {
+			if (!name || /[/\\]/.test(name)) continue; // 拒绝含路径分隔符的封面名
+			if (fs.existsSync(path.join(localFolderPath, name))) {
+				return `${webPrefix}/${name}`;
+			}
+		}
+		return WHITE_COVER_PLACEHOLDER_URL;
 	}
 
-	for (const name of candidates) {
-		if (!hasLocalFolder) continue;
-		if (!name || /[/\\]/.test(name)) continue; // 拒绝含路径分隔符的封面名
-		if (fs.existsSync(path.join(localFolderPath, name))) {
-			return `${webPrefix}/${name}`;
+	// 外部-only 相册（本地无同名文件夹）：仅当显式 cover 为“解码文件名”(不含路径分隔符)时，
+	// 在已枚举外链照片里按序匹配（jsDelivr 直链等 src 末段即文件名）；命中返回该照片 src。
+	if (explicit && !/[/\\]/.test(explicit)) {
+		const key = photoNameKey(explicit);
+		for (const p of photos) {
+			if (photoNameKey(p.src) === key) return p.src;
 		}
 	}
-
-	// 无 cover → 回退该相册首张照片 src（photos 非空已保证）
-	return photos[0]?.src ?? "";
+	// 无显式 cover 或未命中 → 统一回退白色占位（不再回退首张照片、不再返回空串）
+	return WHITE_COVER_PLACEHOLDER_URL;
 }
 
 function clampColumns(v: unknown): number {

@@ -22,7 +22,8 @@ export interface AlbumInfo {
 	title?: string; // 相册标题（数组模式下必填；默认取匹配的本地文件夹名）
 	photo_urls?: string[]; // 外链单图 url 数组（可选，默认 []）
 	photo_dir_urls?: string[]; // 外链图片文件夹 url 数组（可选，默认 []；构建期自动读取其下图片直链）
-	cover?: string; // 封面文件名（可选；默认取名为 cover 的图片，多个取第一个；无则回退该相册首张照片）
+	photo_dir_url?: string | string[]; // 兼容旧字段（单数），scanner 已归一读取；新配置请用 photo_dir_urls
+	cover?: string; // 封面文件名或 http 直链（可选）；本地相册默认探测名为 cover 的图片，外部相册按该文件名在枚举外链照片里匹配；无 cover 或未命中时用空白占位图(dataFiles.white_webp)，不再回退首张照片
 	description?: string; // 相册描述（可选，默认 ""）
 	date?: string; // 相册日期 YYYY-MM-DD（可选，默认当前日期）
 	location?: string; // 拍摄地点（可选，默认 ""）

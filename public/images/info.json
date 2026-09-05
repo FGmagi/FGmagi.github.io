@@ -7,8 +7,23 @@
 		"photo_dir_urls": [
 			"https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io/images/Acg"
 		],
-		"cover": "cover.webp",
+		"cover": "cover.avif",
 		"date": "2026-09-01",
+		"location": "World",
+		"tags": [],
+		"layout": "masonry",
+		"columns": 4
+	},
+	{
+		"title": "Acg2",
+		"hidden": false,
+		"description": "前天是小兔子，昨天是小鹿，今天是你",
+		"photo_urls": [],
+		"photo_dir_urls": [
+			"https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io/images/Acg2"
+		],
+		"cover": "cover.avif",
+		"date": "2026-09-06",
 		"location": "World",
 		"tags": [],
 		"layout": "masonry",

@@ -4,6 +4,7 @@ Mizuki-Content-Manager-main/
 *任务日志.log
 *.prompt.md
 rename_uuid.bat
+ds_agents/
 
 # build output
 dist/

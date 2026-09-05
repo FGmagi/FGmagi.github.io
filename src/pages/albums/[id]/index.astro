@@ -101,11 +101,10 @@ if (!album) {
               class="block"
             >
               <img 
-                src={photo.src}
                 alt={photo.alt}
                 class="photo-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-                loading="lazy"
-                onload="this.removeAttribute('loading')"
+                data-src={photo.src}
+                decoding="async"
               />
             </a>
           </figure>
@@ -117,21 +116,53 @@ if (!album) {
 </MainGridLayout>
 
 <script>
-  // 确保Fancybox正确处理相册图片
+  // 相册图片懒加载增强：图片只携带 data-src，进入视口后才把 data-src 注入 src，
+  // 并以小并发队列（同时≤6）控制流量，避免外链大相册（数百张）一次性并发请求耗尽带宽。
   document.addEventListener('DOMContentLoaded', () => {
     console.log('=== 相册页面加载完成 ===');
-    
-    // 检查页面中的图片元素
-    const albumImages = document.querySelectorAll('.moment-images img, .photo-gallery img');
-    console.log('相册图片数量:', albumImages.length);
-    
-    // 预加载图片以确保正确显示
-    albumImages.forEach((img) => {
-      if (img instanceof HTMLImageElement) {
-        const preloadImg = new Image();
-        preloadImg.src = img.src;
+    const imgs = Array.from(document.querySelectorAll('.photo-gallery img.photo-image'));
+    console.log('相册图片数量:', imgs.length);
+
+    const MAX_CONCURRENT = 6;
+    const queue = [];
+    const inFlight = new Set();
+
+    const pump = () => {
+      while (inFlight.size < MAX_CONCURRENT && queue.length > 0) {
+        const img = queue.shift();
+        if (!img || !(img instanceof HTMLImageElement)) continue;
+        const src = img.getAttribute('data-src');
+        if (!src) continue;
+        inFlight.add(img);
+        const settle = () => { inFlight.delete(img); img.onload = null; img.onerror = null; pump(); };
+        img.onload = settle;
+        img.onerror = () => { console.warn('相册图片加载失败:', src); settle(); };
+        img.src = src;
       }
-    });
+    };
+
+    const start = (img) => {
+      if (!img || !(img instanceof HTMLImageElement)) return;
+      if (!img.getAttribute('data-src')) return;
+      if (img.complete && img.src) return; // 已加载过
+      queue.push(img);
+      pump();
+    };
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        for (const en of entries) {
+          if (en.isIntersecting) {
+            io.unobserve(en.target);
+            start(en.target);
+          }
+        }
+      }, { rootMargin: '400px 0px' });
+      imgs.forEach((img) => io.observe(img));
+    } else {
+      // 旧浏览器降级：全部进队，仍受 ≤6 并发上限约束
+      imgs.forEach(start);
+    }
   });
 </script>
 
@@ -178,6 +209,20 @@ if (!album) {
   .grid-layout .photo-container {
     aspect-ratio: 1;
   }
-  
+
+  /* 懒加载占位：图片 src 注入前保留底位，避免网格/瀑布流整列塌陷 */
+  .photo-gallery .photo-item {
+    background: rgba(148, 163, 184, 0.08);
+  }
+
+  .photo-gallery .grid-layout .photo-item {
+    aspect-ratio: 1 / 1;
+  }
+
+  .photo-image:not([src]) {
+    min-height: 220px;
+    background: rgba(148, 163, 184, 0.1);
+  }
+
 </style>
 

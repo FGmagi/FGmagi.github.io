@@ -217,7 +217,10 @@ export type DataFilesConfig = {
 	specDir: string; // 独立页面内容目录（glob base）
 	albumsDir: string; // 相册图片目录（文件系统路径）
 	albumsWebDir: string; // 相册网页路径前缀（相对 public/，以 / 开头）
-	albumsCover:string;
+	albumsCover: string;
+	albumsInfoFile?: string; // 相册顶层清单文件名（albumsDir 下；默认 "info.json"，顶层对象数组）
+	albumsMaxImagesPerExternalFolder?: number; // 单个外链图片文件夹自动抓取图片数量上限（默认 500，防流量）
+	albumsMaxAlbumSizeBytes?: number; // 单相册总体积上限（字节，默认 1GB=1073741824）
 	faviconIco: string; // 默认 favicon 文件（相对项目根）
 	fontDir: string; // 字体文件目录（相对项目根，compress-fonts.js 读取）
 };

@@ -46,6 +46,10 @@ export const dataFiles: DataFilesConfig = {
 	albumsDir: "public/images", // 相册图片目录（文件系统路径）
 	albumsWebDir: "/images", // 相册网页路径前缀（相对 public/）
 	albumsCover: "cover.webp",
+	albumsInfoFile: "info.json", // 相册顶层清单文件名（albumsDir 下，顶层对象数组，每对象一个相册）
+	// ---- 两上限可在此修改 ----
+	albumsMaxImagesPerExternalFolder: 500, // 单个外链图片文件夹自动读取的图片数量上限（超限截断并 warn）
+	albumsMaxAlbumSizeBytes: 1073741824, // 单相册总体积上限（字节；默认 1GB = 1073741824）
 	faviconIco: "public/favicon/favicon.ico", // 默认 favicon（OG 图片兜底；网页路径 /favicon/favicon.ico）
 	fontDir: "public/assets/font", // 字体文件目录（compress-fonts.js 按此读取 TTF）
 };
@@ -56,8 +60,8 @@ const fullBanner = {
 	desktop: [
 		"/芙兰朵露-光.webp",
 		"/阿罗娜-普拉娜.webp",
-		"/AcgExample/伊尔莎.webp",
-		"/AcgExample/芙兰朵露-黑.webp",
+		"/伊尔莎.webp",
+		"/芙兰朵露-黑.webp",
 	].map((s) => banner_dir + s), // 桌面横幅图片
 	mobile: ["/C-SK-0.webp", "/C-SK-1.webp", "/C-SK-2.webp"].map(
 		(s) => banner_dir + s,

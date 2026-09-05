@@ -115,16 +115,19 @@ if (!album) {
 
 </MainGridLayout>
 
-<script lang = "ts">
+<script>
   // 相册图片懒加载增强：图片只携带 data-src，进入视口后才把 data-src 注入 src，
   // 并以小并发队列（同时≤6）控制流量，避免外链大相册（数百张）一次性并发请求耗尽带宽。
   document.addEventListener('DOMContentLoaded', () => {
     console.log('=== 相册页面加载完成 ===');
+    /** @type {HTMLImageElement[]} */
     const imgs = Array.from(document.querySelectorAll('.photo-gallery img.photo-image'));
     console.log('相册图片数量:', imgs.length);
 
     const MAX_CONCURRENT = 6;
+    /** @type {HTMLImageElement[]} */
     const queue: HTMLImageElement[] = [];   
+    /** @type {Set<HTMLImageElement>} */
     const inFlight = new Set<HTMLImageElement>(); 
 
     const pump = () => {

@@ -115,7 +115,7 @@ if (!album) {
 
 </MainGridLayout>
 
-<script lang="ts">
+<script>
   // 相册图片懒加载增强：图片只携带 data-src，进入视口后才把 data-src 注入 src，
   // 并以小并发队列（同时≤6）控制流量，避免外链大相册（数百张）一次性并发请求耗尽带宽。
   document.addEventListener('DOMContentLoaded', () => {

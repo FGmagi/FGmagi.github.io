@@ -6,6 +6,8 @@ import MainGridLayout from "../../../layouts/MainGridLayout.astro";
 // import type { GetStaticPaths } from "astro";
 import type { AlbumGroup, Photo } from "../../../types/album";
 import { scanAlbums } from "../../../utils/album-scanner";
+import { enrichAlbums } from "../../../utils/photo-meta";
+import { photoKey } from "../../../utils/photo-identity";
 
 // 检查相册页面是否启用
 if (!siteConfig.featurePages.albums) {
@@ -14,7 +16,10 @@ if (!siteConfig.featurePages.albums) {
 
 export const getStaticPaths = async () => {
 	const albumsData = await scanAlbums();
-	return albumsData.map((album) => ({
+	// 26.09.06 尺寸决策四级（①显式 ②build memo ③本地原档 sharp ④未知交运行期）：
+	// enrichAlbums 就地回填 photo.width/height（只发生在 build/SSR，零运行时开销）
+	const enriched = await enrichAlbums(albumsData);
+	return enriched.map((album) => ({
 		params: { id: album.id },
 		props: { album },
 	}));
@@ -29,6 +34,29 @@ const { album } = Astro.props;
 if (!album) {
 	return Astro.redirect("/404/");
 }
+
+// 26.09.06 注入双通道之一：SSR 内联尺寸。
+// - masonry：已知尺寸写 figure 内联 aspect-ratio + img width/height、data-key、data-dim；
+//   未知项无 data-dim + 类 photo-dim-unknown（交运行期探测/默认占位）；
+// - grid：CSS 1:1 裁剪、不注入 aspect-ratio（仍带 data-key/data-dim 供纠正与缓存）。
+const galleryItems = album.photos.map((photo: Photo, index: number) => {
+	const dimKnown =
+		typeof photo.width === "number" &&
+		typeof photo.height === "number" &&
+		photo.width > 0 &&
+		photo.height > 0;
+	const key = photoKey(album.id, photo.src);
+	return {
+		photo,
+		index,
+		key,
+		dimKnown,
+		aspectStyle:
+			dimKnown && album.layout === "masonry"
+				? `aspect-ratio: ${photo.width} / ${photo.height};`
+				: undefined,
+	};
+});
 ---
 
 <MainGridLayout title={album.title} description={album.description || album.title}>
@@ -86,25 +114,38 @@ if (!album) {
         )}
       </header>
 
-      <!-- 照片网格 -->
+      <!-- 照片网格：尺寸未知时整卡空白 + 居中旋转圆圈，绝不渲染未排版占位 -->
       <div 
         class={`photo-gallery ${album.layout === 'masonry' ? 'masonry-layout' : 'grid-layout'}`}
         data-layout={album.layout || 'grid'}
         data-columns={album.columns || 3}
       >
-        {album.photos.map((photo: Photo, _index: number) => (
-          <figure class="photo-item group relative overflow-hidden rounded-lg">
+        {galleryItems.map(({ photo, index, key, dimKnown, aspectStyle }) => (
+          <figure 
+            class:list={["photo-item", dimKnown ? "photo-dim-known" : "photo-dim-unknown"]}
+            data-key={key}
+            data-dim={dimKnown ? `${photo.width},${photo.height}` : undefined}
+            style={aspectStyle}
+          >
+            <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） -->
+            <span class="photo-placeholder" aria-hidden="true">
+              <span class="photo-spinner"></span>
+            </span>
             <a 
               href="javascript:void(0)"
               data-src={photo.src}
-              data-fancybox={`gallery-${_index}`}
-              class="block"
+              data-fancybox={`gallery-${index}`}
+              class="photo-link group"
+              aria-label={photo.alt || photo.title || `Photo ${index + 1}`}
             >
               <img 
                 alt={photo.alt}
-                class="photo-image w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                class="photo-image cursor-pointer"
+                data-key={key}
                 data-src={photo.src}
                 decoding="async"
+                width={dimKnown ? photo.width : undefined}
+                height={dimKnown ? photo.height : undefined}
               />
             </a>
           </figure>
@@ -115,61 +156,15 @@ if (!album) {
 
 </MainGridLayout>
 
+<!-- 相册渲染编排（三段式：尺寸→占位→懒加载）。模块顶层只注册一次，
+     同时响应首载(DOMContentLoaded)与 swup content:replace / page:view，
+     修复 SPA 跳入相册页时页面级脚本不重跑的缺陷。 -->
 <script>
-  // 相册图片懒加载增强：图片只携带 data-src，进入视口后才把 data-src 注入 src，
-  // 并以小并发队列（同时≤6）控制流量，避免外链大相册（数百张）一次性并发请求耗尽带宽。
-  document.addEventListener('DOMContentLoaded', () => {
-    console.log('=== 相册页面加载完成 ===');
-    /** @type {HTMLImageElement[]} */
-    const imgs = Array.from(document.querySelectorAll('.photo-gallery img.photo-image'));
-    console.log('相册图片数量:', imgs.length);
-
-    const MAX_CONCURRENT = 6;
-    /** @type {HTMLImageElement[]} */
-    const queue: HTMLImageElement[] = [];   
-    /** @type {Set<HTMLImageElement>} */
-    const inFlight = new Set<HTMLImageElement>(); 
-
-    const pump = () => {
-      while (inFlight.size < MAX_CONCURRENT && queue.length > 0) {
-        const img = queue.shift();
-        if (!img || !(img instanceof HTMLImageElement)) continue;
-        const src = img.getAttribute('data-src');
-        if (!src) continue;
-        inFlight.add(img);
-        const settle = () => { inFlight.delete(img); img.onload = null; img.onerror = null; pump(); };
-        img.onload = settle;
-        img.onerror = () => { console.warn('相册图片加载失败:', src); settle(); };
-        img.src = src;
-      }
-    };
-
-    const start = (img: Element | null)  => {
-      if (!img || !(img instanceof HTMLImageElement)) return;
-      if (!img.getAttribute('data-src')) return;
-      if (img.complete && img.src) return; // 已加载过
-      queue.push(img);
-      pump();
-    };
-
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver((entries) => {
-        for (const en of entries) {
-          if (en.isIntersecting) {
-            io.unobserve(en.target);
-            start(en.target);
-          }
-        }
-      }, { rootMargin: '400px 0px' });
-      imgs.forEach((img) => io.observe(img));
-    } else {
-      // 旧浏览器降级：全部进队，仍受 ≤6 并发上限约束
-      imgs.forEach(start);
-    }
-  });
+  import "../../../utils/album-gallery.js";
 </script>
 
 <style>
+  /* ============ 布局骨架（grid / masonry 同源 CSS columns） ============ */
   .grid-layout {
     display: grid;
     gap: 1rem;
@@ -204,28 +199,111 @@ if (!album) {
     }
   }
   
+  .photo-gallery .photo-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: rgba(148, 163, 184, 0.08);
+    isolation: isolate; /* hover 缩放不溢出；与子层隔离 */
+  }
+  
+  /* grid：CSS 1:1 裁剪（不注入 aspect-ratio） */
+  .grid-layout .photo-item {
+    aspect-ratio: 1 / 1;
+  }
+  
   .masonry-layout .photo-item {
     break-inside: avoid;
     margin-bottom: 1rem;
+    width: 100%;
+    aspect-ratio: 3 / 2; /* 兜底盒高：真实比例以 SSR 内联 / 运行期校正为准 */
+  }
+
+  /* ============ 占位层与图片层 ============ */
+  .photo-placeholder {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(148, 163, 184, 0.1);
+    transition: opacity 0.3s ease;
   }
   
-  .grid-layout .photo-container {
-    aspect-ratio: 1;
+  .photo-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+  }
+  
+  .photo-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.35s ease, transform 0.3s ease;
   }
 
-  /* 懒加载占位：图片 src 注入前保留底位，避免网格/瀑布流整列塌陷 */
-  .photo-gallery .photo-item {
-    background: rgba(148, 163, 184, 0.08);
+  .photo-link:hover .photo-image {
+    transform: scale(1.05);
+  }
+  
+  /* 加载完成：显示图片并隐藏占位层 */
+  .photo-item.photo-loaded .photo-image {
+    opacity: 1;
+  }
+  .photo-item.photo-loaded .photo-placeholder {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  /* 加载失败：占位（去掉 spinner） */
+  .photo-item.photo-error .photo-spinner {
+    display: none;
+  }
+  .photo-item.photo-error .photo-placeholder::after {
+    content: "×";
+    font-size: 1.5rem;
+    line-height: 1;
+    color: rgba(148, 163, 184, 0.6);
   }
 
-  .photo-gallery .grid-layout .photo-item {
-    aspect-ratio: 1 / 1;
+  /* ============ 旋转圆圈动画 ============ */
+  .photo-spinner {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 3px solid rgba(148, 163, 184, 0.25);
+    border-top-color: var(--primary, #0891b2);
+    animation: photo-gallery-spin 0.8s linear infinite;
+    flex: none;
+  }
+  
+  @keyframes photo-gallery-spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
-  .photo-image:not([src]) {
-    min-height: 220px;
-    background: rgba(148, 163, 184, 0.1);
+  /* ============ 尺寸期（S0）：整卡空白 + 正中央旋转圆圈 ============ */
+  .photo-gallery.gallery-sizing {
+    position: relative;
+    min-height: 300px;
   }
-
+  .photo-gallery.gallery-sizing > .photo-item {
+    visibility: hidden;
+  }
+  .gallery-sizing-indicator {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
 </style>
-

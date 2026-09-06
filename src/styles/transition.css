@@ -1,5 +1,10 @@
 /* Page transition animations with Swup - Enhanced version inspired by yukina */
 
+/* 26.09.06修改，内容为：统一跳转控制器（Layout.astro）后，主内容区出入场的真正时序在
+   MainGridLayout.astro 的 :global(.page-transition-region) 规则（out 200ms / in 250ms）——
+   本文件仅保留 swup 通用动画类（.transition-main / .transition-leaving / .onload-animation）的
+   既有定义，二者共用 300ms 级时基，互不冲突。 */
+
 /* 26.08.30修改，内容为：移除 .onload-animation 的 nth-child 递增加载动画延迟样式（已在 config.ts 中同步将递增加载延迟调为 0ms） */
 
 /* 主要内容区域的过渡动画 - 参考yukina的侧滑效果 */

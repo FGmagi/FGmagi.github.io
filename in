@@ -1,0 +1,1731 @@
+<!DOCTYPE html><html lang="zh-CN" class="bg-[var(--page-bg)] text-[14px] md:text-[16px]" data-astro-cid-sckkx6r4 style="--bannerOffset: 15vh;--banner-height-home: 65vh;--banner-height: 35vh;--configHue: 185;--page-width: 90rem;"> <head><!-- 第三方分析脚本 - 延迟加载优化 --><script>
+			// 使用 requestIdleCallback 延迟加载第三方脚本
+			function loadAnalytics() {
+				// Google Tag Manager
+				(function (w, d, s, l, i) {
+					w[l] = w[l] || [];
+					w[l].push({
+						"gtm.start": new Date().getTime(),
+						event: "gtm.js",
+					});
+					var f = d.getElementsByTagName(s)[0],
+						j = d.createElement(s),
+						dl = l != "dataLayer" ? "&l=" + l : "";
+					j.async = true;
+					j.src =
+						"https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+					f.parentNode.insertBefore(j, f);
+				})(window, document, "script", "dataLayer", "GTM-KRX3XGVH");
+
+				// Clarity
+				(function (c, l, a, r, i, t, y) {
+					c[a] =
+						c[a] ||
+						function () {
+							(c[a].q = c[a].q || []).push(arguments);
+						};
+					t = l.createElement(r);
+					t.async = 1;
+					t.src = "https://www.clarity.ms/tag/" + i;
+					y = l.getElementsByTagName(r)[0];
+					y.parentNode.insertBefore(t, y);
+				})(window, document, "clarity", "script", "tjr3vkhj8i");
+			}
+
+			// 在浏览器空闲时加载，或者在 3 秒后加载
+			if ("requestIdleCallback" in window) {
+				requestIdleCallback(loadAnalytics, { timeout: 3000 });
+			} else {
+				setTimeout(loadAnalytics, 3000);
+			}
+		</script><title>Acg - FGmagi Blog</title><meta charset="UTF-8"><meta name="description" content="祈祷明天对于你来说，也是美好的一天"><meta name="author" content="FGmagi"><meta property="og:site_name" content="FGmagi Blog"><meta property="og:url" content="https://fgmagi.pages.dev/albums/acg/"><meta property="og:title" content="Acg - FGmagi Blog"><meta property="og:description" content="祈祷明天对于你来说，也是美好的一天"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://fgmagi.pages.dev/albums/acg/"><meta name="twitter:title" content="Acg - FGmagi Blog"><meta name="twitter:description" content="祈祷明天对于你来说，也是美好的一天"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v5.16.14"><link rel="icon" href="/favicon/favicon.ico" sizes="64x64" media="(prefers-color-scheme: light)"><link rel="icon" href="/favicon/favicon.ico" sizes="64x64" media="(prefers-color-scheme: dark)"><!-- Set the theme before the page is rendered to avoid a flash --><script>(function(){const DEFAULT_THEME = "light";
+const LIGHT_MODE = "light";
+const DARK_MODE = "dark";
+const BANNER_HEIGHT_EXTEND = 30;
+const PAGE_WIDTH = 90;
+const configHue = 185;
+const pageScaling = {"enable":true,"targetWidth":2000};
+
+			// Load the theme from local storage
+			const theme = localStorage.getItem("theme") || DEFAULT_THEME;
+			let isDark = false;
+			switch (theme) {
+				case LIGHT_MODE:
+					document.documentElement.classList.remove("dark");
+					isDark = false;
+					break;
+				case DARK_MODE:
+					document.documentElement.classList.add("dark");
+					isDark = true;
+					break;
+			}
+
+			// Set the theme for Expressive Code based on current mode
+			const expressiveTheme = isDark ? "github-dark" : "github-light";
+			const currentTheme =
+				document.documentElement.getAttribute("data-theme");
+			// 只在主题不同时才更新，避免触发不必要的重绘
+			if (currentTheme !== expressiveTheme) {
+				document.documentElement.setAttribute(
+					"data-theme",
+					expressiveTheme,
+				);
+			}
+
+			// Load the hue from local storage
+			const hue = localStorage.getItem("hue") || configHue;
+			document.documentElement.style.setProperty("--hue", hue);
+
+			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
+			let offset = Math.floor(
+				window.innerHeight * (BANNER_HEIGHT_EXTEND / 100),
+			);
+			offset = offset - (offset % 4);
+			document.documentElement.style.setProperty(
+				"--banner-height-extend",
+				`${offset}px`,
+			);
+
+			// 自动缩放逻辑 (Moved from MainGridLayout to here for earlier execution)
+			(function() {
+				if (pageScaling && pageScaling.enable) {
+					function adjustPageScale() {
+						const isTouch =
+							(window.matchMedia &&
+								(window.matchMedia("(pointer:coarse)").matches ||
+									window.matchMedia("(hover: none)").matches)) ||
+							("ontouchstart" in window);
+						const isPortrait =
+							window.matchMedia &&
+							window.matchMedia("(orientation: portrait)").matches;
+						const isTabletLike = isTouch || window.innerWidth <= 1280;
+						if (isTabletLike || isPortrait) {
+							document.documentElement.style.fontSize = "";
+							return;
+						}
+						const targetWidth = pageScaling.targetWidth || 2000;
+						const currentWidth = document.documentElement.clientWidth;
+						let scale = currentWidth / targetWidth;
+						if (scale > 1) scale = 1;
+						if (scale < 0.85) scale = 0.85;
+						document.documentElement.style.fontSize = `${scale * 100}%`;
+					}
+
+					// 立即执行一次
+					adjustPageScale();
+					
+					// 监听窗口大小变化
+					window.addEventListener('resize', adjustPageScale);
+					
+					// Swup 页面切换后也需要检查
+					document.addEventListener('swup:page:view', adjustPageScale);
+					window.addEventListener('orientationchange', adjustPageScale);
+				}
+			})();
+		})();</script><style>@font-face{font-family:"思源黑体";src:url("/assets/font/思源黑体.woff2") format("woff2"), url("/assets/font/思源黑体.ttf") format("truetype");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"萝莉体 第二版";src:url("/assets/font/萝莉体 第二版.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"ZenMaruGothic-Medium";src:url("/assets/font/ZenMaruGothic-Medium.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}</style><!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why --><!-- Pio 看板娘样式 - 仅在启用时加载 --><link rel="alternate" type="application/rss+xml" title="FGmagi" href="https://fgmagi.pages.dev/rss.xml"><!-- Umami Analytics --><link rel="stylesheet" href="/_astro/katex.B82Si5CG.css">
+<link rel="stylesheet" href="/_astro/fancybox.DRe9SoLl.css">
+<link rel="stylesheet" href="/_astro/_page_.BHllG_j3.css">
+<style>.grid-layout[data-astro-cid-rgidg7mq]{display:grid;gap:1rem}.grid-layout[data-astro-cid-rgidg7mq][data-columns="2"]{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.grid-layout[data-astro-cid-rgidg7mq][data-columns="3"]{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}.grid-layout[data-astro-cid-rgidg7mq][data-columns="4"]{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.masonry-layout[data-astro-cid-rgidg7mq]{-moz-columns:2;columns:2;-moz-column-gap:1rem;column-gap:1rem}@media(min-width:768px){.masonry-layout[data-astro-cid-rgidg7mq]{-moz-columns:3;columns:3}}@media(min-width:1024px){.masonry-layout[data-astro-cid-rgidg7mq][data-columns="4"]{-moz-columns:4;columns:4}}.photo-gallery[data-astro-cid-rgidg7mq] .photo-item[data-astro-cid-rgidg7mq]{position:relative;overflow:hidden;border-radius:.5rem;background:#94a3b814;isolation:isolate}.grid-layout[data-astro-cid-rgidg7mq] .photo-item[data-astro-cid-rgidg7mq]{aspect-ratio:1 / 1}.masonry-layout[data-astro-cid-rgidg7mq] .photo-item[data-astro-cid-rgidg7mq]{-moz-column-break-inside:avoid;break-inside:avoid;margin-bottom:1rem;width:100%;aspect-ratio:3 / 2}.photo-placeholder[data-astro-cid-rgidg7mq]{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;background:#94a3b81a;transition:opacity .3s ease}.photo-link[data-astro-cid-rgidg7mq]{position:absolute;inset:0;z-index:1;display:block}.photo-image[data-astro-cid-rgidg7mq]{display:block;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;opacity:0;transition:opacity .35s ease,transform .3s ease}.photo-link[data-astro-cid-rgidg7mq]:hover .photo-image[data-astro-cid-rgidg7mq]{transform:scale(1.05)}.photo-item[data-astro-cid-rgidg7mq].photo-loaded .photo-image[data-astro-cid-rgidg7mq]{opacity:1}.photo-item[data-astro-cid-rgidg7mq].photo-loaded .photo-placeholder[data-astro-cid-rgidg7mq]{opacity:0;pointer-events:none}.photo-item[data-astro-cid-rgidg7mq].photo-error .photo-spinner[data-astro-cid-rgidg7mq]{display:none}.photo-item[data-astro-cid-rgidg7mq].photo-error .photo-placeholder[data-astro-cid-rgidg7mq]:after{content:"×";font-size:1.5rem;line-height:1;color:#94a3b899}.photo-spinner[data-astro-cid-rgidg7mq]{display:inline-block;width:26px;height:26px;border-radius:50%;border:3px solid rgba(148,163,184,.25);border-top-color:var(--primary, #0891b2);animation:photo-gallery-spin .8s linear infinite;flex:none}@keyframes photo-gallery-spin{to{transform:rotate(360deg)}}.photo-gallery[data-astro-cid-rgidg7mq].gallery-sizing{position:relative;min-height:300px}.photo-gallery[data-astro-cid-rgidg7mq].gallery-sizing>.photo-item[data-astro-cid-rgidg7mq]{visibility:hidden}.gallery-sizing-indicator[data-astro-cid-rgidg7mq]{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;pointer-events:none}
+</style>
+<link rel="stylesheet" href="/_astro/_page_.BYiRNGjT.css">
+<link rel="stylesheet" href="/_astro/_page_.D9mM0WTq.css">
+<link rel="stylesheet" href="/_astro/_permalink_.CLMvY_Mt.css">
+<style>.line-clamp-2[data-astro-cid-b6yaaygw]{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.album-card[data-astro-cid-b6yaaygw]:hover{transform:translateY(-2px)}@keyframes fadeInUp{0%{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.album-card[data-astro-cid-b6yaaygw]{animation:fadeInUp .3s ease-out}
+</style>
+<link rel="stylesheet" href="/_astro/anime.DFcz0wu_.css">
+<style>body.simple-mode .post-cover-link{display:none!important}body.simple-mode .post-card-content{width:100%!important;padding-right:2rem!important}.post-cover-link img.cover-portrait{-o-object-fit:contain!important;object-fit:contain!important}body:not(.simple-mode) .post-card-meta .meta-words{display:none!important}body:not(.simple-mode) .post-card-meta .meta-date{display:none!important}body.simple-mode .post-card-bottom-date{display:none!important}body.simple-mode .post-card-bottom-row:not(.has-tags){display:none!important}.post-card-tag[data-astro-cid-iyiqi2so]{-moz-user-select:none;user-select:none;-webkit-user-select:none;cursor:default;transition:none}.post-card-tag[data-astro-cid-iyiqi2so]:hover,.post-card-tag[data-astro-cid-iyiqi2so]:active{background-color:var(--btn-regular-bg)!important;transform:none!important}
+.filter-container[data-astro-cid-komnyuwm]{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}.filter-tag[data-astro-cid-komnyuwm]{padding:.625rem 1.25rem;border:1px solid var(--line-divider);border-radius:var(--radius-large);background:var(--btn-regular-bg);color:var(--btn-content);font-size:.875rem;font-weight:500;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;position:relative;overflow:hidden}.filter-tag[data-astro-cid-komnyuwm]:before{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:var(--primary);opacity:0;transition:opacity .3s ease;z-index:-1}.filter-tag[data-astro-cid-komnyuwm]:hover:not(.active){background:var(--btn-hover-bg);border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 8px #0000001a}.filter-tag[data-astro-cid-komnyuwm].active{background:var(--primary);color:#fff;border-color:var(--primary);transform:translateY(-1px);box-shadow:0 4px 12px rgba(var(--color-primary-rgb),.3)}.filter-tag[data-astro-cid-komnyuwm].active:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(var(--color-primary-rgb),.4)}@keyframes fadeInUp{0%{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.onload-animation[data-astro-cid-komnyuwm]{animation:fadeInUp .6s cubic-bezier(.25,.1,.25,1) forwards;opacity:0}.line-clamp-2[data-astro-cid-komnyuwm]{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.device-card[data-astro-cid-komnyuwm]:after{content:"";position:absolute;inset:0;border-radius:.75rem;background:linear-gradient(135deg,rgba(var(--color-primary-rgb),.05),transparent);opacity:0;transition:opacity .4s ease;pointer-events:none}.device-card[data-astro-cid-komnyuwm]:hover:after{opacity:1}.device-card[data-astro-cid-komnyuwm] h3[data-astro-cid-komnyuwm]{text-shadow:0 1px 2px rgba(0,0,0,.05)}@media(max-width:640px){.filter-container[data-astro-cid-komnyuwm]{gap:.5rem}.filter-tag[data-astro-cid-komnyuwm]{padding:.5rem 1rem;font-size:.8rem}.device-card[data-astro-cid-komnyuwm] .relative[data-astro-cid-komnyuwm].p-6.pb-0{padding:1rem 1rem 0}.device-card[data-astro-cid-komnyuwm] .p-6[data-astro-cid-komnyuwm].pt-4{padding:1rem}}@media(prefers-color-scheme:dark){.device-card[data-astro-cid-komnyuwm]:hover{box-shadow:0 4px 12px #00000026}}
+.card-base-daily[data-astro-cid-pyfuvgrx]{overflow:hidden;border-radius:var(--radius-large);background-color:var(--card-bg);border:1px solid var(--line-divider);transition:all .3s ease}.moments-header[data-astro-cid-pyfuvgrx]{padding:1rem;border-radius:8px;background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark, var(--primary)) 100%);color:#fff;position:relative;overflow:hidden}.header-content[data-astro-cid-pyfuvgrx]{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}.moments-title[data-astro-cid-pyfuvgrx]{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.1)}.moments-subtitle[data-astro-cid-pyfuvgrx]{color:#ffffffe6}.stat-number[data-astro-cid-pyfuvgrx]{color:#fff}.stat-label[data-astro-cid-pyfuvgrx]{color:#fffc}.image-item[data-astro-cid-pyfuvgrx] img[data-astro-cid-pyfuvgrx]{transition:transform .3s ease}.image-item[data-astro-cid-pyfuvgrx]:hover img[data-astro-cid-pyfuvgrx]{transform:scale(1.05)}.action-btn[data-astro-cid-pyfuvgrx]{background:none;border:none;cursor:pointer;color:var(--text-muted)}.action-btn[data-astro-cid-pyfuvgrx]:hover{color:var(--primary)}@media(max-width:640px){.moments-header[data-astro-cid-pyfuvgrx]{padding:.75rem}.header-content[data-astro-cid-pyfuvgrx]{flex-direction:column;text-align:center;gap:.75rem}.diary-images[data-astro-cid-pyfuvgrx]{grid-template-columns:repeat(2,1fr)}.moment-footer[data-astro-cid-pyfuvgrx]{flex-direction:column;align-items:flex-start;gap:.5rem}}@media(min-width:641px)and (max-width:900px){.moments-header[data-astro-cid-pyfuvgrx]{padding:1.25rem}.header-content[data-astro-cid-pyfuvgrx]{display:flex;justify-content:space-between;align-items:center}.moment-item[data-astro-cid-pyfuvgrx]{padding:1.5rem}.diary-images[data-astro-cid-pyfuvgrx]{grid-template-columns:repeat(3,1fr);gap:.75rem;max-width:500px}.moment-text[data-astro-cid-pyfuvgrx]{font-size:1rem;line-height:1.7}.moment-footer[data-astro-cid-pyfuvgrx]{margin-top:1rem}}@media(min-width:901px){.moments-header[data-astro-cid-pyfuvgrx]{padding:1.5rem}.moment-item[data-astro-cid-pyfuvgrx]{padding:2rem}.diary-images[data-astro-cid-pyfuvgrx]{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));max-width:600px;gap:1rem}.moment-text[data-astro-cid-pyfuvgrx]{font-size:1.1rem;line-height:1.8}}@media(max-width:480px){.moment-item[data-astro-cid-pyfuvgrx]{border-radius:8px}.moments-header[data-astro-cid-pyfuvgrx]{border-radius:6px}}
+.friend-card[data-astro-cid-spp2p3no]{animation:fadeInUp .5s ease-out forwards;opacity:0}.friend-card[data-astro-cid-spp2p3no]:nth-child(1){animation-delay:.05s}.friend-card[data-astro-cid-spp2p3no]:nth-child(2){animation-delay:.1s}.friend-card[data-astro-cid-spp2p3no]:nth-child(3){animation-delay:.15s}.friend-card[data-astro-cid-spp2p3no]:nth-child(4){animation-delay:.2s}.friend-card[data-astro-cid-spp2p3no]:nth-child(5){animation-delay:.25s}.friend-card[data-astro-cid-spp2p3no]:nth-child(6){animation-delay:.3s}@keyframes fadeInUp{0%{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.filter-container[data-astro-cid-spp2p3no]{display:flex;flex-wrap:wrap;gap:.5rem}.filter-tag[data-astro-cid-spp2p3no]{padding:.5rem 1rem;border:1px solid var(--line-divider);border-radius:var(--radius-large);background:var(--btn-regular-bg);color:var(--btn-content);font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s ease;white-space:nowrap}.filter-tag[data-astro-cid-spp2p3no]:hover:not(.active){background:var(--btn-hover-bg);border-color:var(--primary);transform:translateY(-1px)}.filter-tag[data-astro-cid-spp2p3no].active{background:var(--primary);color:#fff;border-color:var(--primary)}.filter-tag[data-astro-cid-spp2p3no].active:hover{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important;transform:translateY(-1px)}
+.line-clamp-1[data-astro-cid-aid3sr62]{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}.line-clamp-2[data-astro-cid-aid3sr62]{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line-clamp-2[data-astro-cid-qlh7ngej]{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}@keyframes pulse{0%{transform:scale(1);box-shadow:0 0 #6366f166}70%{transform:scale(1.05);box-shadow:0 0 0 10px #6366f100}to{transform:scale(1);box-shadow:0 0 #6366f100}}.timeline-node[data-astro-cid-qlh7ngej]{animation:pulse 2s infinite}.timeline-horizontal-scroll[data-astro-cid-qlh7ngej]::-webkit-scrollbar{height:8px}.timeline-horizontal-scroll[data-astro-cid-qlh7ngej]::-webkit-scrollbar-track{background:#e5e7eb;border-radius:4px}.timeline-horizontal-scroll[data-astro-cid-qlh7ngej]::-webkit-scrollbar-thumb{background:hsl(var(--hue),70%,60%);border-radius:4px}
+.skills-container[data-astro-cid-xahix5fp]{position:relative}.skills-grid-container[data-astro-cid-xahix5fp]{grid-template-columns:1fr;transition:grid-template-columns .3s ease}@container (min-width: 40rem){.skills-grid-container[data-astro-cid-xahix5fp]{grid-template-columns:repeat(2,1fr)}}@container (min-width: 56.25rem){.skills-grid-container[data-astro-cid-xahix5fp]{grid-template-columns:repeat(3,1fr)}}
+</style>
+<link rel="stylesheet" href="/_astro/_slug_.BOhp1_Ak.css">
+<link rel="stylesheet" href="/_astro/_page_.CXvRwXHN.css">
+<style></style><script type="module" src="/_astro/page.CtGVhf01.js"></script></head> <body class="min-h-screen" style="font-family: system-ui, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;; --bannerOffset: 15vh;--banner-height-home: 65vh;--banner-height: 35vh;--configHue: 185;--page-width: 90rem;" data-astro-cid-sckkx6r4> <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH" height="0" width="0" style="display:none;visibility:hidden; --bannerOffset: 15vh;--banner-height-home: 65vh;--banner-height: 35vh;--configHue: 185;--page-width: 90rem;" data-astro-cid-sckkx6r4></iframe></noscript> <!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 --> <div class="top-gradient-highlight" data-astro-cid-sckkx6r4 style="--bannerOffset: 15vh;--banner-height-home: 65vh;--banner-height: 35vh;--configHue: 185;--page-width: 90rem;"></div> <!-- 全局配置载体 --><div id="config-carrier" data-hue="185" data-hide-code-blocks-during-transition="true"></div> <script>(function(){const tocEnable = true;
+const tocDepth = 2;
+const tocUseJapaneseBadge = true;
+
+  // 将TOC配置传递到前端
+  window.siteConfig = window.siteConfig || {};
+  window.siteConfig.toc = {
+    enable: tocEnable,
+    depth: tocDepth,
+    useJapaneseBadge: tocUseJapaneseBadge
+  };
+  
+  // 添加调试信息
+  console.log('TOC Config:', window.siteConfig.toc);
+})();</script> <!-- 引入Umami Share工具脚本 --> <script src="/js/umami-share.js"></script>  <script type="module">const navbarTransparentMode = "semifull";
+const defaultWallpaperMode = "fullscreen";
+const defaultPostListLayout = "list";
+const BANNER_HEIGHT = 35;
+const pageScaling = {"enable":true,"targetWidth":2000};
+
+
+	// 26.08.30修改，内容为：页面渲染前始终强制使用列表模式（布局切换按钮已隐藏），并应用简洁模式（默认开启，隐藏左右磁贴）
+
+	// 立即执行，在页面渲染前应用壁纸模式和布局模式，避免闪烁
+	(function() {
+		// 列表/网格切换按钮已隐藏，始终使用列表模式（覆盖此前保存的 grid 缓存）
+		localStorage.setItem('postListLayout', 'list');
+		sessionStorage.setItem('postListLayout', 'list');
+
+		const wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+		const body = document.body;
+		
+		// 26.08.31修改，内容为：简洁模式默认改为关闭（常规模式），仅当存储值为 true 时启用
+		const simpleMode = localStorage.getItem('simpleMode');
+		if (simpleMode === 'true') {
+			body.classList.add('simple-mode');
+		} else {
+			body.classList.remove('simple-mode');
+		}
+
+		// 定义 banner 高度常量（与 constants.ts 保持一致）
+		// const BANNER_HEIGHT = 35;
+		// const BANNER_HEIGHT_EXTEND = 30;
+		// const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
+		// const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
+		
+		// 立即应用 body 类，确保首次渲染就是正确的状态
+		switch(wallpaperMode) {
+			case 'banner':
+				body.classList.add('enable-banner');
+				body.classList.remove('wallpaper-transparent', 'no-banner-mode');
+				break;
+			case 'fullscreen':
+				body.classList.remove('enable-banner');
+				body.classList.add('wallpaper-transparent', 'no-banner-mode');
+				break;
+			case 'none':
+				body.classList.remove('enable-banner', 'wallpaper-transparent');
+				body.classList.add('no-banner-mode');
+				break;
+		}
+		
+		// 立即调整主内容区域位置和布局模式（避免闪烁和位置错误）
+		// 使用 requestAnimationFrame 确保 DOM 准备好
+		requestAnimationFrame(function() {
+			const mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
+			if (mainContent) {
+				if (wallpaperMode === 'banner') {
+					// 让主内容区域从banner顶部开始，这样波浪线会自然覆盖内容上部
+					mainContent.style.top = `${BANNER_HEIGHT}vh`;
+				} else {
+					// fullscreen 或 none 模式
+					mainContent.style.top = '5.5rem';
+				}
+			}
+			
+			// 立即应用布局模式，避免闪烁
+			const mainGrid = document.getElementById('main-grid');
+			if (mainGrid) {
+				const savedLayout = localStorage.getItem('postListLayout');
+				const currentLayout = savedLayout || defaultPostListLayout;
+				mainGrid.setAttribute('data-layout-mode', currentLayout);
+				
+				// 根据布局模式显示或隐藏右侧边栏
+				const rightSidebar = document.querySelector('.right-sidebar-container');
+				if (rightSidebar) {
+					if (currentLayout === 'grid') {
+						rightSidebar.classList.add('hidden-in-grid-mode');
+					} else {
+						rightSidebar.classList.remove('hidden-in-grid-mode');
+					}
+				}
+				
+				// 同时更新文章列表容器的CSS类
+				const postListContainer = document.getElementById('post-list-container');
+				if (postListContainer) {
+					postListContainer.classList.remove('list-mode', 'grid-mode');
+					
+					if (currentLayout === 'grid') {
+						postListContainer.classList.add('grid-mode');
+						postListContainer.classList.add('grid', 'grid-cols-1', 'lg:grid-cols-2', 'gap-6');
+						postListContainer.classList.remove('flex', 'flex-col');
+					} else {
+						postListContainer.classList.add('list-mode');
+						postListContainer.classList.add('flex', 'flex-col');
+						postListContainer.classList.remove('grid', 'grid-cols-1', 'lg:grid-cols-2', 'gap-6');
+					}
+				}
+			}
+		});
+	})();
+	
+	// 根据壁纸模式动态设置 banner 和全屏壁纸的显示
+	// const wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+	
+	// 在 DOM 加载后执行
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', applyWallpaperMode);
+	} else {
+		applyWallpaperMode();
+	}
+	
+	// 26.09.02 [14]：全屏↔隐藏壁纸模式切换增加背景渐变过渡——全屏→隐藏先淡出壁纸再切终态，
+	// 隐藏→全屏先 display:block + opacity:0 强制一帧再淡入并加回透明类；
+	// 时长与 [data-fullscreen-wallpaper] 既有 opacity 0.6s 过渡一致；prefers-reduced-motion 下直接切换；
+	// 初始加载 / swup 切页不传 animate，保持任务D 首帧缓冲与 F-02 门控语义
+	var wallpaperModeTransitionMs = 600;
+	var wallpaperModeTimer = null;
+
+	function cancelWallpaperModeTransition() {
+		if (wallpaperModeTimer) {
+			clearTimeout(wallpaperModeTimer);
+			wallpaperModeTimer = null;
+		}
+		document.body.classList.remove('wallpaper-mode-transition');
+	}
+
+	function prefersReducedWallpaperMotion() {
+		return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+	}
+
+	function applyWallpaperBannerState() {
+		var bannerWrapper = document.getElementById('banner-wrapper');
+		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
+		var navbar = document.getElementById('navbar');
+		var body = document.body;
+		var mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
+		var tocWrapper = document.getElementById('toc-wrapper');
+		var forceReflow = function() { void document.body.offsetHeight; };
+
+		if (bannerWrapper) bannerWrapper.style.display = 'block';
+		if (fullscreenWallpaper) fullscreenWallpaper.style.display = 'none';
+		if (tocWrapper) {
+			var scrollTop = document.documentElement.scrollTop;
+			var bannerHeight = window.innerHeight * (BANNER_HEIGHT / 100);
+			if (scrollTop <= bannerHeight) tocWrapper.classList.add('toc-hide');
+		}
+		body.classList.remove('wallpaper-transparent');
+		body.classList.remove('no-banner-mode');
+		forceReflow();
+		if (mainContent) mainContent.style.removeProperty('top');
+		body.classList.add('enable-banner');
+		if (navbar) {
+			navbar.removeAttribute('data-dynamic-transparent');
+			navbar.setAttribute('data-transparent-mode', navbarTransparentMode);
+			if (navbarTransparentMode === 'semifull' && window.initSemifullScrollDetection) {
+				window.initSemifullScrollDetection();
+			}
+		}
+		forceReflow();
+	}
+
+	function applyWallpaperFullscreenState() {
+		var bannerWrapper = document.getElementById('banner-wrapper');
+		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
+		var navbar = document.getElementById('navbar');
+		var body = document.body;
+		var mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
+		var tocWrapper = document.getElementById('toc-wrapper');
+		var forceReflow = function() { void document.body.offsetHeight; };
+
+		if (bannerWrapper) bannerWrapper.style.display = 'none';
+		if (fullscreenWallpaper) fullscreenWallpaper.style.display = 'block';
+		if (tocWrapper) tocWrapper.classList.remove('toc-hide');
+		body.classList.remove('enable-banner');
+		forceReflow();
+		if (mainContent) mainContent.style.removeProperty('top');
+		body.classList.add('wallpaper-transparent');
+		body.classList.add('no-banner-mode');
+		if (navbar) {
+			navbar.setAttribute('data-dynamic-transparent', 'semi');
+			navbar.removeAttribute('data-transparent-mode');
+		}
+		forceReflow();
+	}
+
+	function applyWallpaperNoneState() {
+		var bannerWrapper = document.getElementById('banner-wrapper');
+		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
+		var navbar = document.getElementById('navbar');
+		var body = document.body;
+		var mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
+		var tocWrapper = document.getElementById('toc-wrapper');
+		var forceReflow = function() { void document.body.offsetHeight; };
+
+		if (bannerWrapper) bannerWrapper.style.display = 'none';
+		if (fullscreenWallpaper) fullscreenWallpaper.style.display = 'none';
+		if (tocWrapper) tocWrapper.classList.remove('toc-hide');
+		body.classList.remove('enable-banner');
+		body.classList.remove('wallpaper-transparent');
+		forceReflow();
+		if (mainContent) mainContent.style.removeProperty('top');
+		body.classList.add('no-banner-mode');
+		if (navbar) {
+			navbar.setAttribute('data-dynamic-transparent', 'none');
+			navbar.removeAttribute('data-transparent-mode');
+		}
+		forceReflow();
+	}
+
+	function applyWallpaperMode(animate) {
+		cancelWallpaperModeTransition();
+		var wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+		var fullscreenWallpaper = document.querySelector('[data-fullscreen-wallpaper]');
+		var canAnimate = !!animate && !!fullscreenWallpaper && !prefersReducedWallpaperMotion();
+
+		// 全屏 → 隐藏壁纸：壁纸先淡出，过渡结束再切到 none 终态（display:none + 移除透明类），避免生硬跳变
+		if (wallpaperMode === 'none' && canAnimate && fullscreenWallpaper.style.display !== 'none') {
+			document.body.classList.add('wallpaper-mode-transition');
+			fullscreenWallpaper.style.setProperty('opacity', '0', 'important');
+			wallpaperModeTimer = setTimeout(function() {
+				wallpaperModeTimer = null;
+				document.body.classList.remove('wallpaper-mode-transition');
+				applyWallpaperNoneState();
+				fullscreenWallpaper.style.removeProperty('opacity');
+			}, wallpaperModeTransitionMs + 40);
+			return;
+		}
+
+		// 隐藏壁纸 → 全屏：先 display:block + opacity:0 并强制一帧，再淡入并加回 wallpaper-transparent 等类
+		if (wallpaperMode === 'fullscreen' && canAnimate && fullscreenWallpaper.style.display === 'none') {
+			document.body.classList.add('wallpaper-mode-transition');
+			var bannerWrapper = document.getElementById('banner-wrapper');
+			if (bannerWrapper) bannerWrapper.style.display = 'none';
+			fullscreenWallpaper.style.display = 'block';
+			fullscreenWallpaper.style.setProperty('opacity', '0', 'important');
+			applyWallpaperFullscreenState();
+			void document.body.offsetHeight;
+			requestAnimationFrame(function() {
+				if (fullscreenWallpaper.style.display !== 'none') {
+					fullscreenWallpaper.style.removeProperty('opacity');
+				}
+			});
+			wallpaperModeTimer = setTimeout(function() {
+				wallpaperModeTimer = null;
+				document.body.classList.remove('wallpaper-mode-transition');
+				if (fullscreenWallpaper.style.display !== 'none') {
+					fullscreenWallpaper.style.removeProperty('opacity');
+				}
+			}, wallpaperModeTransitionMs + 40);
+			return;
+		}
+
+		switch (wallpaperMode) {
+			case 'banner':
+				applyWallpaperBannerState();
+				if (fullscreenWallpaper) fullscreenWallpaper.style.removeProperty('opacity');
+				break;
+			case 'fullscreen':
+				applyWallpaperFullscreenState();
+				if (fullscreenWallpaper) fullscreenWallpaper.style.removeProperty('opacity');
+				break;
+			case 'none':
+				applyWallpaperNoneState();
+				if (fullscreenWallpaper) fullscreenWallpaper.style.removeProperty('opacity');
+				break;
+		}
+	}
+	
+	// 监听壁纸模式变化，立即应用（不重载页面）；用户切换时播放背景渐变过渡（animate=true）
+	window.addEventListener('wallpaper-mode-change', function(_event) {
+		applyWallpaperMode(true);
+	});
+	
+	// 26.08.30修改，内容为：新增监听 simple-mode-change 事件，实时切换 body 的 simple-mode 类（无需刷新页面）
+
+	// 监听简洁模式变化，立即应用（不重载页面）
+	window.addEventListener('simple-mode-change', function(event) {
+		const simple = event.detail && event.detail.simple;
+		if (simple) {
+			document.body.classList.add('simple-mode');
+		} else {
+			document.body.classList.remove('simple-mode');
+		}
+	});
+
+	// 26.08.31修改，内容为：Swup 页面切换统一由 #main-grid 控制淡出和淡入，清除新节点动画并保留 page-entering 至渐变结束
+	function clearPageRegionAnimations() {
+		const transitionRegion = document.getElementById('main-grid');
+		if (!transitionRegion) return;
+		transitionRegion.querySelectorAll('.onload-animation').forEach((element) => {
+			element.classList.remove('onload-animation');
+		});
+	}
+
+	function setupSwupLayoutSync() {
+		// @ts-ignore
+		if (typeof window !== 'undefined' && window.swup) {
+			// 关键：在 content:replace 之前（animation:out:start）就准备好布局状态
+			// @ts-ignore
+			window.swup.hooks.on('animation:out:start', function() {
+				// 26.08.30修改，内容为：离开动画开始前标记 swup-leaving，左中右卡片同步淡出并冻结网格布局
+				document.body.classList.add('swup-leaving');
+				// 保存当前布局状态，以便在新页面中立即应用
+				const savedLayout = localStorage.getItem('postListLayout');
+				if (savedLayout) {
+					// @ts-ignore
+					window.__pendingLayoutMode = savedLayout;
+				}
+			});
+
+			// 26.09.01 [3]：visit:start 阶段记录目标页是否为主页（content:replace 阶段 location 可能尚未更新），供主页背景切换判断
+			// @ts-ignore
+			window.swup.hooks.on('visit:start', function(visit) {
+				var targetPath = visit && visit.to ? visit.to.url : '';
+				try {
+					targetPath = new URL(visit.to.url, window.location.origin).pathname;
+				} catch (e) { /* 保持原始字符串 */ }
+				window.__pendingTargetHome = targetPath === '/' || targetPath === '';
+			});
+			
+			// 在内容替换后立即应用布局，不等待其他脚本
+			// @ts-ignore
+			window.swup.hooks.on('content:replace', function() {
+				// 26.08.31修改，内容为：内容替换后先清除主网格子元素动画，再由主网格统一淡入，避免中间卡片单独延迟
+				document.body.classList.remove('swup-leaving');
+				clearPageRegionAnimations();
+				document.body.classList.add('page-entering');
+				clearTimeout(window.__pageEnteringTimer);
+				window.__pageEnteringTimer = setTimeout(() => {
+					document.body.classList.remove('page-entering');
+				}, 360);
+				const mainGrid = document.getElementById('main-grid');
+				if (mainGrid) {
+					// @ts-ignore
+					const currentLayout = window.__pendingLayoutMode || localStorage.getItem('postListLayout') || defaultPostListLayout;
+					mainGrid.setAttribute('data-layout-mode', currentLayout);
+					
+					const rightSidebar = document.querySelector('.right-sidebar-container');
+					if (rightSidebar) {
+						if (currentLayout === 'grid') {
+							rightSidebar.classList.add('hidden-in-grid-mode');
+						} else {
+							rightSidebar.classList.remove('hidden-in-grid-mode');
+						}
+					}
+					
+					// 关键：同时更新文章列表容器的CSS类
+					const postListContainer = document.getElementById('post-list-container');
+					if (postListContainer) {
+						// 移除现有布局类
+						postListContainer.classList.remove('list-mode', 'grid-mode');
+						
+						if (currentLayout === 'grid') {
+							postListContainer.classList.add('grid-mode');
+							postListContainer.classList.add('grid', 'grid-cols-1', 'lg:grid-cols-2', 'gap-6');
+							postListContainer.classList.remove('flex', 'flex-col');
+						} else {
+							postListContainer.classList.add('list-mode');
+							postListContainer.classList.add('flex', 'flex-col');
+							postListContainer.classList.remove('grid', 'grid-cols-1', 'lg:grid-cols-2', 'gap-6');
+						}
+					}
+					
+					// 清除临时状态
+					// @ts-ignore
+					delete window.__pendingLayoutMode;
+				}
+
+				// 26.09.01 [3]：目标页为主页时触发全屏壁纸随机切换（F-02），新主页已开始渲染、渐变与新页淡入同步
+				if (window.__pendingTargetHome && typeof window.__mizukiSwitchWallpaper === 'function') {
+					window.__mizukiSwitchWallpaper();
+				}
+				delete window.__pendingTargetHome;
+			});
+			
+			return true;
+		}
+		return false;
+	}
+	
+	// 尝试立即设置，如果失败则延迟重试
+	if (!setupSwupLayoutSync()) {
+		const checkSwup = setInterval(function() {
+			if (setupSwupLayoutSync()) {
+				clearInterval(checkSwup);
+			}
+		}, 50);
+		
+		setTimeout(function() {
+			clearInterval(checkSwup);
+		}, 2000);
+	}
+	
+	// 支持 Swup 页面过渡
+	// 26.08.30修改，内容为：swup 页面切换后重新应用简洁模式（simple-mode 类），避免切页后磁贴显示状态残留
+
+	document.addEventListener('swup:page:view', function() {
+		// 26.08.31修改，内容为：新页面节点插入后再次清除加载动画，page-entering继续到统一渐变完成，避免跨页瞬间显示
+		clearPageRegionAnimations();
+		applyWallpaperMode();
+		
+		// 26.08.31修改，内容为：在Swup页面切换时重新应用简洁模式（默认常规模式）
+		const simpleMode = localStorage.getItem('simpleMode');
+		if (simpleMode === 'true') {
+			document.body.classList.add('simple-mode');
+		} else {
+			document.body.classList.remove('simple-mode');
+		}
+
+		// 在Swup页面切换时也要重新应用布局模式
+		requestAnimationFrame(function() {
+			const mainGrid = document.getElementById('main-grid');
+			if (mainGrid) {
+				const savedLayout = localStorage.getItem('postListLayout');
+				const currentLayout = savedLayout || defaultPostListLayout;
+				mainGrid.setAttribute('data-layout-mode', currentLayout);
+				
+				if (currentLayout === 'grid') {
+					const rightSidebar = document.querySelector('.right-sidebar-container');
+					if (rightSidebar) {
+						rightSidebar.classList.add('hidden-in-grid-mode');
+					}
+				} else {
+					const rightSidebar = document.querySelector('.right-sidebar-container');
+					if (rightSidebar) {
+						rightSidebar.classList.remove('hidden-in-grid-mode');
+					}
+				}
+			}
+		});
+	});
+	// 在页面完全加载后，再次确认布局模式是否正确
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', function() {
+			const mainGrid = document.getElementById('main-grid');
+			if (mainGrid) {
+				const savedLayout = localStorage.getItem('postListLayout');
+				const currentLayout = savedLayout || defaultPostListLayout;
+				mainGrid.setAttribute('data-layout-mode', currentLayout);
+				
+				if (currentLayout === 'grid') {
+					const rightSidebar = document.querySelector('.right-sidebar-container');
+					if (rightSidebar) {
+						rightSidebar.classList.add('hidden-in-grid-mode');
+					}
+				}
+			}
+		});
+	}
+</script>  <!-- 26.09.02 [14]：容器暴露 SSR 解析后的桌面/移动组实际图数（含 desktop↔mobile 回退与 imageApi 分支），供“切换壁纸”按钮判断当前设备可用壁纸数 --><div class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none" style="z-index: -1; opacity: 0.28; transform: translateZ(0); perspective: 1000px;" data-fullscreen-wallpaper data-wp-desktop-count="4" data-wp-mobile-count="3"> <script>
+	// 立即执行脚本：防止闪烁
+	(function() {
+		// 26.08.31修改，内容为：无缓存时默认 fullscreen（与配置一致），避免启动时按 banner 隐藏壁纸造成闪烁
+		const mode = localStorage.getItem('wallpaperMode') || 'fullscreen';
+		if (mode !== 'fullscreen') {
+			document.currentScript.parentElement.style.display = 'none';
+		}
+	})();
+	</script> <div class="hidden md:block w-full h-full relative" style="transform: translateZ(0);"> <img src="/images/芙兰朵露-光.webp" alt="desktop wallpaper 1" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-center" data-carousel-item="0" style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(1px);; opacity: 1;" decoding="async" loading="eager"><img src="/images/阿罗娜-普拉娜.webp" alt="desktop wallpaper 2" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-center" data-carousel-item="1" style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(1px);; opacity: 0;" decoding="async" loading="lazy"><img src="/images/伊尔莎.webp" alt="desktop wallpaper 3" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-center" data-carousel-item="2" style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(1px);; opacity: 0;" decoding="async" loading="lazy"><img src="/images/芙兰朵露-黑.webp" alt="desktop wallpaper 4" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-center" data-carousel-item="3" style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(1px);; opacity: 0;" decoding="async" loading="lazy"> </div><div class="block md:hidden w-full h-full relative" style="transform: translateZ(0);"> <img src="/images/C-SK-0.webp" alt="mobile wallpaper 1" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-center" data-carousel-item="0" style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(1px);; opacity: 1;" decoding="async" loading="eager"><img src="/images/C-SK-1.webp" alt="mobile wallpaper 2" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-center" data-carousel-item="1" style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(1px);; opacity: 0;" decoding="async" loading="lazy"><img src="/images/C-SK-2.webp" alt="mobile wallpaper 3" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 object-center" data-carousel-item="2" style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; filter: blur(1px);; opacity: 0;" decoding="async" loading="lazy"> </div> <script>
+	// 26.09.01修改，内容为：解析期（首帧前）按 sessionStorage 保存的轮播索引恢复背景图可见性，消除刷新时“先显示第 0 张、再淡入切换”的渲染残留
+	(function() {
+		var savedIndex = parseInt(sessionStorage.getItem('mizuki_wallpaper_index') || '0', 10);
+		var container = document.currentScript.parentElement;
+		if (!container) return;
+		container.querySelectorAll('.hidden.md\\:block, .block.md\\:hidden').forEach(function(group) {
+			var items = group.querySelectorAll('[data-carousel-item]');
+			if (items.length === 0) return;
+			var safeIndex = (savedIndex >= 0 && savedIndex < items.length) ? savedIndex : 0;
+			for (var i = 0; i < items.length; i++) {
+				items[i].style.opacity = i === safeIndex ? '1' : '0';
+			}
+		});
+	})();
+	</script> </div> <script>(function(){const carouselInterval = 300;
+const carouselEnabled = true;
+
+		/**
+		 * 26.09.01 [3]：移除 setInterval 定时自动轮播，改为暴露 window.__mizukiSwitchWallpaper 手动切换接口
+		 * 由 MainGridLayout 的 swup 钩子在“页面切换且目标页为主页”时调用：随机换图（>2 张时保证前后不同）、
+		 * 复用图片的 transition-opacity duration-1000 实现 1s 渐变淡出/淡入；
+		 * 距上次切换不足 carousel.interval 秒则跳过；carousel.enable 仍为总开关（false 时直接返回）
+		 * 26.09.02 [14]：新增可选参数 force——true 时跳过最小间隔检查（“切换壁纸”按钮手动触发），
+		 * 仍执行随机换图/渐变并写回 mizuki_wallpaper_index/last_switch；swup 自动触发不传 force，保持原间隔门控
+		 */
+		function initFullscreenWallpaperSwitch() {
+			const container = document.querySelector('[data-fullscreen-wallpaper]');
+			if (!container) return;
+
+			const INDEX_KEY = 'mizuki_wallpaper_index';
+			const LAST_SWITCH_KEY = 'mizuki_wallpaper_last_switch';
+
+			// 手动切换接口：页面切至主页时由 swup 钩子触发；force=true 由“切换壁纸”按钮触发（绕过间隔门控）
+			window.__mizukiSwitchWallpaper = function(force) {
+				// 总开关：enable=false 时完全不切换
+				if (!carouselEnabled) return;
+				if (!container || !document.body.contains(container)) return;
+
+				// 最小切换间隔检查（首次/无记录时允许切换）
+				const lastSwitch = parseInt(sessionStorage.getItem(LAST_SWITCH_KEY) || '0', 10);
+				// 26.09.02 [14]：force=true 时跳过间隔检查（切换后仍写回 last_switch，重新计时）
+				if (!force && lastSwitch && Date.now() - lastSwitch < carouselInterval * 1000) return;
+
+				// 按设备类型确定目标组（md 断点：桌面组 hidden.md:block / 移动组 block.md:hidden）
+				const isDesktop = window.matchMedia && window.matchMedia('(min-width: 768px)').matches;
+				const items = isDesktop
+					? container.querySelectorAll('.hidden.md\\:block [data-carousel-item]')
+					: container.querySelectorAll('.block.md\\:hidden [data-carousel-item]');
+				const length = items.length;
+				// 长度 1 或空则忽略
+				if (length <= 1) return;
+
+				const savedIndex = parseInt(sessionStorage.getItem(INDEX_KEY) || '0', 10);
+				const currentIndex = (savedIndex >= 0 && savedIndex < length) ? savedIndex : 0;
+
+				let newIndex;
+				if (length === 2) {
+					// 两张图直接互切，保证必定换图
+					newIndex = 1 - currentIndex;
+				} else {
+					// >2 张：循环随机直到与当前索引不同，保证前后两次不选同一张
+					do {
+						newIndex = Math.floor(Math.random() * length);
+					} while (newIndex === currentIndex);
+				}
+
+				// 渐变切换：旧图淡出、新图淡入（复用 transition-opacity duration-1000）
+				items[currentIndex].style.opacity = '0';
+				items[newIndex].style.opacity = '1';
+
+				sessionStorage.setItem(INDEX_KEY, newIndex.toString());
+				sessionStorage.setItem(LAST_SWITCH_KEY, Date.now().toString());
+			};
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initFullscreenWallpaperSwitch);
+		} else {
+			initFullscreenWallpaperSwitch();
+		}
+	})();</script>  <!-- Iconify图标库加载器 --><script>(function(){const preloadIcons = [];
+const timeout = 10000;
+const retryCount = 3;
+
+  // 全局图标加载逻辑
+  (function() {
+    'use strict';
+    
+    // 避免重复加载
+    if (window.__iconifyLoaderInitialized) {
+      return;
+    }
+    window.__iconifyLoaderInitialized = true;
+
+    // 图标加载器类
+    class IconifyLoader {
+      constructor() {
+        this.isLoaded = false;
+        this.isLoading = false;
+        this.loadPromise = null;
+        this.observers = new Set();
+        this.preloadQueue = new Set();
+      }
+
+      async load(options = {}) {
+        const { timeout: loadTimeout = timeout, retryCount: maxRetries = retryCount } = options;
+        
+        if (this.isLoaded) {
+          return Promise.resolve();
+        }
+
+        if (this.isLoading && this.loadPromise) {
+          return this.loadPromise;
+        }
+
+        this.isLoading = true;
+        this.loadPromise = this.loadWithRetry(loadTimeout, maxRetries);
+
+        try {
+          await this.loadPromise;
+          this.isLoaded = true;
+          this.notifyObservers();
+          await this.processPreloadQueue();
+        } catch (error) {
+          console.error('Failed to load Iconify:', error);
+          throw error;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+
+      async loadWithRetry(timeout, retryCount) {
+        for (let attempt = 1; attempt <= retryCount; attempt++) {
+          try {
+            await this.loadScript(timeout);
+            return;
+          } catch (error) {
+            console.warn(`Iconify load attempt ${attempt} failed:`, error);
+            
+            if (attempt === retryCount) {
+              throw new Error(`Failed to load Iconify after ${retryCount} attempts`);
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+      }
+
+      loadScript(timeout) {
+        return new Promise((resolve, reject) => {
+          // 检查是否已经存在
+          if (this.isIconifyReady()) {
+            resolve();
+            return;
+          }
+
+          const existingScript = document.querySelector('script[src*="iconify-icon"]');
+          if (existingScript) {
+            this.waitForIconifyReady().then(resolve).catch(reject);
+            return;
+          }
+
+          const script = document.createElement('script');
+          script.src = 'https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js';
+          script.async = true;
+          script.crossOrigin = 'anonymous';
+
+          const timeoutId = setTimeout(() => {
+            script.remove();
+            reject(new Error('Script load timeout'));
+          }, timeout);
+
+          script.onload = () => {
+            clearTimeout(timeoutId);
+            this.waitForIconifyReady().then(resolve).catch(reject);
+          };
+
+          script.onerror = () => {
+            clearTimeout(timeoutId);
+            script.remove();
+            reject(new Error('Script load error'));
+          };
+
+          document.head.appendChild(script);
+        });
+      }
+
+      waitForIconifyReady(maxWait = 5000) {
+        return new Promise((resolve, reject) => {
+          const startTime = Date.now();
+          
+          const checkReady = () => {
+            if (this.isIconifyReady()) {
+              resolve();
+              return;
+            }
+            
+            if (Date.now() - startTime > maxWait) {
+              reject(new Error('Iconify initialization timeout'));
+              return;
+            }
+            
+            setTimeout(checkReady, 50);
+          };
+          
+          checkReady();
+        });
+      }
+
+      isIconifyReady() {
+        return typeof window !== 'undefined' && 
+               'customElements' in window && 
+               customElements.get('iconify-icon') !== undefined;
+      }
+
+      onLoad(callback) {
+        if (this.isLoaded) {
+          callback();
+        } else {
+          this.observers.add(callback);
+        }
+      }
+
+      notifyObservers() {
+        this.observers.forEach(callback => {
+          try {
+            callback();
+          } catch (error) {
+            console.error('Error in icon load observer:', error);
+          }
+        });
+        this.observers.clear();
+      }
+
+      addToPreloadQueue(icons) {
+        if (Array.isArray(icons)) {
+          icons.forEach(icon => this.preloadQueue.add(icon));
+        } else {
+          this.preloadQueue.add(icons);
+        }
+        
+        if (this.isLoaded) {
+          this.processPreloadQueue();
+        }
+      }
+
+      async processPreloadQueue() {
+        if (this.preloadQueue.size === 0) return;
+        
+        const iconsToLoad = Array.from(this.preloadQueue);
+        this.preloadQueue.clear();
+        
+        await this.preloadIcons(iconsToLoad);
+      }
+
+      async preloadIcons(icons) {
+        if (!this.isLoaded || icons.length === 0) return;
+
+        return new Promise((resolve) => {
+          let loadedCount = 0;
+          const totalIcons = icons.length;
+          const tempElements = [];
+
+          const cleanup = () => {
+            tempElements.forEach(el => {
+              if (el.parentNode) {
+                el.parentNode.removeChild(el);
+              }
+            });
+          };
+
+          const checkComplete = () => {
+            loadedCount++;
+            if (loadedCount >= totalIcons) {
+              cleanup();
+              resolve();
+            }
+          };
+
+          icons.forEach(icon => {
+            const tempIcon = document.createElement('iconify-icon');
+            tempIcon.setAttribute('icon', icon);
+            tempIcon.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+            
+            tempIcon.addEventListener('load', checkComplete);
+            tempIcon.addEventListener('error', checkComplete);
+            
+            tempElements.push(tempIcon);
+            document.body.appendChild(tempIcon);
+          });
+
+          // 设置超时清理
+          setTimeout(() => {
+            cleanup();
+            resolve();
+          }, 3000);
+        });
+      }
+    }
+
+    // 创建全局实例
+    window.__iconifyLoader = new IconifyLoader();
+
+    // 立即开始加载
+    window.__iconifyLoader.load().catch(error => {
+      console.error('Failed to initialize Iconify:', error);
+    });
+
+    // 如果有预加载图标，添加到队列
+    if (preloadIcons && preloadIcons.length > 0) {
+      window.__iconifyLoader.addToPreloadQueue(preloadIcons);
+    }
+
+    // 导出便捷函数到全局
+    window.loadIconify = () => window.__iconifyLoader?.load();
+    window.preloadIcons = (icons) => window.__iconifyLoader?.addToPreloadQueue(icons);
+    window.onIconifyReady = (callback) => {
+      return window.__iconifyLoader?.onLoad ? window.__iconifyLoader.onLoad(callback) : null;
+    };
+
+    // 页面可见性变化时重新检查
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !window.__iconifyLoader.isLoaded) {
+        window.__iconifyLoader.load().catch(console.error);
+      }
+    });
+
+  })();
+})();</script> <!-- 为不支持JavaScript的情况提供备用方案 --><noscript><style>
+    iconify-icon {
+      display: none;
+    }
+    .icon-fallback {
+      display: inline-block;
+    }
+  </style></noscript>   <div id="top-row" class="z-50 pointer-events-none relative transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" data-astro-cid-haiuh7kc> <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-all" data-astro-cid-haiuh7kc> <div id="navbar" class="z-50 onload-animation" data-transparent-mode="semifull" data-is-home="false"> <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation --> <div class="!overflow-visible max-w-[var(--page-width)] h-[3.6rem] mx-auto flex items-center px-4"> <!-- 区域1（左）：主页，维持原位 --> <div class="flex items-center shrink-0 space-x-1"> <a href="/" class="btn-plain scale-animation rounded-lg h-[2.5rem] px-4 font-bold active:scale-95"> <div class="flex flex-row items-center text-md">  <img src="/assets/home/default-logo.png" alt="FGmagi" class="h-[2.25rem] max-w-full object-contain" loading="lazy"> </div> </a> <div class="dropdown-container group" data-dropdown data-astro-cid-qou34bit> <a aria-label="主页" href="/" class="btn-plain scale-animation rounded-lg h-11 font-bold w-11 md:w-auto md:px-5 active:scale-95 flex items-center justify-center md:justify-start whitespace-nowrap" data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1.1rem] md:mr-2 flex-shrink-0" data-astro-cid-qou34bit="true" data-icon="material-symbols:home">   <symbol id="ai:material-symbols:home" viewBox="0 0 24 24"><path fill="currentColor" d="M4 21V9l8-6l8 6v12h-6v-7h-4v7z"/></symbol><use href="#ai:material-symbols:home"></use>  </svg> <span class="truncate hidden md:inline" data-astro-cid-qou34bit>主页</span>  </a> </div>  <script type="module">document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("[data-dropdown]").forEach(a=>{const n=a.querySelector("[data-dropdown-trigger]"),s=a.querySelector("[data-dropdown-menu]"),t=a.querySelectorAll(".dropdown-item");if(!n||!s)return;const o=()=>{n.setAttribute("aria-expanded","false")},d=()=>{const e=n.getAttribute("aria-expanded")==="true";n.setAttribute("aria-expanded",String(!e))};n.addEventListener("click",()=>{typeof window<"u"&&window.panelManager&&window.panelManager.closeAllPanelsExcept(),d()}),n.addEventListener("keydown",e=>{e.key==="Enter"||e.key===" "?(e.preventDefault(),d()):e.key==="ArrowDown"?(e.preventDefault(),n.setAttribute("aria-expanded","true"),t.length>0&&t[0].focus()):e.key==="Escape"&&o()}),t.forEach(e=>{e.addEventListener("click",()=>o())}),t.forEach((e,i)=>{e.addEventListener("keydown",r=>{r.key==="ArrowDown"?(r.preventDefault(),t[(i+1)%t.length].focus()):r.key==="ArrowUp"?(r.preventDefault(),t[(i-1+t.length)%t.length].focus()):r.key==="Escape"&&(r.preventDefault(),o(),n.focus())})}),document.addEventListener("click",e=>{a.contains(e.target)||o()})})});</script> </div> <!-- 区域2（右）：全部/目录 + 功能按键 --> <div class="flex items-center gap-1 ml-auto shrink-0 min-w-0 pl-1"> <div class="hidden md:flex items-center space-x-1 text-sm"> <div class="dropdown-container group" data-dropdown data-astro-cid-qou34bit> <a aria-label="全部" href="/archive/" class="btn-plain scale-animation rounded-lg h-11 font-bold w-11 md:w-auto md:px-5 active:scale-95 flex items-center justify-center md:justify-start whitespace-nowrap" data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1.1rem] md:mr-2 flex-shrink-0" data-astro-cid-qou34bit="true" data-icon="material-symbols:archive">   <symbol id="ai:material-symbols:archive" viewBox="0 0 24 24"><path fill="currentColor" d="m12 18l4-4l-1.4-1.4l-1.6 1.6V10h-2v4.2l-1.6-1.6L8 14zm-7 3q-.825 0-1.412-.587T3 19V6.525q0-.35.113-.675t.337-.6L4.7 3.725q.275-.35.687-.538T6.25 3h11.5q.45 0 .863.188t.687.537l1.25 1.525q.225.275.338.6t.112.675V19q0 .825-.587 1.413T19 21zm.4-15h13.2l-.85-1H6.25z"/></symbol><use href="#ai:material-symbols:archive"></use>  </svg> <span class="truncate hidden md:inline" data-astro-cid-qou34bit>全部</span>  </a> </div>  <div class="dropdown-container group" data-dropdown data-astro-cid-qou34bit>  <button class="btn-plain scale-animation rounded-lg h-11 font-bold w-11 md:w-auto md:px-5 active:scale-95 dropdown-trigger flex items-center justify-center md:justify-start whitespace-nowrap" aria-expanded="false" aria-haspopup="true" data-dropdown-trigger data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1.1rem] md:mr-2 flex-shrink-0" data-astro-cid-qou34bit="true" data-icon="material-symbols:menu">   <symbol id="ai:material-symbols:menu" viewBox="0 0 24 24"><path fill="currentColor" d="M3 18v-2h18v2zm0-5v-2h18v2zm0-5V6h18v2z"/></symbol><use href="#ai:material-symbols:menu"></use>  </svg> <span class="truncate hidden md:inline" data-astro-cid-qou34bit>目录</span> </button> <div class="dropdown-menu" data-dropdown-menu data-astro-cid-qou34bit> <div class="dropdown-content" data-astro-cid-qou34bit> <a href="/anime/" class="dropdown-item" aria-label="追番" data-astro-cid-qou34bit> <div class="flex items-center" data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1rem] mr-2" data-astro-cid-qou34bit="true" data-icon="material-symbols:movie">   <symbol id="ai:material-symbols:movie" viewBox="0 0 24 24"><path fill="currentColor" d="m4 4l2 4h3L7 4h2l2 4h3l-2-4h2l2 4h3l-2-4h3q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20H4q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4"/></symbol><use href="#ai:material-symbols:movie"></use>  </svg> <span data-astro-cid-qou34bit>追番</span> </div>  </a><a href="/friends/" class="dropdown-item" aria-label="友链" data-astro-cid-qou34bit> <div class="flex items-center" data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1rem] mr-2" data-astro-cid-qou34bit="true" data-icon="material-symbols:group">   <symbol id="ai:material-symbols:group" viewBox="0 0 24 24"><path fill="currentColor" d="M1 20v-2.8q0-.85.438-1.562T2.6 14.55q1.55-.775 3.15-1.162T9 13t3.25.388t3.15 1.162q.725.375 1.163 1.088T17 17.2V20zm18 0v-3q0-1.1-.612-2.113T16.65 13.15q1.275.15 2.4.513t2.1.887q.9.5 1.375 1.112T23 17v3zM9 12q-1.65 0-2.825-1.175T5 8t1.175-2.825T9 4t2.825 1.175T13 8t-1.175 2.825T9 12m10-4q0 1.65-1.175 2.825T15 12q-.275 0-.7-.062t-.7-.138q.675-.8 1.038-1.775T15 8t-.362-2.025T13.6 4.2q.35-.125.7-.163T15 4q1.65 0 2.825 1.175T19 8"/></symbol><use href="#ai:material-symbols:group"></use>  </svg> <span data-astro-cid-qou34bit>友链</span> </div>  </a><a href="/albums/" class="dropdown-item" aria-label="图片" data-astro-cid-qou34bit> <div class="flex items-center" data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1rem] mr-2" data-astro-cid-qou34bit="true" data-icon="material-symbols:photo-library">   <symbol id="ai:material-symbols:photo-library" viewBox="0 0 24 24"><path fill="currentColor" d="M9 14h10l-3.45-4.5l-2.3 3l-1.55-2zm-1 4q-.825 0-1.412-.587T6 16V4q0-.825.588-1.412T8 2h12q.825 0 1.413.588T22 4v12q0 .825-.587 1.413T20 18zm-4 4q-.825 0-1.412-.587T2 20V6h2v14h14v2z"/></symbol><use href="#ai:material-symbols:photo-library"></use>  </svg> <span data-astro-cid-qou34bit>图片</span> </div>  </a><a href="/posts/myself/" class="dropdown-item" aria-label="我的" data-astro-cid-qou34bit> <div class="flex items-center" data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1rem] mr-2" data-astro-cid-qou34bit="true" data-icon="material-symbols:person">   <symbol id="ai:material-symbols:person" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12q-1.65 0-2.825-1.175T8 8t1.175-2.825T12 4t2.825 1.175T16 8t-1.175 2.825T12 12m-8 8v-2.8q0-.85.438-1.562T5.6 14.55q1.55-.775 3.15-1.162T12 13t3.25.388t3.15 1.162q.725.375 1.163 1.088T20 17.2V20z"/></symbol><use href="#ai:material-symbols:person"></use>  </svg> <span data-astro-cid-qou34bit>我的</span> </div>  </a><a href="/posts/about/" class="dropdown-item" aria-label="关于" data-astro-cid-qou34bit> <div class="flex items-center" data-astro-cid-qou34bit> <svg width="1em" height="1em" class="text-[1rem] mr-2" data-astro-cid-qou34bit="true" data-icon="material-symbols:info">   <symbol id="ai:material-symbols:info" viewBox="0 0 24 24"><path fill="currentColor" d="M11 17h2v-6h-2zm1-8q.425 0 .713-.288T13 8t-.288-.712T12 7t-.712.288T11 8t.288.713T12 9m0 13q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22"/></symbol><use href="#ai:material-symbols:info"></use>  </svg> <span data-astro-cid-qou34bit>关于</span> </div>  </a> </div> </div>  </div>   </div> <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).only=e;window.dispatchEvent(new Event("astro:only"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="ZFhhkd" component-url="/_astro/MobileTOC.ChP6drnB.js" component-export="default" renderer-url="/_astro/client.svelte.CXK0pt-a.js" props="{}" ssr client="only" opts="{&quot;name&quot;:&quot;MobileTOC&quot;,&quot;value&quot;:&quot;svelte&quot;}"></astro-island> <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 px-3 active:scale-90 flex items-center gap-1.5" id="display-settings-switch"> <svg width="1em" height="1em" class="text-[1.25rem]" data-icon="material-symbols:palette-outline">   <symbol id="ai:material-symbols:palette-outline" viewBox="0 0 24 24"><path fill="currentColor" d="M12 22q-2.05 0-3.875-.788t-3.187-2.15t-2.15-3.187T2 12q0-2.075.813-3.9t2.2-3.175T8.25 2.788T12.2 2q2 0 3.775.688t3.113 1.9t2.125 2.875T22 11.05q0 2.875-1.75 4.413T16 17h-1.85q-.225 0-.312.125t-.088.275q0 .3.375.863t.375 1.287q0 1.25-.687 1.85T12 22m-5.5-9q.65 0 1.075-.425T8 11.5t-.425-1.075T6.5 10t-1.075.425T5 11.5t.425 1.075T6.5 13m3-4q.65 0 1.075-.425T11 7.5t-.425-1.075T9.5 6t-1.075.425T8 7.5t.425 1.075T9.5 9m5 0q.65 0 1.075-.425T16 7.5t-.425-1.075T14.5 6t-1.075.425T13 7.5t.425 1.075T14.5 9m3 4q.65 0 1.075-.425T19 11.5t-.425-1.075T17.5 10t-1.075.425T16 11.5t.425 1.075T17.5 13M12 20q.225 0 .363-.125t.137-.325q0-.35-.375-.825T11.75 17.3q0-1.05.725-1.675T14.25 15H16q1.65 0 2.825-.962T20 11.05q0-3.025-2.312-5.038T12.2 4Q8.8 4 6.4 6.325T4 12q0 3.325 2.338 5.663T12 20"/></symbol><use href="#ai:material-symbols:palette-outline"></use>  </svg> <span class="hidden md:inline text-sm font-bold">主题色</span> </button> <astro-island uid="2eRmR" component-url="/_astro/WallpaperSwitch.B31Xhjdb.js" component-export="default" renderer-url="/_astro/client.svelte.CXK0pt-a.js" props="{}" ssr client="only" opts="{&quot;name&quot;:&quot;WallpaperSwitch&quot;,&quot;value&quot;:&quot;svelte&quot;}"></astro-island> <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch"> <svg width="1em" height="1em" class="text-[1.25rem]" data-icon="material-symbols:unfold-more">   <symbol id="ai:material-symbols:unfold-more" viewBox="0 0 24 24"><path fill="currentColor" d="m12 21l-4.5-4.5l1.45-1.45L12 18.1l3.05-3.05l1.45 1.45zM8.95 9.05L7.5 7.6L12 3.1l4.5 4.5l-1.45 1.45L12 6z"/></symbol><use href="#ai:material-symbols:unfold-more"></use>  </svg> </button> <div id="nav-menu-panel" class="float-panel float-panel-closed absolute transition-all fixed right-4 px-2 py-2 max-h-[80vh] overflow-y-auto" data-astro-cid-h5lvqo6o> <div class="mobile-menu-item" data-astro-cid-h5lvqo6o> <!-- 普通链接项目 -->
+                <a href="/" class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-4
+                    hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition
+                " data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/75 dark:text-white/75 font-bold group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:home">   <use href="#ai:material-symbols:home"></use>  </svg> 主页 </div> <svg width="1em" height="1em" class="transition text-[1.25rem] text-[var(--primary)]" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:chevron-right-rounded">   <symbol id="ai:material-symbols:chevron-right-rounded" viewBox="0 0 24 24"><path fill="currentColor" d="M12.6 12L8.7 8.1q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l4.6 4.6q.15.15.213.325t.062.375t-.062.375t-.213.325l-4.6 4.6q-.275.275-.7.275t-.7-.275t-.275-.7t.275-.7z"/></symbol><use href="#ai:material-symbols:chevron-right-rounded"></use>  </svg>  </a> </div><div class="mobile-menu-item" data-astro-cid-h5lvqo6o> <!-- 普通链接项目 -->
+                <a href="/archive/" class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-4
+                    hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition
+                " data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/75 dark:text-white/75 font-bold group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:archive">   <use href="#ai:material-symbols:archive"></use>  </svg> 全部 </div> <svg width="1em" height="1em" viewBox="0 0 24 24" class="transition text-[1.25rem] text-[var(--primary)]" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:chevron-right-rounded">   <use href="#ai:material-symbols:chevron-right-rounded"></use>  </svg>  </a> </div><div class="mobile-menu-item" data-astro-cid-h5lvqo6o> <!-- 有子菜单的项目 -->
+                <div class="mobile-dropdown" data-mobile-dropdown data-astro-cid-h5lvqo6o> <button class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-4 w-full text-left
+                            hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition" data-mobile-dropdown-trigger aria-expanded="false" data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/75 dark:text-white/75 font-bold group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:menu">   <use href="#ai:material-symbols:menu"></use>  </svg> 目录 </div> <svg width="1em" height="1em" class="transition text-[1.25rem] text-[var(--primary)] mobile-dropdown-arrow duration-200" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:keyboard-arrow-down-rounded">   <symbol id="ai:material-symbols:keyboard-arrow-down-rounded" viewBox="0 0 24 24"><path fill="currentColor" d="M12 14.975q-.2 0-.375-.062T11.3 14.7l-4.6-4.6q-.275-.275-.275-.7t.275-.7t.7-.275t.7.275l3.9 3.9l3.9-3.9q.275-.275.7-.275t.7.275t.275.7t-.275.7l-4.6 4.6q-.15.15-.325.213t-.375.062"/></symbol><use href="#ai:material-symbols:keyboard-arrow-down-rounded"></use>  </svg> </button> <div class="mobile-submenu" data-mobile-submenu data-astro-cid-h5lvqo6o> <a href="/anime/" class="group flex justify-between items-center py-2 pl-6 pr-1 rounded-lg gap-4
+                                   hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition" data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/60 dark:text-white/60 font-medium group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:movie">   <use href="#ai:material-symbols:movie"></use>  </svg> 追番 </div>  </a><a href="/friends/" class="group flex justify-between items-center py-2 pl-6 pr-1 rounded-lg gap-4
+                                   hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition" data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/60 dark:text-white/60 font-medium group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:group">   <use href="#ai:material-symbols:group"></use>  </svg> 友链 </div>  </a><a href="/albums/" class="group flex justify-between items-center py-2 pl-6 pr-1 rounded-lg gap-4
+                                   hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition" data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/60 dark:text-white/60 font-medium group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:photo-library">   <use href="#ai:material-symbols:photo-library"></use>  </svg> 图片 </div>  </a><a href="/posts/myself/" class="group flex justify-between items-center py-2 pl-6 pr-1 rounded-lg gap-4
+                                   hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition" data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/60 dark:text-white/60 font-medium group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:person">   <use href="#ai:material-symbols:person"></use>  </svg> 我的 </div>  </a><a href="/posts/about/" class="group flex justify-between items-center py-2 pl-6 pr-1 rounded-lg gap-4
+                                   hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition" data-astro-cid-h5lvqo6o> <div class="flex items-center transition text-black/60 dark:text-white/60 font-medium group-hover:text-[var(--primary)] group-active:text-[var(--primary)]" data-astro-cid-h5lvqo6o> <svg width="1em" height="1em" viewBox="0 0 24 24" class="text-[1.1rem] mr-2" data-astro-cid-h5lvqo6o="true" data-icon="material-symbols:info">   <use href="#ai:material-symbols:info"></use>  </svg> 关于 </div>  </a> </div> </div> </div> </div>  <script type="module">document.addEventListener("DOMContentLoaded",function(){const r=document.querySelectorAll("[data-mobile-dropdown]");r.forEach(e=>{const t=e.querySelector("[data-mobile-dropdown-trigger]"),d=e.querySelector("[data-mobile-submenu]");!t||!d||t.addEventListener("click",function(o){o.preventDefault();const u=e.getAttribute("data-expanded")==="true";r.forEach(a=>{if(a!==e){a.setAttribute("data-expanded","false");const i=a.querySelector("[data-mobile-dropdown-trigger]");i&&i.setAttribute("aria-expanded","false")}});const n=!u;e.setAttribute("data-expanded",n.toString()),t.setAttribute("aria-expanded",n.toString())})})});</script> <astro-island uid="Z23J4cc" component-url="/_astro/DisplaySettings.BkoxELq_.js" component-export="default" renderer-url="/_astro/client.svelte.CXK0pt-a.js" props="{}" ssr client="only" opts="{&quot;name&quot;:&quot;DisplaySettings&quot;,&quot;value&quot;:&quot;svelte&quot;}"></astro-island> </div> </div> </div> <script type="module" src="/_astro/Navbar.astro_astro_type_script_index_0_lang.BRzFkB64.js"></script> <script>(function(){const scriptUrl = "/pagefind/pagefind.js";
+
+async function loadPagefind() {
+    try {
+        const response = await fetch(scriptUrl, { method: 'HEAD' });
+        if (!response.ok) {
+            throw new Error(`Pagefind script not found: ${response.status}`);
+        }
+
+        const pagefind = await import(scriptUrl);
+
+        await pagefind.options({
+            excerptLength: 20
+        });
+
+        window.pagefind = pagefind;
+
+        document.dispatchEvent(new CustomEvent('pagefindready'));
+        console.log('Pagefind loaded and initialized successfully, event dispatched.');
+    } catch (error) {
+        console.error('Failed to load Pagefind:', error);
+        window.pagefind = {
+            search: () => Promise.resolve({ results: [] }),
+            options: () => Promise.resolve(),
+        };
+        document.dispatchEvent(new CustomEvent('pagefindloaderror'));
+        console.log('Pagefind load error, event dispatched.');
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadPagefind);
+} else {
+    loadPagefind();
+}
+})();</script> </div> </div>  <div id="banner-wrapper" class="absolute z-10 w-full transition duration-700 overflow-hidden mobile-hide-banner" style="top: -30vh" data-astro-cid-haiuh7kc> <!-- Single image mode -->
+        <div id="banner-single-container" class="relative h-full w-full" data-astro-cid-haiuh7kc> <script>(function(){const desktopImages = [];
+const mobileImages = ["/images/C-SK-0.webp","/images/C-SK-1.webp","/images/C-SK-2.webp"];
+const position = "center";
+
+                (function() {
+                    const getRandomImage = (images, storageKey) => {
+                        if (Array.isArray(images)) {
+                            if (images.length === 0) return null;
+                            if (images.length === 1) return images[0];
+                            
+                            const lastIndex = sessionStorage.getItem(storageKey);
+                            let newIndex;
+                            
+                            do {
+                                newIndex = Math.floor(Math.random() * images.length);
+                            } while (newIndex === parseInt(lastIndex || '-1'));
+                            
+                            sessionStorage.setItem(storageKey, newIndex.toString());
+                            return images[newIndex];
+                        }
+                        return images || null;
+                    };
+                    
+                    const desktopSrc = getRandomImage(desktopImages, 'banner_desktop_index');
+                    const mobileSrc = getRandomImage(mobileImages, 'banner_mobile_index');
+                    
+                    const container = document.getElementById('banner-single-container');
+                    
+                    if (mobileSrc) {
+                        const mobileImg = document.createElement('img');
+                        mobileImg.alt = 'Mobile banner image of the blog';
+                        mobileImg.className = 'block md:hidden object-cover h-full w-full transition duration-700 opacity-100';
+                        mobileImg.src = mobileSrc;
+                        mobileImg.loading = 'eager';
+                        mobileImg.dataset.position = position;
+                        container.appendChild(mobileImg);
+                    }
+                    
+                    if (desktopSrc) {
+                        const desktopImg = document.createElement('img');
+                        desktopImg.id = 'banner';
+                        desktopImg.alt = 'Desktop banner image of the blog';
+                        desktopImg.className = 'hidden md:block object-cover h-full w-full transition duration-700 opacity-100';
+                        desktopImg.src = desktopSrc;
+                        desktopImg.loading = 'eager';
+                        desktopImg.dataset.position = position;
+                        container.appendChild(desktopImg);
+                    }
+                })();
+            })();</script> </div> <!-- Home page text overlay --> <div class="banner-text-overlay absolute inset-0 z-20 flex items-center justify-center hidden" data-astro-cid-haiuh7kc> <div class="w-4/5 lg:w-3/4 text-center mb-0" data-astro-cid-haiuh7kc> <div class="flex flex-col" data-astro-cid-haiuh7kc>  <h2 class="banner-subtitle text-xl lg:text-3xl text-white/90 drop-shadow-md" data-astro-cid-haiuh7kc> <span class="inline-block min-h-[1.2em]" data-astro-cid-haiuh7kc> <span class="typewriter " data-text="[&#34;前天是小兔子，昨天是小鹿，今天是你&#34;,&#34;祈祷明天对你来说，也是美好的一天&#34;]" data-speed="100" data-delete-speed="50" data-pause-time="10000" data-astro-cid-4iv2rnoh></span> <script type="module">class n{element;texts;currentTextIndex=0;speed;deleteSpeed;pauseTime;currentIndex=0;isDeleting=!1;timeoutId=null;constructor(t){this.element=t;const e=t.dataset.text||"";try{const i=JSON.parse(e);this.texts=Array.isArray(i)?i:[e]}catch{this.texts=[e]}this.speed=parseInt(t.dataset.speed||"100"),this.deleteSpeed=parseInt(t.dataset.deleteSpeed||"50"),this.pauseTime=parseInt(t.dataset.pauseTime||"2000"),this.texts.length>1&&!this.isTypewriterEnabled()?this.showRandomText():this.start()}isTypewriterEnabled(){return this.element.dataset.speed!==void 0||this.element.dataset.deleteSpeed!==void 0||this.element.dataset.pauseTime!==void 0}showRandomText(){const t=Math.floor(Math.random()*this.texts.length);this.element.textContent=this.texts[t]}start(){this.texts.length!==0&&this.type()}getCurrentText(){return this.texts[this.currentTextIndex]||""}type(){const t=this.getCurrentText();this.isDeleting?this.currentIndex>0?(this.currentIndex--,this.element.textContent=t.substring(0,this.currentIndex),this.timeoutId=window.setTimeout(()=>this.type(),this.deleteSpeed)):(this.isDeleting=!1,this.currentTextIndex=(this.currentTextIndex+1)%this.texts.length,this.timeoutId=window.setTimeout(()=>this.type(),this.speed)):this.currentIndex<t.length?(this.currentIndex++,this.element.textContent=t.substring(0,this.currentIndex),this.timeoutId=window.setTimeout(()=>this.type(),this.speed)):this.texts.length>1?(this.isDeleting=!0,this.timeoutId=window.setTimeout(()=>this.type(),this.pauseTime)):this.texts.length===1&&this.texts[0]===""&&(this.element.innerHTML="&nbsp;")}destroy(){this.timeoutId&&clearTimeout(this.timeoutId)}}document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".typewriter").forEach(t=>{new n(t)})});document.addEventListener("swup:contentReplaced",()=>{document.querySelectorAll(".typewriter").forEach(t=>{new n(t)})});</script>  </span> </h2> </div> </div> </div> <!-- Water waves effect --> <div class="waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]" id="header-waves" style="transform: translateZ(0); will-change: fill;" data-astro-cid-haiuh7kc> <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 20 150 32" preserveAspectRatio="none" shape-rendering="auto" style="transform: translateZ(0); backface-visibility: hidden;" data-astro-cid-haiuh7kc> <defs data-astro-cid-haiuh7kc> <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v48h-352z" data-astro-cid-haiuh7kc></path> </defs> <g class="parallax" style="transform: translateZ(0);" data-astro-cid-haiuh7kc> <use xlink:href="#gentle-wave" x="48" y="0" class="opacity-25 fill-[var(--page-bg)]" style="animation-delay: -2s; animation-duration: 7s; will-change: transform;" data-astro-cid-haiuh7kc></use> <use xlink:href="#gentle-wave" x="48" y="3" class="opacity-50 fill-[var(--page-bg)]" style="animation-delay: -3s; animation-duration: 10s; will-change: transform;" data-astro-cid-haiuh7kc></use> <use xlink:href="#gentle-wave" x="48" y="5" class="opacity-75 fill-[var(--page-bg)]" style="animation-delay: -4s; animation-duration: 13s; will-change: transform;" data-astro-cid-haiuh7kc></use> <use xlink:href="#gentle-wave" x="48" y="7" class="fill-[var(--page-bg)]" style="animation-delay: -5s; animation-duration: 20s; will-change: transform;" data-astro-cid-haiuh7kc></use> </g> </svg> </div> </div>  <div class="absolute w-full z-30 pointer-events-none mobile-main-no-banner " style="top: 5.5rem" data-astro-cid-haiuh7kc> <!-- The pointer-events-none here prevent blocking the click event of the TOC --> <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto" data-astro-cid-haiuh7kc> <div id="main-grid" class="page-transition-region transition-opacity duration-300 ease-out w-full left-0 right-0 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 mobile-no-sidebar " data-layout-mode="list" data-astro-cid-haiuh7kc> <!-- Banner image credit -->     <div id="sidebar-swup-container" class="contents" data-astro-cid-haiuh7kc> <div id="sidebar" class="onload-animation hidden md:hidden lg:hidden home-sidebar w-full sidebar-root" data-astro-cid-gfmxq3pg> <!-- 顶部组件区域 --> <div class="flex flex-col w-full gap-4 mb-4" data-astro-cid-gfmxq3pg> <!-- 手机端顶部组件 --> <div class="flex flex-col w-full gap-4 md:hidden" data-astro-cid-gfmxq3pg> <div class="card-base p-3"> <!-- 26.08.30修改，内容为：移除头像指向"关于"页的链接与悬停遮罩，头像不再可点击 --> <div class="group block relative mx-auto mt-1 lg:mx-0 lg:mt-0 mb-3
+       max-w-[12rem] lg:max-w-none overflow-hidden rounded-xl"> <div class="mx-auto lg:w-full h-full lg:mt-0  overflow-hidden relative"> <div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>   <img src="/images/head-image.webp" alt="Profile Image of the Author" class="w-full h-full object-cover" style="object-position: center" loading="lazy"> </div> </div> <div class="px-2"> <div class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition">FGmagi</div> <div class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"></div> <div class="text-center text-neutral-400 mb-2.5 transition"> <span class="typewriter inline-block" data-text="弱水三千，只取一瓢" data-speed="80" data-delete-speed="50" data-pause-time="2000" data-astro-cid-4iv2rnoh></span>   </div>  </div> </div> <!-- 组件显示现在由sidebarLayoutConfig统一控制，无需检查config.enable --><widget-layout data-id="announcement" data-is-collapsed="undefined" class="pb-4 card-base onload-animation" style="; " data-astro-cid-ucso7hve="true"> <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-8 mt-4 mb-2 flex items-center
+        before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
+        before:absolute before:left-[-16px] before:top-[5.5px]" data-astro-cid-ucso7hve style=""> 公告  </div> <div id="announcement" class="collapse-wrapper px-4 overflow-hidden" data-astro-cid-ucso7hve style="">  <div> <!-- 公告栏内容 --> <div class="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3"> 施工中，暂无告示 </div> <!-- 可选链接（Learn More 显隐由 config link.showLearnMore 控制；右侧 X 关闭按钮已取消） --> <div class="flex items-center justify-between gap-3"> <div> <a href="/posts/about/" target="_self" class="btn-regular rounded-lg px-3 py-1.5 text-sm font-medium active:scale-95 transition-transform"> Learn More </a> </div> </div> </div>  </div>  </widget-layout>  <script type="module">class d extends HTMLElement{constructor(){if(super(),this.dataset.isCollapsed!=="true")return;const e=this.dataset.id,t=this.querySelector(".expand-btn"),s=this.querySelector(`#${e}`);t.addEventListener("click",()=>{s.classList.remove("collapsed"),t.classList.add("hidden")})}}customElements.get("widget-layout")||customElements.define("widget-layout",d);</script> </div> <!-- 平板和桌面端顶部组件 --> <div class="hidden md:flex flex-col w-full gap-4" data-astro-cid-gfmxq3pg> <div class="card-base p-3"> <!-- 26.08.30修改，内容为：移除头像指向"关于"页的链接与悬停遮罩，头像不再可点击 --> <div class="group block relative mx-auto mt-1 lg:mx-0 lg:mt-0 mb-3
+       max-w-[12rem] lg:max-w-none overflow-hidden rounded-xl"> <div class="mx-auto lg:w-full h-full lg:mt-0  overflow-hidden relative"> <div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>   <img src="/images/head-image.webp" alt="Profile Image of the Author" class="w-full h-full object-cover" style="object-position: center" loading="lazy"> </div> </div> <div class="px-2"> <div class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition">FGmagi</div> <div class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"></div> <div class="text-center text-neutral-400 mb-2.5 transition"> <span class="typewriter inline-block" data-text="弱水三千，只取一瓢" data-speed="80" data-delete-speed="50" data-pause-time="2000" data-astro-cid-4iv2rnoh></span>   </div>  </div> </div> <!-- 组件显示现在由sidebarLayoutConfig统一控制，无需检查config.enable --><widget-layout data-id="announcement" data-is-collapsed="undefined" class="pb-4 card-base onload-animation" style="; " data-astro-cid-ucso7hve="true"> <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-8 mt-4 mb-2 flex items-center
+        before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
+        before:absolute before:left-[-16px] before:top-[5.5px]" data-astro-cid-ucso7hve style=""> 公告  </div> <div id="announcement" class="collapse-wrapper px-4 overflow-hidden" data-astro-cid-ucso7hve style="">  <div> <!-- 公告栏内容 --> <div class="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-3"> 施工中，暂无告示 </div> <!-- 可选链接（Learn More 显隐由 config link.showLearnMore 控制；右侧 X 关闭按钮已取消） --> <div class="flex items-center justify-between gap-3"> <div> <a href="/posts/about/" target="_self" class="btn-regular rounded-lg px-3 py-1.5 text-sm font-medium active:scale-95 transition-transform"> Learn More </a> </div> </div> </div>  </div>  </widget-layout>   </div> </div> <!-- 粘性组件区域 --> <div id="sidebar-sticky" class="transition-all duration-700 flex flex-col w-full gap-4 sticky top-4" data-astro-cid-gfmxq3pg> <!-- 手机端粘性组件 -->  <!-- 平板和桌面端粘性组件 --> <div class="hidden md:flex flex-col w-full gap-4" data-astro-cid-gfmxq3pg> <widget-layout data-id="tag-filter" data-is-collapsed="false" class="pb-4 card-base onload-animation" style="; --collapsedHeight: 7.5rem;" data-astro-cid-ucso7hve="true"> <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-8 mt-4 mb-2 flex items-center
+        before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
+        before:absolute before:left-[-16px] before:top-[5.5px]" data-astro-cid-ucso7hve style="--collapsedHeight: 7.5rem;"> 标签筛选  </div> <div id="tag-filter" class="collapse-wrapper px-4 overflow-hidden" data-astro-cid-ucso7hve style="--collapsedHeight: 7.5rem;"> <div class="tag-filter-list" data-tag-filter-root data-astro-cid-wydzda32><button type="button" class="tag-filter-chip btn-regular h-6 text-xs px-2 rounded-lg" data-tag="环境配置" aria-pressed="false" data-astro-cid-wydzda32><span class="tag-filter-label max-w-full truncate" data-astro-cid-wydzda32>环境配置</span></button><button type="button" class="tag-filter-chip btn-regular h-6 text-xs px-2 rounded-lg" data-tag="技术" aria-pressed="false" data-astro-cid-wydzda32><span class="tag-filter-label max-w-full truncate" data-astro-cid-wydzda32>技术</span></button><span class="tag-filter-filler" aria-hidden="true" data-astro-cid-wydzda32></span></div> </div>  </widget-layout>  <script>
+	// 26.09.02 [13]：标签筛选卡客户端逻辑——chip 点击激活/取消、OR 交集 DOM 过滤当前页卡片、导航复位。
+	// 侧边栏随 swup 每次注入新 DOM（内联脚本随注入执行），chip 直接绑定在新 DOM 上；全局钩子以 __tagFilterBound 防重复累加。
+	(function () {
+		var root = document.querySelector('[data-tag-filter-root]');
+		if (!root) return;
+
+		// 26.09.02 [13]：激活集合挂在 window 级（__tagFilterActive），跨 swup 注入期间保存、复位时清空
+		function getActiveTags() {
+			if (!window.__tagFilterActive) window.__tagFilterActive = new Set();
+			return window.__tagFilterActive;
+		}
+
+		// 26.09.02 [13]：应用过滤——激活集为空恢复全量；卡片 data-tags 为 trim+小写、空格分隔的标签列表；
+		// 命中任一激活标签即显示（OR）；仅操作带 data-tags 的真实卡，空白占位卡/分隔线不受影响
+		function applyTagFilter() {
+			var container = document.getElementById('post-list-container');
+			if (!container) return;
+			var active = getActiveTags();
+			var cards = container.querySelectorAll('[data-tags]');
+			for (var i = 0; i < cards.length; i++) {
+				var card = cards[i];
+				var tags = (card.getAttribute('data-tags') || '').split(/\s+/);
+				var visible = active.size === 0;
+				if (!visible) {
+					for (var j = 0; j < tags.length; j++) {
+						if (tags[j] && active.has(tags[j])) {
+							visible = true;
+							break;
+						}
+					}
+				}
+				setCardVisible(card, visible);
+			}
+		}
+
+		// 26.09.02 [13]：卡片显隐（无动画 display 切换）；卡片隐藏时同步隐藏紧随其后的移动端分隔线，恢复时一并恢复
+		function setCardVisible(card, visible) {
+			card.style.display = visible ? '' : 'none';
+			var next = card.nextElementSibling;
+			if (next && next.classList.contains('post-card-divider')) {
+				next.style.display = visible ? '' : 'none';
+			}
+		}
+
+		// 26.09.02 [13]：清空激活态并恢复全量（切页/原地跳回主页/翻页时调用）
+		function clearTagFilter() {
+			getActiveTags().clear();
+			document
+				.querySelectorAll('[data-tag-filter-root] .tag-filter-chip')
+				.forEach(function (chip) {
+					chip.classList.remove('active');
+					chip.setAttribute('aria-pressed', 'false');
+				});
+			applyTagFilter();
+		}
+
+		// 26.09.02 [13]：点击未激活 chip 加入激活集（高亮）并过滤；点击已激活 chip 取消激活并恢复
+		function bindTagFilterChips() {
+			document
+				.querySelectorAll('[data-tag-filter-root] .tag-filter-chip')
+				.forEach(function (chip) {
+					chip.addEventListener('click', function () {
+						var tag = (chip.getAttribute('data-tag') || '').trim();
+						if (!tag) return;
+						var active = getActiveTags();
+						if (chip.classList.contains('active')) {
+							chip.classList.remove('active');
+							chip.setAttribute('aria-pressed', 'false');
+							active.delete(tag);
+						} else {
+							chip.classList.add('active');
+							chip.setAttribute('aria-pressed', 'true');
+							active.add(tag);
+						}
+						applyTagFilter();
+					});
+				});
+		}
+		bindTagFilterChips();
+
+		// 26.09.02 [13]：末行占位同步——filler 若因整行恰好填满而落到独立行则隐藏，避免产生空行；resize 时重算
+		function syncTagFilterFiller() {
+			var list = root.querySelectorAll('.tag-filter-chip');
+			var filler = root.querySelector('.tag-filter-filler');
+			if (!filler || list.length === 0) return;
+			var last = list[list.length - 1];
+			filler.style.display = '';
+			// 用垂直重叠判断同一 flex 行（filler 高度为 0 且 align-items:center，offsetTop 会差半个行高）
+			var lastRect = last.getBoundingClientRect();
+			var fillerRect = filler.getBoundingClientRect();
+			if (
+				fillerRect.top >= lastRect.bottom ||
+				fillerRect.bottom <= lastRect.top
+			) {
+				filler.style.display = 'none';
+			}
+		}
+		function scheduleFillerSync() {
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', function () {
+					requestAnimationFrame(syncTagFilterFiller);
+				});
+			} else {
+				requestAnimationFrame(syncTagFilterFiller);
+			}
+		}
+		scheduleFillerSync();
+
+		// 26.09.02 [13]：全局复位钩子只绑一次（__tagFilterBound）——
+		// ①Layout 对同路径链接原地淡出刷新（原地跳回主页）时清空；
+		// ②swup content:replace / page:view / popstate 统一复位（切其它页、回主页、/page/N/ 翻页均覆盖）
+		if (!window.__tagFilterBound) {
+			window.__tagFilterBound = true;
+
+			document.addEventListener('click', function (e) {
+				var anchor =
+					e.target && e.target.closest
+						? e.target.closest('a[href]')
+						: null;
+				if (!anchor) return;
+				var href = anchor.getAttribute('href') || '';
+				if (
+					href.charAt(0) === '#' ||
+					href.indexOf('http') === 0 ||
+					href.indexOf('//') === 0 ||
+					anchor.getAttribute('target') === '_blank'
+				) {
+					return;
+				}
+				try {
+					if (
+						new URL(anchor.href, window.location.origin).pathname ===
+						window.location.pathname
+					) {
+						clearTagFilter();
+					}
+				} catch (err) {
+					/* 忽略无法解析的链接 */
+				}
+			});
+
+			document.addEventListener('swup:page:view', clearTagFilter);
+			window.addEventListener('popstate', clearTagFilter);
+			window.addEventListener('resize', function () {
+				requestAnimationFrame(syncTagFilterFiller);
+			});
+
+			// 26.09.02 [13]：swup 模块晚于本脚本初始化时重试绑定 content:replace 复位
+			var swupTries = 0;
+			function tryBindSwupClear() {
+				if (window.swup && window.swup.hooks) {
+					window.swup.hooks.on('content:replace', clearTagFilter);
+					return true;
+				}
+				if (swupTries < 20) {
+					swupTries++;
+					setTimeout(tryBindSwupClear, 100);
+				}
+				return false;
+			}
+			tryBindSwupClear();
+		}
+	})();
+</script> </div> </div> </div> <!-- 响应式样式和JavaScript -->  <script>(function(){const breakpoints = {"mobile":768,"tablet":1280,"desktop":1280};
+const mobileShowSidebar = true;
+const tabletShowSidebar = true;
+const desktopShowSidebar = true;
+const hasMobileComponents = true;
+const hasTabletComponents = true;
+
+	// 响应式布局管理
+	class SidebarManager {
+		constructor() {
+			this.init();
+		}
+		
+		init() {
+			this.updateResponsiveDisplay();
+			window.addEventListener('resize', () => this.updateResponsiveDisplay());
+			
+			// 监听SWUP内容替换事件
+			if (typeof window !== 'undefined' && window.swup) {
+				window.swup.hooks.on('content:replace', () => {
+					// 延迟执行以确保DOM已更新
+					setTimeout(() => {
+						this.updateResponsiveDisplay();
+					}, 100);
+				});
+			}
+		}
+		
+		updateResponsiveDisplay() {
+			const width = window.innerWidth;
+			
+			let deviceType;
+			let hasComponents = false;
+			let showConfig = false;
+
+			if (width < breakpoints.mobile) {
+				deviceType = 'mobile';
+				hasComponents = hasMobileComponents;
+				showConfig = mobileShowSidebar;
+			} else if (width < breakpoints.tablet) {
+				deviceType = 'tablet';
+				hasComponents = hasTabletComponents;
+				showConfig = tabletShowSidebar;
+			} else {
+				deviceType = 'desktop';
+				hasComponents = hasTabletComponents; // 桌面端也使用 tablet 的组件列表（left）
+				showConfig = desktopShowSidebar;
+			}
+			
+			// 根据设备类型判断是否显示侧边栏
+			// 只有在配置开启且该设备下有组件时才显示
+			const shouldShow = showConfig && hasComponents;
+			
+			const sidebar = document.getElementById('sidebar');
+			
+			if (sidebar) {
+				sidebar.style.setProperty(
+					`--sidebar-${deviceType}-display`, 
+					shouldShow ? 'block' : 'none'
+				);
+			}
+		}
+	}
+	
+	// 初始化侧边栏管理器
+	new SidebarManager();
+})();</script> <div class="right-sidebar-container home-right-sidebar onload-animation hidden md:hidden lg:hidden" data-astro-cid-haiuh7kc> <div id="right-sidebar" class="w-full" data-astro-cid-dnkjr6w2> <!-- 顶部固定组件区域 --> <div class="flex flex-col w-full gap-4 mb-4" data-astro-cid-dnkjr6w2> <widget-layout data-id="site-stats" data-is-collapsed="undefined" class="pb-4 card-base onload-animation" style="; " data-astro-cid-ucso7hve="true"> <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-8 mt-4 mb-2 flex items-center
+        before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
+        before:absolute before:left-[-16px] before:top-[5.5px]" data-astro-cid-ucso7hve style=""> 站点统计  </div> <div id="site-stats" class="collapse-wrapper px-4 overflow-hidden" data-astro-cid-ucso7hve style="">  <div class="flex flex-col gap-1"> <div class="flex items-center justify-between px-2 py-2"> <div class="flex items-center gap-2.5 flex-1 min-w-0"> <div class="text-[var(--primary)] text-xl shrink-0"> <svg width="1em" height="1em" data-icon="material-symbols:article-outline">   <symbol id="ai:material-symbols:article-outline" viewBox="0 0 24 24"><path fill="currentColor" d="M7 17h7v-2H7zm0-4h10v-2H7zm0-4h10V7H7zM5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21zm0-2h14V5H5zM5 5v14z"/></symbol><use href="#ai:material-symbols:article-outline"></use>  </svg> </div> <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm break-words leading-tight"> 文章 </span> </div> <div class="flex items-center ml-3 shrink-0"> <span class="text-base font-bold text-neutral-900 dark:text-neutral-100"> 1 </span>  </div> </div><div class="flex items-center justify-between px-2 py-2"> <div class="flex items-center gap-2.5 flex-1 min-w-0"> <div class="text-[var(--primary)] text-xl shrink-0"> <svg width="1em" height="1em" data-icon="material-symbols:label-outline">   <symbol id="ai:material-symbols:label-outline" viewBox="0 0 24 24"><path fill="currentColor" d="M4 20q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4h11q.475 0 .9.213t.7.587L22 12l-5.4 7.2q-.275.375-.7.588T15 20zm0-2h11l4.5-6L15 6H4zm5.5-6"/></symbol><use href="#ai:material-symbols:label-outline"></use>  </svg> </div> <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm break-words leading-tight"> 标签 </span> </div> <div class="flex items-center ml-3 shrink-0"> <span class="text-base font-bold text-neutral-900 dark:text-neutral-100"> 2 </span>  </div> </div><div class="flex items-center justify-between px-2 py-2"> <div class="flex items-center gap-2.5 flex-1 min-w-0"> <div class="text-[var(--primary)] text-xl shrink-0"> <svg width="1em" height="1em" data-icon="material-symbols:text-ad-outline-rounded">   <symbol id="ai:material-symbols:text-ad-outline-rounded" viewBox="0 0 24 24"><path fill="currentColor" d="M4 20q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4h16q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20zm0-2h16V6H4zm0 0V6zm2-1h12q.425 0 .713-.288T19 16t-.288-.712T18 15H6q-.425 0-.712.288T5 16t.288.713T6 17m0-4h12q.425 0 .713-.288T19 12t-.288-.712T18 11H6q-.425 0-.712.288T5 12t.288.713T6 13m0-4h8q.425 0 .713-.288T15 8t-.288-.712T14 7H6q-.425 0-.712.288T5 8t.288.713T6 9"/></symbol><use href="#ai:material-symbols:text-ad-outline-rounded"></use>  </svg> </div> <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm break-words leading-tight"> 总字数 </span> </div> <div class="flex items-center ml-3 shrink-0"> <span class="text-base font-bold text-neutral-900 dark:text-neutral-100"> 1,475 </span>  </div> </div><div class="flex items-center justify-between px-2 py-2"> <div class="flex items-center gap-2.5 flex-1 min-w-0"> <div class="text-[var(--primary)] text-xl shrink-0"> <svg width="1em" height="1em" data-icon="material-symbols:calendar-clock-outline">   <symbol id="ai:material-symbols:calendar-clock-outline" viewBox="0 0 24 24"><path fill="currentColor" d="M5 8h14V6H5zm0 0V6zm0 14q-.825 0-1.412-.587T3 20V6q0-.825.588-1.412T5 4h1V2h2v2h8V2h2v2h1q.825 0 1.413.588T21 6v5.675q-.475-.225-.975-.375T19 11.075V10H5v10h6.3q.175.55.413 1.05t.562.95zm13 1q-2.075 0-3.537-1.463T13 18t1.463-3.537T18 13t3.538 1.463T23 18t-1.463 3.538T18 23m1.675-2.625l.7-.7L18.5 17.8V15h-1v3.2z"/></symbol><use href="#ai:material-symbols:calendar-clock-outline"></use>  </svg> </div> <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm break-words leading-tight"> 运行天数 </span> </div> <div class="flex items-center ml-3 shrink-0"> <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-stat-id="running-days"> 0 </span> <span class="text-sm text-neutral-500 dark:text-neutral-400 ml-1">  天 </span> </div> </div><div class="flex items-center justify-between px-2 py-2"> <div class="flex items-center gap-2.5 flex-1 min-w-0"> <div class="text-[var(--primary)] text-xl shrink-0"> <svg width="1em" height="1em" data-icon="material-symbols:ecg-heart-outline">   <symbol id="ai:material-symbols:ecg-heart-outline" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21q-.45 0-.862-.162t-.738-.488l-6.7-6.725q-.875-.875-1.287-2T2 9.275Q2 6.7 3.675 4.85T7.85 3q1.2 0 2.263.475T12 4.8q.8-.85 1.863-1.325T16.125 3q2.5 0 4.188 1.85T22 9.25q0 1.225-.425 2.35t-1.275 2l-6.725 6.75q-.325.325-.725.488T12 21m1-13q.25 0 .475.125t.35.325l1.7 2.55h4.15q.175-.425.263-.862t.087-.888q-.05-1.725-1.15-2.963t-2.75-1.237q-.775 0-1.487.3t-1.238.875l-.675.725q-.125.15-.325.238t-.4.087t-.4-.087t-.35-.238l-.675-.725q-.525-.575-1.225-.9T7.85 5Q6.2 5 5.1 6.263T4 9.25q0 .45.075.888t.25.862H9q.25 0 .475.125t.35.325l.875 1.3l1.35-4.05q.1-.3.362-.5T13 8m.3 3.25l-1.35 4.05q-.1.3-.375.5t-.6.2q-.25 0-.475-.125t-.35-.325L8.45 13H5.9l5.925 5.925q.05.05.088.063T12 19t.088-.012t.087-.063l5.9-5.925H15q-.25 0-.475-.125t-.375-.325z"/></symbol><use href="#ai:material-symbols:ecg-heart-outline"></use>  </svg> </div> <span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm break-words leading-tight"> 最后活动 </span> </div> <div class="flex items-center ml-3 shrink-0"> <span class="text-base font-bold text-neutral-900 dark:text-neutral-100" data-stat-id="last-update"> 0 </span> <span class="text-sm text-neutral-500 dark:text-neutral-400 ml-1">  天前 </span> </div> </div> </div>  </div>  </widget-layout>   <script>(function(){const siteStartDate = "2026-2-18";
+const lastPostDate = "2026-09-01T00:00:00.000Z";
+
+	function updateDynamicStats() {
+		const today = new Date();
+
+		// 更新运行天数
+		const startDate = new Date(siteStartDate);
+		const diffTime = Math.abs(today.getTime() - startDate.getTime());
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+		const runningDaysElements = document.querySelectorAll(
+			'[data-stat-id="running-days"]',
+		);
+		if (runningDaysElements.length > 0) {
+			runningDaysElements.forEach(element => {
+				element.textContent = diffDays.toString();
+			});
+		}
+
+		// 更新最后活动时间
+		if (lastPostDate) {
+			const lastPost = new Date(lastPostDate);
+			const timeSinceLastPost = Math.abs(
+				today.getTime() - lastPost.getTime(),
+			);
+			const daysSinceLastUpdate = Math.floor(
+				timeSinceLastPost / (1000 * 60 * 60 * 24),
+			);
+
+			const lastUpdateElements = document.querySelectorAll(
+				'[data-stat-id="last-update"]',
+			);
+			if (lastUpdateElements.length > 0) {
+				lastUpdateElements.forEach(element => {
+					element.textContent = daysSinceLastUpdate.toString();
+				})
+			}
+		}
+	}
+
+	// 页面加载时更新
+	updateDynamicStats();
+
+	// 每小时更新一次（可选，因为天数变化较慢）
+	setInterval(updateDynamicStats, 60 * 60 * 1000);
+})();</script><widget-layout data-id="calendar-widget" data-is-collapsed="undefined" class="pb-4 card-base hidden md:block onload-animation" style="; " data-astro-cid-ucso7hve="true">  <div id="calendar-widget" class="collapse-wrapper px-4 overflow-hidden" data-astro-cid-ucso7hve style="">  <div class="flex justify-between items-center mb-2 mt-2" data-astro-cid-o3b4delr> <div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-4 flex items-center
+					before:w-1 before:h-4 before:rounded-md before:bg-[var(--primary)]
+					before:absolute before:left-[-16px] before:top-[13.5px]" data-astro-cid-o3b4delr> <div id="calendar-title-container" class="flex justify-center items-center cursor-pointer hover:bg-[var(--btn-plain-bg-hover)] px-2 py-2 -ml-2 rounded-lg transition-colors" data-astro-cid-o3b4delr> <span id="calendar-title" class="text-lg font-bold text-neutral-900 dark:text-neutral-100 select-none" data-astro-cid-o3b4delr></span> </div> </div> <div class="flex items-center gap-1 shrink-0 ml-2" data-astro-cid-o3b4delr> <button id="back-to-today-btn" class="p-1.5 rounded-md hover:bg-[var(--btn-plain-bg-hover)] text-[var(--primary)] transition-all invisible" aria-label="Back to today" data-astro-cid-o3b4delr> <svg width="1em" height="1em" class="text-xl" data-astro-cid-o3b4delr="true" data-icon="material-symbols:restart-alt-rounded">   <symbol id="ai:material-symbols:restart-alt-rounded" viewBox="0 0 24 24"><path fill="currentColor" d="M9.825 20.7q-2.575-.725-4.2-2.837T4 13q0-1.425.475-2.713t1.35-2.362q.275-.3.675-.313t.725.313q.275.275.288.675t-.263.75q-.6.775-.925 1.7T6 13q0 2.025 1.188 3.613t3.062 2.162q.325.1.538.375t.212.6q0 .5-.35.788t-.825.162m4.35 0q-.475.125-.825-.175t-.35-.8q0-.3.213-.575t.537-.375q1.875-.6 3.063-2.175T18 13q0-2.5-1.75-4.25T12 7h-.075l.4.4q.275.275.275.7t-.275.7t-.7.275t-.7-.275l-2.1-2.1q-.15-.15-.212-.325T8.55 6t.063-.375t.212-.325l2.1-2.1q.275-.275.7-.275t.7.275t.275.7t-.275.7l-.4.4H12q3.35 0 5.675 2.325T20 13q0 2.725-1.625 4.85t-4.2 2.85"/></symbol><use href="#ai:material-symbols:restart-alt-rounded"></use>  </svg> </button> <button id="prev-month-btn" class="p-1.5 rounded-md hover:bg-[var(--btn-plain-bg-hover)] text-neutral-600 dark:text-neutral-400 hover:text-[var(--primary)] transition-colors text-xl font-extrabold" aria-label="Previous month" data-astro-cid-o3b4delr>
+＜
+</button> <button id="next-month-btn" class="p-1.5 rounded-md hover:bg-[var(--btn-plain-bg-hover)] text-neutral-600 dark:text-neutral-400 hover:text-[var(--primary)] transition-colors text-xl font-extrabold" aria-label="Next month" data-astro-cid-o3b4delr>
+＞
+</button> </div> </div> <div class="relative w-full overflow-hidden" style="min-height: 15.625rem;" data-astro-cid-o3b4delr> <div id="calendar-view" class="w-full opacity-100" data-astro-cid-o3b4delr> <div class="grid grid-cols-7 gap-1 mb-2" data-astro-cid-o3b4delr> <div class="text-center text-xs text-neutral-500 dark:text-neutral-400 font-medium py-1" data-astro-cid-o3b4delr> 一 </div><div class="text-center text-xs text-neutral-500 dark:text-neutral-400 font-medium py-1" data-astro-cid-o3b4delr> 二 </div><div class="text-center text-xs text-neutral-500 dark:text-neutral-400 font-medium py-1" data-astro-cid-o3b4delr> 三 </div><div class="text-center text-xs text-neutral-500 dark:text-neutral-400 font-medium py-1" data-astro-cid-o3b4delr> 四 </div><div class="text-center text-xs text-neutral-500 dark:text-neutral-400 font-medium py-1" data-astro-cid-o3b4delr> 五 </div><div class="text-center text-xs text-neutral-500 dark:text-neutral-400 font-medium py-1" data-astro-cid-o3b4delr> 六 </div><div class="text-center text-xs text-neutral-500 dark:text-neutral-400 font-medium py-1" data-astro-cid-o3b4delr> 日 </div> </div> <div id="calendar-grid" class="grid grid-cols-7 gap-1" data-astro-cid-o3b4delr></div> <div id="calendar-posts" class="mt-4" data-astro-cid-o3b4delr> <div class="h-[1px] w-full bg-neutral-200 dark:bg-neutral-700 mb-2 hidden" id="calendar-posts-divider" data-astro-cid-o3b4delr></div> <div class="flex flex-col gap-1 max-h-[9.375rem] overflow-y-auto custom-scrollbar" id="calendar-posts-list" data-astro-cid-o3b4delr></div> </div> </div> <div id="selection-panel" class="absolute inset-0 bg-[var(--card-bg)] z-10 flex flex-col hidden opacity-0 transition-opacity duration-200" data-astro-cid-o3b4delr> <div id="selection-content" class="w-full h-full overflow-y-auto custom-scrollbar p-2 grid gap-2 content-start" data-astro-cid-o3b4delr></div> </div> </div>  </div>  </widget-layout>   <script>(function(){const monthNames = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+const yearSuffix = "年";
+
+	let allPostsData = [];
+	const postDateMap = {};
+	const postsByMonth = {};
+	const stats = {
+		hasPostInYear: {},
+		hasPostInMonth: {},
+		minYear: new Date().getFullYear(),
+		maxYear: new Date().getFullYear() + 5,
+	};
+
+	async function fetchCalendarData() {
+		try {
+			const res = await fetch("/api/calendar-data.json");
+			const data = await res.json();
+			if (Array.isArray(data)) {
+				allPostsData = data;
+				processPostsData(allPostsData);
+				const currentPostId = getCurrentPostId();
+				if (currentPostId) {
+					const matchedPost = allPostsData.find(
+						(p) => p.id === currentPostId,
+					);
+					if (matchedPost) {
+						const [y, m] = matchedPost.date.split("-");
+						currentYear = parseInt(y);
+						currentMonth = parseInt(m) - 1;
+					}
+				}
+				renderCalendar();
+			}
+		} catch (error) {
+			console.error("Failed to fetch calendar data:", error);
+		}
+	}
+
+	function processPostsData(posts) {
+		if (!posts || posts.length === 0) return;
+		posts.forEach((post) => {
+			const [yStr, mStr] = post.date.split("-");
+			const year = parseInt(yStr);
+			const month = parseInt(mStr); // 1-12
+			stats.hasPostInYear[year] = true;
+			stats.hasPostInMonth[`${year}-${month}`] = true;
+
+			if (year < stats.minYear) stats.minYear = year;
+
+			const dateKey = post.date;
+			const monthKey = `${year}-${month - 1}`; // JS Month is 0-11
+
+			if (!postDateMap[dateKey]) postDateMap[dateKey] = [];
+			postDateMap[dateKey].push(post);
+
+			if (!postsByMonth[monthKey]) postsByMonth[monthKey] = [];
+			postsByMonth[monthKey].push(post);
+		});
+	}
+
+	const now = new Date();
+	const todayYear = now.getFullYear();
+	const todayMonth = now.getMonth();
+	const todayDate = now.getDate();
+
+	let currentYear = todayYear;
+	let currentMonth = todayMonth;
+	let selectedDateKey = null;
+	let currentView = "day";
+
+	const dom = {
+		titleContainer: document.getElementById("calendar-title-container"),
+		title: document.getElementById("calendar-title"),
+		prevBtn: document.getElementById("prev-month-btn"),
+		nextBtn: document.getElementById("next-month-btn"),
+		backTodayBtn: document.getElementById("back-to-today-btn"),
+		calendarView: document.getElementById("calendar-view"),
+		selectionPanel: document.getElementById("selection-panel"),
+		selectionContent: document.getElementById("selection-content"),
+		grid: document.getElementById("calendar-grid"),
+		postsList: document.getElementById("calendar-posts-list"),
+		divider: document.getElementById("calendar-posts-divider"),
+	};
+
+	function getCurrentPostId() {
+		const path = window.location.pathname;
+		if (!allPostsData || allPostsData.length === 0) return null;
+		const decodedPath = decodeURIComponent(path);
+		const normalizedPath = decodedPath.endsWith("/")
+			? decodedPath.slice(0, -1)
+			: decodedPath;
+
+		const matchedPost = allPostsData.find((post) => {
+			return normalizedPath.endsWith(`/${post.id}`);
+		});
+		return matchedPost ? matchedPost.id : null;
+	}
+
+	function init() {
+		renderCalendar();
+		setupEventListeners();
+		fetchCalendarData();
+	}
+
+	function setupEventListeners() {
+		dom.titleContainer.addEventListener("click", (e) => {
+			e.stopPropagation();
+			if (currentView === "day") showMonthPicker();
+			else if (currentView === "month") showYearPicker();
+			else closeSelectionPanel();
+		});
+
+		dom.prevBtn.addEventListener("click", () => {
+			currentMonth--;
+			if (currentMonth < 0) {
+				currentMonth = 11;
+				currentYear--;
+			}
+			renderCalendar();
+		});
+
+		dom.nextBtn.addEventListener("click", () => {
+			currentMonth++;
+			if (currentMonth > 11) {
+				currentMonth = 0;
+				currentYear++;
+			}
+			renderCalendar();
+		});
+
+		dom.backTodayBtn.addEventListener("click", () => {
+			currentYear = todayYear;
+			currentMonth = todayMonth;
+			selectedDateKey = null;
+			if (currentView !== "day") closeSelectionPanel();
+			else renderCalendar();
+		});
+
+		dom.grid.addEventListener("click", (e) => {
+			const cell = e.target.closest(".calendar-day");
+			if (!cell) return;
+			const dateKey = cell.getAttribute("data-date");
+
+			if (selectedDateKey === dateKey) selectedDateKey = null;
+			else selectedDateKey = dateKey;
+
+			renderCalendar();
+			if (selectedDateKey && postDateMap[selectedDateKey]) {
+				renderPostList(postDateMap[selectedDateKey]);
+			} else {
+				showMonthlyPosts();
+			}
+		});
+
+		dom.selectionContent.addEventListener("click", (e) => {
+			const monthItem = e.target.closest(".month-item");
+			const yearItem = e.target.closest(".year-item");
+
+			if (monthItem) {
+				e.stopPropagation();
+				currentMonth = parseInt(monthItem.getAttribute("data-month"));
+				closeSelectionPanel();
+			} else if (yearItem) {
+				e.stopPropagation();
+				currentYear = parseInt(yearItem.getAttribute("data-year"));
+				showMonthPicker();
+			}
+		});
+
+		document.addEventListener("click", (e) => {
+			if (currentView === "day") return;
+			const widget = document.getElementById("calendar-widget");
+			if (widget && !widget.contains(e.target)) {
+				closeSelectionPanel();
+			}
+		});
+	}
+
+	function updateHeader() {
+		dom.title.textContent = `${currentYear}${yearSuffix} ${monthNames[currentMonth]}`;
+		const isCurrentRealMonth =
+			currentYear === todayYear && currentMonth === todayMonth;
+		const shouldShowReset = !isCurrentRealMonth || selectedDateKey !== null;
+
+		if (shouldShowReset) dom.backTodayBtn.classList.remove("invisible");
+		else dom.backTodayBtn.classList.add("invisible");
+
+		const isDayView = currentView === "day";
+		dom.prevBtn.style.visibility = isDayView ? "visible" : "hidden";
+		dom.nextBtn.style.visibility = isDayView ? "visible" : "hidden";
+	}
+
+	function renderCalendar() {
+		updateHeader();
+		const firstDayOfMonth =
+			(new Date(currentYear, currentMonth, 1).getDay() + 6) % 7;
+		const daysInMonth = new Date(
+			currentYear,
+			currentMonth + 1,
+			0,
+		).getDate();
+
+		let html = "";
+		if (firstDayOfMonth > 0) {
+			html += `<div class="aspect-square"></div>`.repeat(firstDayOfMonth);
+		}
+
+		for (let day = 1; day <= daysInMonth; day++) {
+			const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+			const posts = postDateMap[dateKey] || [];
+			const hasPost = posts.length > 0;
+			const count = posts.length;
+			const isToday =
+				currentYear === todayYear &&
+				currentMonth === todayMonth &&
+				day === todayDate;
+			const isSelected = selectedDateKey === dateKey;
+
+			let bgClass =
+				"hover:bg-[var(--btn-plain-bg-hover)] text-neutral-700 dark:text-neutral-300 border border-transparent";
+
+			if (isSelected) {
+				bgClass =
+					"bg-[var(--primary)] text-white shadow-md border border-transparent";
+			} else if (isToday) {
+				bgClass =
+					"text-[var(--primary)] font-bold bg-[var(--primary)]/10 border border-[var(--primary)]";
+			} else if (hasPost) {
+				bgClass =
+					"font-bold text-neutral-900 dark:text-neutral-100 hover:bg-[var(--btn-plain-bg-hover)] border border-transparent";
+			}
+
+			html += `
+                <div class="calendar-day aspect-square flex items-center justify-center rounded-md cursor-pointer relative transition-all duration-200 ${bgClass}"
+                    data-date="${dateKey}">
+                    ${day}
+                    ${hasPost && !isSelected ? `<span class="absolute bottom-1 w-1 h-1 rounded-full bg-[var(--primary)]"></span>` : ""}
+                    ${hasPost && count > 1 ? `<span class="absolute top-0.5 right-0.5 text-[9px] opacity-70 scale-75">${count}</span>` : ""}
+                </div>
+            `;
+		}
+
+		dom.grid.innerHTML = html;
+		if (selectedDateKey && postDateMap[selectedDateKey]) {
+			renderPostList(postDateMap[selectedDateKey]);
+		} else {
+			showMonthlyPosts();
+		}
+	}
+
+	function showMonthlyPosts() {
+		const key = `${currentYear}-${currentMonth}`; // Month is 0-11
+		const posts = postsByMonth[key] || [];
+		renderPostList(posts);
+	}
+
+	function renderPostList(posts) {
+		if (!dom.postsList) return;
+		if (posts.length === 0) {
+			dom.divider.classList.add("hidden");
+			dom.postsList.innerHTML = "";
+			return;
+		}
+
+		dom.divider.classList.remove("hidden");
+		const currentPostId = getCurrentPostId();
+
+		const listHtml = posts
+			.map((post) => {
+				const [, m, d] = post.date.split("-");
+				const dateStr = `${parseInt(m)}-${parseInt(d)}`;
+
+				const isCurrentPost = post.id === currentPostId;
+				let containerClass =
+					"flex items-center justify-between text-sm transition-colors px-2 py-2 rounded-lg group border border-transparent";
+				let titleClass = "truncate flex-1 font-bold transition-colors";
+				let dateClass =
+					"text-xs ml-2 whitespace-nowrap transition-colors";
+
+				if (isCurrentPost) {
+					containerClass +=
+						" bg-[var(--primary)]/10 text-[var(--primary)] border-[var(--primary)]/10";
+					dateClass += " text-[var(--primary)]/80";
+				} else {
+					containerClass +=
+						" text-neutral-700 dark:text-neutral-300 hover:text-[var(--primary)] dark:hover:text-[var(--primary)] hover:bg-[var(--btn-plain-bg-hover)]";
+					dateClass +=
+						" text-neutral-400 group-hover:text-[var(--primary)]/70";
+				}
+
+				return `
+            <a href="/posts/${post.id}/" class="${containerClass}">
+                <span class="${titleClass}">${post.title}</span>
+                <span class="${dateClass}">${dateStr}</span>
+            </a>
+        `;
+			})
+			.join("");
+
+		dom.postsList.innerHTML = listHtml;
+	}
+
+	function showMonthPicker() {
+		currentView = "month";
+		updateHeader();
+		dom.selectionPanel.classList.remove("hidden");
+		requestAnimationFrame(() => {
+			dom.selectionPanel.classList.remove("opacity-0");
+		});
+
+		dom.selectionContent.className =
+			"w-full h-full p-4 grid grid-cols-3 gap-3 content-center";
+
+		let html = "";
+		monthNames.forEach((name, index) => {
+			const isCurrentMonth = index === currentMonth;
+			const hasPost = stats.hasPostInMonth[`${currentYear}-${index + 1}`];
+			let cls =
+				"month-item cursor-pointer rounded-lg flex flex-col items-center justify-center p-2 transition-all hover:bg-[var(--btn-plain-bg-hover)] relative border border-transparent";
+			if (isCurrentMonth)
+				cls +=
+					" border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5";
+			else cls += " text-neutral-700 dark:text-neutral-300";
+
+			html += `
+                <div class="${cls}" data-month="${index}">
+                    <span class="text-sm font-bold">${name}</span>
+                    ${hasPost ? `<span class="w-1 h-1 rounded-full bg-[var(--primary)] mt-1"></span>` : `<span class="w-1 h-1 mt-1"></span>`}
+                </div>
+             `;
+		});
+		dom.selectionContent.innerHTML = html;
+	}
+
+	function showYearPicker() {
+		currentView = "year";
+		updateHeader();
+		dom.selectionContent.className =
+			"w-full h-full p-2 grid grid-cols-4 gap-2 content-start overflow-y-auto";
+
+		let html = "";
+		for (let y = stats.minYear; y <= stats.maxYear; y++) {
+			const isCurrent = y === currentYear;
+			const hasPost = stats.hasPostInYear[y];
+			let cls =
+				"year-item cursor-pointer rounded-lg flex flex-col items-center justify-center py-3 transition-all hover:bg-[var(--btn-plain-bg-hover)] relative border border-transparent";
+			if (isCurrent)
+				cls +=
+					" border-[var(--primary)] text-[var(--primary)] bg-[var(--primary)]/5";
+			else cls += " text-neutral-700 dark:text-neutral-300";
+
+			html += `
+                <div class="${cls}" data-year="${y}" id="year-${y}">
+                    <span class="text-sm font-bold">${y}</span>
+                     ${hasPost ? `<span class="w-1.5 h-1.5 rounded-full bg-[var(--primary)] mt-1"></span>` : `<span class="w-1.5 h-1.5 mt-1"></span>`}
+                </div>
+            `;
+		}
+		dom.selectionContent.innerHTML = html;
+
+		setTimeout(() => {
+			const el = document.getElementById(`year-${currentYear}`);
+			if (el) el.scrollIntoView({ block: "center", behavior: "smooth" });
+		}, 50);
+	}
+
+	function closeSelectionPanel() {
+		dom.selectionPanel.classList.add("opacity-0");
+		setTimeout(() => {
+			dom.selectionPanel.classList.add("hidden");
+			currentView = "day";
+			renderCalendar();
+		}, 200);
+	}
+
+	init();
+})();</script>  </div> <!-- 粘性组件区域 -->  </div> <!-- 响应式样式和JavaScript -->  <script type="module" src="/_astro/RightSideBar.astro_astro_type_script_index_0_lang.Cc5JK-KZ.js"></script> </div> </div> <main id="swup-container" class="transition-swup-fade overflow-hidden w-full col-span-1 row-start-1 row-end-2 md:col-start-1 md:col-end-2 lg:col-span-1 transition-main" data-astro-cid-haiuh7kc> <div id="content-wrapper" class="onload-animation transition-leaving" data-astro-cid-haiuh7kc> <!-- the overflow-hidden here prevent long text break the layout--> <!-- make id different from windows.swup global property -->  <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32" data-astro-cid-rgidg7mq> <div class="card-base z-10 px-9 py-6 relative w-full" data-astro-cid-rgidg7mq> <!-- 返回按钮 --> <div class="mb-6" data-astro-cid-rgidg7mq> <a href="/albums/" class="inline-flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-[var(--primary)] transition-colors" data-astro-cid-rgidg7mq> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" data-astro-cid-rgidg7mq> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" data-astro-cid-rgidg7mq></path> </svg> 返回相册 </a> </div> <!-- 相册标题信息 --> <header class="mb-8" data-astro-cid-rgidg7mq> <h1 class="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-3" data-astro-cid-rgidg7mq> Acg </h1> <p class="text-neutral-600 dark:text-neutral-400 mb-4" data-astro-cid-rgidg7mq> 祈祷明天对于你来说，也是美好的一天 </p> <!-- 相册元数据 --> <div class="flex flex-wrap items-center gap-4 text-sm text-neutral-500 dark:text-neutral-500" data-astro-cid-rgidg7mq> <span data-astro-cid-rgidg7mq>40 张照片</span> <time data-astro-cid-rgidg7mq>2026/9/1</time> <span class="flex items-center gap-1" data-astro-cid-rgidg7mq> <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" data-astro-cid-rgidg7mq> <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" data-astro-cid-rgidg7mq></path> </svg> World </span> </div> <!-- 标签 -->  </header> <!-- 照片网格：尺寸未知时整卡空白 + 居中旋转圆圈，绝不渲染未排版占位 --> <div class="photo-gallery masonry-layout" data-layout="masonry" data-columns="4" data-astro-cid-rgidg7mq> <figure class="photo-item photo-dim-known" data-key="acg/07b316ae-283b-ac66-c5c4-2adf9f1ec3582026-9-6 0-04-23.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/07b316ae-283b-ac66-c5c4-2adf9f1ec3582026-9-6%200-04-23.avif" data-fancybox="gallery-0" class="photo-link group" aria-label="07b316ae-283b-ac66-c5c4-2adf9f1ec3582026-9-6 0-04-23" data-astro-cid-rgidg7mq> <img alt="07b316ae-283b-ac66-c5c4-2adf9f1ec3582026-9-6 0-04-23" class="photo-image cursor-pointer" data-key="acg/07b316ae-283b-ac66-c5c4-2adf9f1ec3582026-9-6 0-04-23.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/07b316ae-283b-ac66-c5c4-2adf9f1ec3582026-9-6%200-04-23.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/0c0792db-0381-af18-c941-e869f00592ff2026-9-6 0-01-31.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/0c0792db-0381-af18-c941-e869f00592ff2026-9-6%200-01-31.avif" data-fancybox="gallery-1" class="photo-link group" aria-label="0c0792db-0381-af18-c941-e869f00592ff2026-9-6 0-01-31" data-astro-cid-rgidg7mq> <img alt="0c0792db-0381-af18-c941-e869f00592ff2026-9-6 0-01-31" class="photo-image cursor-pointer" data-key="acg/0c0792db-0381-af18-c941-e869f00592ff2026-9-6 0-01-31.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/0c0792db-0381-af18-c941-e869f00592ff2026-9-6%200-01-31.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/0e16fcc7-7209-4e39-1f78-bd7e87119da52026-9-6 0-01-34.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/0e16fcc7-7209-4e39-1f78-bd7e87119da52026-9-6%200-01-34.avif" data-fancybox="gallery-2" class="photo-link group" aria-label="0e16fcc7-7209-4e39-1f78-bd7e87119da52026-9-6 0-01-34" data-astro-cid-rgidg7mq> <img alt="0e16fcc7-7209-4e39-1f78-bd7e87119da52026-9-6 0-01-34" class="photo-image cursor-pointer" data-key="acg/0e16fcc7-7209-4e39-1f78-bd7e87119da52026-9-6 0-01-34.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/0e16fcc7-7209-4e39-1f78-bd7e87119da52026-9-6%200-01-34.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/14906504-e519-9d7b-9c87-2786eda959952026-9-6 0-06-37.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/14906504-e519-9d7b-9c87-2786eda959952026-9-6%200-06-37.avif" data-fancybox="gallery-3" class="photo-link group" aria-label="14906504-e519-9d7b-9c87-2786eda959952026-9-6 0-06-37" data-astro-cid-rgidg7mq> <img alt="14906504-e519-9d7b-9c87-2786eda959952026-9-6 0-06-37" class="photo-image cursor-pointer" data-key="acg/14906504-e519-9d7b-9c87-2786eda959952026-9-6 0-06-37.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/14906504-e519-9d7b-9c87-2786eda959952026-9-6%200-06-37.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/169a6737-1dec-e04f-ba5b-7c229fa44d402026-9-6 0-06-07.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/169a6737-1dec-e04f-ba5b-7c229fa44d402026-9-6%200-06-07.avif" data-fancybox="gallery-4" class="photo-link group" aria-label="169a6737-1dec-e04f-ba5b-7c229fa44d402026-9-6 0-06-07" data-astro-cid-rgidg7mq> <img alt="169a6737-1dec-e04f-ba5b-7c229fa44d402026-9-6 0-06-07" class="photo-image cursor-pointer" data-key="acg/169a6737-1dec-e04f-ba5b-7c229fa44d402026-9-6 0-06-07.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/169a6737-1dec-e04f-ba5b-7c229fa44d402026-9-6%200-06-07.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/2935f1a3-c2a5-9d24-eb79-ee12f987938d.avif" data-dim="1584,880" style="aspect-ratio: 1584 / 880;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/2935f1a3-c2a5-9d24-eb79-ee12f987938d.avif" data-fancybox="gallery-5" class="photo-link group" aria-label="2935f1a3-c2a5-9d24-eb79-ee12f987938d" data-astro-cid-rgidg7mq> <img alt="2935f1a3-c2a5-9d24-eb79-ee12f987938d" class="photo-image cursor-pointer" data-key="acg/2935f1a3-c2a5-9d24-eb79-ee12f987938d.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/2935f1a3-c2a5-9d24-eb79-ee12f987938d.avif" decoding="async" width="1584" height="880" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/2a8c3979-06eb-5517-8bd2-66fa2b2dbf742026-9-6 0-03-50.avif" data-dim="3500,1470" style="aspect-ratio: 3500 / 1470;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/2a8c3979-06eb-5517-8bd2-66fa2b2dbf742026-9-6%200-03-50.avif" data-fancybox="gallery-6" class="photo-link group" aria-label="2a8c3979-06eb-5517-8bd2-66fa2b2dbf742026-9-6 0-03-50" data-astro-cid-rgidg7mq> <img alt="2a8c3979-06eb-5517-8bd2-66fa2b2dbf742026-9-6 0-03-50" class="photo-image cursor-pointer" data-key="acg/2a8c3979-06eb-5517-8bd2-66fa2b2dbf742026-9-6 0-03-50.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/2a8c3979-06eb-5517-8bd2-66fa2b2dbf742026-9-6%200-03-50.avif" decoding="async" width="3500" height="1470" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/344d0d48-49ef-bfc9-28f0-a679932027872026-9-6 0-06-11.avif" data-dim="1280,720" style="aspect-ratio: 1280 / 720;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/344d0d48-49ef-bfc9-28f0-a679932027872026-9-6%200-06-11.avif" data-fancybox="gallery-7" class="photo-link group" aria-label="344d0d48-49ef-bfc9-28f0-a679932027872026-9-6 0-06-11" data-astro-cid-rgidg7mq> <img alt="344d0d48-49ef-bfc9-28f0-a679932027872026-9-6 0-06-11" class="photo-image cursor-pointer" data-key="acg/344d0d48-49ef-bfc9-28f0-a679932027872026-9-6 0-06-11.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/344d0d48-49ef-bfc9-28f0-a679932027872026-9-6%200-06-11.avif" decoding="async" width="1280" height="720" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/3c75c13a-feb7-655d-9ce4-41199a9a9aa02026-9-6 0-03-59.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/3c75c13a-feb7-655d-9ce4-41199a9a9aa02026-9-6%200-03-59.avif" data-fancybox="gallery-8" class="photo-link group" aria-label="3c75c13a-feb7-655d-9ce4-41199a9a9aa02026-9-6 0-03-59" data-astro-cid-rgidg7mq> <img alt="3c75c13a-feb7-655d-9ce4-41199a9a9aa02026-9-6 0-03-59" class="photo-image cursor-pointer" data-key="acg/3c75c13a-feb7-655d-9ce4-41199a9a9aa02026-9-6 0-03-59.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/3c75c13a-feb7-655d-9ce4-41199a9a9aa02026-9-6%200-03-59.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/41a18e89-c237-66d3-e73b-d6d3515c13c82026-9-6 0-05-32.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/41a18e89-c237-66d3-e73b-d6d3515c13c82026-9-6%200-05-32.avif" data-fancybox="gallery-9" class="photo-link group" aria-label="41a18e89-c237-66d3-e73b-d6d3515c13c82026-9-6 0-05-32" data-astro-cid-rgidg7mq> <img alt="41a18e89-c237-66d3-e73b-d6d3515c13c82026-9-6 0-05-32" class="photo-image cursor-pointer" data-key="acg/41a18e89-c237-66d3-e73b-d6d3515c13c82026-9-6 0-05-32.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/41a18e89-c237-66d3-e73b-d6d3515c13c82026-9-6%200-05-32.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/4c935bb6-1d34-2652-fdf4-6fcb818168532026-9-6 0-04-02.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/4c935bb6-1d34-2652-fdf4-6fcb818168532026-9-6%200-04-02.avif" data-fancybox="gallery-10" class="photo-link group" aria-label="4c935bb6-1d34-2652-fdf4-6fcb818168532026-9-6 0-04-02" data-astro-cid-rgidg7mq> <img alt="4c935bb6-1d34-2652-fdf4-6fcb818168532026-9-6 0-04-02" class="photo-image cursor-pointer" data-key="acg/4c935bb6-1d34-2652-fdf4-6fcb818168532026-9-6 0-04-02.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/4c935bb6-1d34-2652-fdf4-6fcb818168532026-9-6%200-04-02.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/5619ab11-50ff-726d-30da-bd6da9588f502026-9-6 0-06-28.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/5619ab11-50ff-726d-30da-bd6da9588f502026-9-6%200-06-28.avif" data-fancybox="gallery-11" class="photo-link group" aria-label="5619ab11-50ff-726d-30da-bd6da9588f502026-9-6 0-06-28" data-astro-cid-rgidg7mq> <img alt="5619ab11-50ff-726d-30da-bd6da9588f502026-9-6 0-06-28" class="photo-image cursor-pointer" data-key="acg/5619ab11-50ff-726d-30da-bd6da9588f502026-9-6 0-06-28.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/5619ab11-50ff-726d-30da-bd6da9588f502026-9-6%200-06-28.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/676f47dd-6fb1-f50e-312f-7284917a03be2026-9-6 0-06-13.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/676f47dd-6fb1-f50e-312f-7284917a03be2026-9-6%200-06-13.avif" data-fancybox="gallery-12" class="photo-link group" aria-label="676f47dd-6fb1-f50e-312f-7284917a03be2026-9-6 0-06-13" data-astro-cid-rgidg7mq> <img alt="676f47dd-6fb1-f50e-312f-7284917a03be2026-9-6 0-06-13" class="photo-image cursor-pointer" data-key="acg/676f47dd-6fb1-f50e-312f-7284917a03be2026-9-6 0-06-13.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/676f47dd-6fb1-f50e-312f-7284917a03be2026-9-6%200-06-13.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/6f61ba9a-c5ea-1979-0315-4541dca081432026-9-6 0-04-12.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/6f61ba9a-c5ea-1979-0315-4541dca081432026-9-6%200-04-12.avif" data-fancybox="gallery-13" class="photo-link group" aria-label="6f61ba9a-c5ea-1979-0315-4541dca081432026-9-6 0-04-12" data-astro-cid-rgidg7mq> <img alt="6f61ba9a-c5ea-1979-0315-4541dca081432026-9-6 0-04-12" class="photo-image cursor-pointer" data-key="acg/6f61ba9a-c5ea-1979-0315-4541dca081432026-9-6 0-04-12.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/6f61ba9a-c5ea-1979-0315-4541dca081432026-9-6%200-04-12.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/6fb1226f-3e8a-7592-dceb-7b83d99367852026-9-6 0-04-20.avif" data-dim="1920,1200" style="aspect-ratio: 1920 / 1200;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/6fb1226f-3e8a-7592-dceb-7b83d99367852026-9-6%200-04-20.avif" data-fancybox="gallery-14" class="photo-link group" aria-label="6fb1226f-3e8a-7592-dceb-7b83d99367852026-9-6 0-04-20" data-astro-cid-rgidg7mq> <img alt="6fb1226f-3e8a-7592-dceb-7b83d99367852026-9-6 0-04-20" class="photo-image cursor-pointer" data-key="acg/6fb1226f-3e8a-7592-dceb-7b83d99367852026-9-6 0-04-20.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/6fb1226f-3e8a-7592-dceb-7b83d99367852026-9-6%200-04-20.avif" decoding="async" width="1920" height="1200" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/713dbd4b-d515-44a3-66d3-ec39c456d92c2026-9-6 0-06-16.avif" data-dim="2840,4000" style="aspect-ratio: 2840 / 4000;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/713dbd4b-d515-44a3-66d3-ec39c456d92c2026-9-6%200-06-16.avif" data-fancybox="gallery-15" class="photo-link group" aria-label="713dbd4b-d515-44a3-66d3-ec39c456d92c2026-9-6 0-06-16" data-astro-cid-rgidg7mq> <img alt="713dbd4b-d515-44a3-66d3-ec39c456d92c2026-9-6 0-06-16" class="photo-image cursor-pointer" data-key="acg/713dbd4b-d515-44a3-66d3-ec39c456d92c2026-9-6 0-06-16.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/713dbd4b-d515-44a3-66d3-ec39c456d92c2026-9-6%200-06-16.avif" decoding="async" width="2840" height="4000" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/735937e1-5fe0-db06-9077-a962aadee6552026-9-6 0-06-36.avif" data-dim="1280,720" style="aspect-ratio: 1280 / 720;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/735937e1-5fe0-db06-9077-a962aadee6552026-9-6%200-06-36.avif" data-fancybox="gallery-16" class="photo-link group" aria-label="735937e1-5fe0-db06-9077-a962aadee6552026-9-6 0-06-36" data-astro-cid-rgidg7mq> <img alt="735937e1-5fe0-db06-9077-a962aadee6552026-9-6 0-06-36" class="photo-image cursor-pointer" data-key="acg/735937e1-5fe0-db06-9077-a962aadee6552026-9-6 0-06-36.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/735937e1-5fe0-db06-9077-a962aadee6552026-9-6%200-06-36.avif" decoding="async" width="1280" height="720" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/77b4c0cd-08bf-9cde-b4da-a30fecdbc8d6.avif" data-dim="1200,1885" style="aspect-ratio: 1200 / 1885;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/77b4c0cd-08bf-9cde-b4da-a30fecdbc8d6.avif" data-fancybox="gallery-17" class="photo-link group" aria-label="77b4c0cd-08bf-9cde-b4da-a30fecdbc8d6" data-astro-cid-rgidg7mq> <img alt="77b4c0cd-08bf-9cde-b4da-a30fecdbc8d6" class="photo-image cursor-pointer" data-key="acg/77b4c0cd-08bf-9cde-b4da-a30fecdbc8d6.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/77b4c0cd-08bf-9cde-b4da-a30fecdbc8d6.avif" decoding="async" width="1200" height="1885" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/801b6f97-f0cd-010b-2262-59aab6c979d42026-9-6 0-06-25.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/801b6f97-f0cd-010b-2262-59aab6c979d42026-9-6%200-06-25.avif" data-fancybox="gallery-18" class="photo-link group" aria-label="801b6f97-f0cd-010b-2262-59aab6c979d42026-9-6 0-06-25" data-astro-cid-rgidg7mq> <img alt="801b6f97-f0cd-010b-2262-59aab6c979d42026-9-6 0-06-25" class="photo-image cursor-pointer" data-key="acg/801b6f97-f0cd-010b-2262-59aab6c979d42026-9-6 0-06-25.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/801b6f97-f0cd-010b-2262-59aab6c979d42026-9-6%200-06-25.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/83c51b2d-b2ab-c95e-a1c8-b283f1f80cfe2026-9-6 0-05-40.avif" data-dim="5120,2880" style="aspect-ratio: 5120 / 2880;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/83c51b2d-b2ab-c95e-a1c8-b283f1f80cfe2026-9-6%200-05-40.avif" data-fancybox="gallery-19" class="photo-link group" aria-label="83c51b2d-b2ab-c95e-a1c8-b283f1f80cfe2026-9-6 0-05-40" data-astro-cid-rgidg7mq> <img alt="83c51b2d-b2ab-c95e-a1c8-b283f1f80cfe2026-9-6 0-05-40" class="photo-image cursor-pointer" data-key="acg/83c51b2d-b2ab-c95e-a1c8-b283f1f80cfe2026-9-6 0-05-40.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/83c51b2d-b2ab-c95e-a1c8-b283f1f80cfe2026-9-6%200-05-40.avif" decoding="async" width="5120" height="2880" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/8d0d7af1-5e93-5fc5-b602-c0a95719f0fe2026-9-6 0-04-33.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/8d0d7af1-5e93-5fc5-b602-c0a95719f0fe2026-9-6%200-04-33.avif" data-fancybox="gallery-20" class="photo-link group" aria-label="8d0d7af1-5e93-5fc5-b602-c0a95719f0fe2026-9-6 0-04-33" data-astro-cid-rgidg7mq> <img alt="8d0d7af1-5e93-5fc5-b602-c0a95719f0fe2026-9-6 0-04-33" class="photo-image cursor-pointer" data-key="acg/8d0d7af1-5e93-5fc5-b602-c0a95719f0fe2026-9-6 0-04-33.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/8d0d7af1-5e93-5fc5-b602-c0a95719f0fe2026-9-6%200-04-33.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/91f62875-7ff6-1b9a-9249-c0b1bcbd6a4a2026-9-6 0-05-56.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/91f62875-7ff6-1b9a-9249-c0b1bcbd6a4a2026-9-6%200-05-56.avif" data-fancybox="gallery-21" class="photo-link group" aria-label="91f62875-7ff6-1b9a-9249-c0b1bcbd6a4a2026-9-6 0-05-56" data-astro-cid-rgidg7mq> <img alt="91f62875-7ff6-1b9a-9249-c0b1bcbd6a4a2026-9-6 0-05-56" class="photo-image cursor-pointer" data-key="acg/91f62875-7ff6-1b9a-9249-c0b1bcbd6a4a2026-9-6 0-05-56.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/91f62875-7ff6-1b9a-9249-c0b1bcbd6a4a2026-9-6%200-05-56.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/9535e89c-b935-c196-eaea-15f3dbe146032026-9-6 0-06-31.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/9535e89c-b935-c196-eaea-15f3dbe146032026-9-6%200-06-31.avif" data-fancybox="gallery-22" class="photo-link group" aria-label="9535e89c-b935-c196-eaea-15f3dbe146032026-9-6 0-06-31" data-astro-cid-rgidg7mq> <img alt="9535e89c-b935-c196-eaea-15f3dbe146032026-9-6 0-06-31" class="photo-image cursor-pointer" data-key="acg/9535e89c-b935-c196-eaea-15f3dbe146032026-9-6 0-06-31.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/9535e89c-b935-c196-eaea-15f3dbe146032026-9-6%200-06-31.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/9c0088e7-e345-8a77-fc7e-21325878a1772026-9-6 0-04-38.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/9c0088e7-e345-8a77-fc7e-21325878a1772026-9-6%200-04-38.avif" data-fancybox="gallery-23" class="photo-link group" aria-label="9c0088e7-e345-8a77-fc7e-21325878a1772026-9-6 0-04-38" data-astro-cid-rgidg7mq> <img alt="9c0088e7-e345-8a77-fc7e-21325878a1772026-9-6 0-04-38" class="photo-image cursor-pointer" data-key="acg/9c0088e7-e345-8a77-fc7e-21325878a1772026-9-6 0-04-38.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/9c0088e7-e345-8a77-fc7e-21325878a1772026-9-6%200-04-38.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/C-SK-02026-9-6 0-08-58.avif" data-dim="1273,1801" style="aspect-ratio: 1273 / 1801;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/C-SK-02026-9-6%200-08-58.avif" data-fancybox="gallery-24" class="photo-link group" aria-label="C-SK-02026-9-6 0-08-58" data-astro-cid-rgidg7mq> <img alt="C-SK-02026-9-6 0-08-58" class="photo-image cursor-pointer" data-key="acg/C-SK-02026-9-6 0-08-58.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/C-SK-02026-9-6%200-08-58.avif" decoding="async" width="1273" height="1801" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/C-SK-12026-9-6 0-09-01.avif" data-dim="912,1416" style="aspect-ratio: 912 / 1416;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/C-SK-12026-9-6%200-09-01.avif" data-fancybox="gallery-25" class="photo-link group" aria-label="C-SK-12026-9-6 0-09-01" data-astro-cid-rgidg7mq> <img alt="C-SK-12026-9-6 0-09-01" class="photo-image cursor-pointer" data-key="acg/C-SK-12026-9-6 0-09-01.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/C-SK-12026-9-6%200-09-01.avif" decoding="async" width="912" height="1416" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/a09f81ec-092b-2e28-2035-48849d849cf1.avif" data-dim="1280,720" style="aspect-ratio: 1280 / 720;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/a09f81ec-092b-2e28-2035-48849d849cf1.avif" data-fancybox="gallery-26" class="photo-link group" aria-label="a09f81ec-092b-2e28-2035-48849d849cf1" data-astro-cid-rgidg7mq> <img alt="a09f81ec-092b-2e28-2035-48849d849cf1" class="photo-image cursor-pointer" data-key="acg/a09f81ec-092b-2e28-2035-48849d849cf1.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/a09f81ec-092b-2e28-2035-48849d849cf1.avif" decoding="async" width="1280" height="720" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/a0c9fb1d-f8f3-2283-e58b-e29e374f8e9f2026-9-6 0-06-40.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/a0c9fb1d-f8f3-2283-e58b-e29e374f8e9f2026-9-6%200-06-40.avif" data-fancybox="gallery-27" class="photo-link group" aria-label="a0c9fb1d-f8f3-2283-e58b-e29e374f8e9f2026-9-6 0-06-40" data-astro-cid-rgidg7mq> <img alt="a0c9fb1d-f8f3-2283-e58b-e29e374f8e9f2026-9-6 0-06-40" class="photo-image cursor-pointer" data-key="acg/a0c9fb1d-f8f3-2283-e58b-e29e374f8e9f2026-9-6 0-06-40.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/a0c9fb1d-f8f3-2283-e58b-e29e374f8e9f2026-9-6%200-06-40.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/a5ff8485-1741-0d80-0643-e97205c369ab2026-9-6 0-06-45.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/a5ff8485-1741-0d80-0643-e97205c369ab2026-9-6%200-06-45.avif" data-fancybox="gallery-28" class="photo-link group" aria-label="a5ff8485-1741-0d80-0643-e97205c369ab2026-9-6 0-06-45" data-astro-cid-rgidg7mq> <img alt="a5ff8485-1741-0d80-0643-e97205c369ab2026-9-6 0-06-45" class="photo-image cursor-pointer" data-key="acg/a5ff8485-1741-0d80-0643-e97205c369ab2026-9-6 0-06-45.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/a5ff8485-1741-0d80-0643-e97205c369ab2026-9-6%200-06-45.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/b1169fb9-9cb9-fdf8-eaf1-a2042d8dd33b2026-9-6 0-06-57.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/b1169fb9-9cb9-fdf8-eaf1-a2042d8dd33b2026-9-6%200-06-57.avif" data-fancybox="gallery-29" class="photo-link group" aria-label="b1169fb9-9cb9-fdf8-eaf1-a2042d8dd33b2026-9-6 0-06-57" data-astro-cid-rgidg7mq> <img alt="b1169fb9-9cb9-fdf8-eaf1-a2042d8dd33b2026-9-6 0-06-57" class="photo-image cursor-pointer" data-key="acg/b1169fb9-9cb9-fdf8-eaf1-a2042d8dd33b2026-9-6 0-06-57.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/b1169fb9-9cb9-fdf8-eaf1-a2042d8dd33b2026-9-6%200-06-57.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/bcdf9a9d-9913-df53-95b8-18a1427da8e82026-9-6 0-07-03.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/bcdf9a9d-9913-df53-95b8-18a1427da8e82026-9-6%200-07-03.avif" data-fancybox="gallery-30" class="photo-link group" aria-label="bcdf9a9d-9913-df53-95b8-18a1427da8e82026-9-6 0-07-03" data-astro-cid-rgidg7mq> <img alt="bcdf9a9d-9913-df53-95b8-18a1427da8e82026-9-6 0-07-03" class="photo-image cursor-pointer" data-key="acg/bcdf9a9d-9913-df53-95b8-18a1427da8e82026-9-6 0-07-03.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/bcdf9a9d-9913-df53-95b8-18a1427da8e82026-9-6%200-07-03.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/c0e65674-d21e-b4b3-3d04-c57e7177cff72026-9-6 0-07-09.avif" data-dim="1280,720" style="aspect-ratio: 1280 / 720;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/c0e65674-d21e-b4b3-3d04-c57e7177cff72026-9-6%200-07-09.avif" data-fancybox="gallery-31" class="photo-link group" aria-label="c0e65674-d21e-b4b3-3d04-c57e7177cff72026-9-6 0-07-09" data-astro-cid-rgidg7mq> <img alt="c0e65674-d21e-b4b3-3d04-c57e7177cff72026-9-6 0-07-09" class="photo-image cursor-pointer" data-key="acg/c0e65674-d21e-b4b3-3d04-c57e7177cff72026-9-6 0-07-09.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/c0e65674-d21e-b4b3-3d04-c57e7177cff72026-9-6%200-07-09.avif" decoding="async" width="1280" height="720" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/c6509131-9529-f011-af3a-e7d97633c8ea2026-9-6 0-07-14.avif" data-dim="2560,1440" style="aspect-ratio: 2560 / 1440;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/c6509131-9529-f011-af3a-e7d97633c8ea2026-9-6%200-07-14.avif" data-fancybox="gallery-32" class="photo-link group" aria-label="c6509131-9529-f011-af3a-e7d97633c8ea2026-9-6 0-07-14" data-astro-cid-rgidg7mq> <img alt="c6509131-9529-f011-af3a-e7d97633c8ea2026-9-6 0-07-14" class="photo-image cursor-pointer" data-key="acg/c6509131-9529-f011-af3a-e7d97633c8ea2026-9-6 0-07-14.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/c6509131-9529-f011-af3a-e7d97633c8ea2026-9-6%200-07-14.avif" decoding="async" width="2560" height="1440" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/c75d0340-3984-b321-0ce5-b764e13f54582026-9-6 0-07-10.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/c75d0340-3984-b321-0ce5-b764e13f54582026-9-6%200-07-10.avif" data-fancybox="gallery-33" class="photo-link group" aria-label="c75d0340-3984-b321-0ce5-b764e13f54582026-9-6 0-07-10" data-astro-cid-rgidg7mq> <img alt="c75d0340-3984-b321-0ce5-b764e13f54582026-9-6 0-07-10" class="photo-image cursor-pointer" data-key="acg/c75d0340-3984-b321-0ce5-b764e13f54582026-9-6 0-07-10.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/c75d0340-3984-b321-0ce5-b764e13f54582026-9-6%200-07-10.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/cc5cda8e-d026-1f43-e989-b54196241ed92026-9-6 0-07-19.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/cc5cda8e-d026-1f43-e989-b54196241ed92026-9-6%200-07-19.avif" data-fancybox="gallery-34" class="photo-link group" aria-label="cc5cda8e-d026-1f43-e989-b54196241ed92026-9-6 0-07-19" data-astro-cid-rgidg7mq> <img alt="cc5cda8e-d026-1f43-e989-b54196241ed92026-9-6 0-07-19" class="photo-image cursor-pointer" data-key="acg/cc5cda8e-d026-1f43-e989-b54196241ed92026-9-6 0-07-19.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/cc5cda8e-d026-1f43-e989-b54196241ed92026-9-6%200-07-19.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/cover.avif" data-dim="1801,1784" style="aspect-ratio: 1801 / 1784;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/cover.avif" data-fancybox="gallery-35" class="photo-link group" aria-label="cover" data-astro-cid-rgidg7mq> <img alt="cover" class="photo-image cursor-pointer" data-key="acg/cover.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/cover.avif" decoding="async" width="1801" height="1784" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/e89db338-d314-630b-615b-324d5402544f2026-9-6 0-09-07.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/e89db338-d314-630b-615b-324d5402544f2026-9-6%200-09-07.avif" data-fancybox="gallery-36" class="photo-link group" aria-label="e89db338-d314-630b-615b-324d5402544f2026-9-6 0-09-07" data-astro-cid-rgidg7mq> <img alt="e89db338-d314-630b-615b-324d5402544f2026-9-6 0-09-07" class="photo-image cursor-pointer" data-key="acg/e89db338-d314-630b-615b-324d5402544f2026-9-6 0-09-07.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/e89db338-d314-630b-615b-324d5402544f2026-9-6%200-09-07.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/eaa0c929-e393-5fd1-647e-70aa3de141d32026-9-6 0-09-09.avif" data-dim="1920,1080" style="aspect-ratio: 1920 / 1080;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/eaa0c929-e393-5fd1-647e-70aa3de141d32026-9-6%200-09-09.avif" data-fancybox="gallery-37" class="photo-link group" aria-label="eaa0c929-e393-5fd1-647e-70aa3de141d32026-9-6 0-09-09" data-astro-cid-rgidg7mq> <img alt="eaa0c929-e393-5fd1-647e-70aa3de141d32026-9-6 0-09-09" class="photo-image cursor-pointer" data-key="acg/eaa0c929-e393-5fd1-647e-70aa3de141d32026-9-6 0-09-09.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/eaa0c929-e393-5fd1-647e-70aa3de141d32026-9-6%200-09-09.avif" decoding="async" width="1920" height="1080" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/fbdce8a5-d9b1-f5e2-83c3-d283baa1a2c92026-9-6 0-10-59.avif" data-dim="800,600" style="aspect-ratio: 800 / 600;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/fbdce8a5-d9b1-f5e2-83c3-d283baa1a2c92026-9-6%200-10-59.avif" data-fancybox="gallery-38" class="photo-link group" aria-label="fbdce8a5-d9b1-f5e2-83c3-d283baa1a2c92026-9-6 0-10-59" data-astro-cid-rgidg7mq> <img alt="fbdce8a5-d9b1-f5e2-83c3-d283baa1a2c92026-9-6 0-10-59" class="photo-image cursor-pointer" data-key="acg/fbdce8a5-d9b1-f5e2-83c3-d283baa1a2c92026-9-6 0-10-59.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/fbdce8a5-d9b1-f5e2-83c3-d283baa1a2c92026-9-6%200-10-59.avif" decoding="async" width="800" height="600" data-astro-cid-rgidg7mq> </a> </figure><figure class="photo-item photo-dim-known" data-key="acg/伊尔莎2026-9-6 0-11-08.avif" data-dim="1920,1106" style="aspect-ratio: 1920 / 1106;" data-astro-cid-rgidg7mq> <!-- 占位层：已排版未加载的空白 + 每图旋转圆圈（加载完成/失败后隐藏） --> <span class="photo-placeholder" aria-hidden="true" data-astro-cid-rgidg7mq> <span class="photo-spinner" data-astro-cid-rgidg7mq></span> </span> <a href="javascript:void(0)" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/%E4%BC%8A%E5%B0%94%E8%8E%8E2026-9-6%200-11-08.avif" data-fancybox="gallery-39" class="photo-link group" aria-label="伊尔莎2026-9-6 0-11-08" data-astro-cid-rgidg7mq> <img alt="伊尔莎2026-9-6 0-11-08" class="photo-image cursor-pointer" data-key="acg/伊尔莎2026-9-6 0-11-08.avif" data-src="https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io@main/images/Acg/%E4%BC%8A%E5%B0%94%E8%8E%8E2026-9-6%200-11-08.avif" decoding="async" width="1920" height="1106" data-astro-cid-rgidg7mq> </a> </figure> </div> </div> </div>  <div class="footer col-span-full onload-animation hidden lg:block" data-astro-cid-haiuh7kc>  </div> </div> </main> <div class="footer col-span-full onload-animation block lg:hidden" data-astro-cid-haiuh7kc>  </div> </div> <!-- There can't be a filter on parent element, or it will break `fixed` --><div class="back-to-top-wrapper block" data-astro-cid-eymb5ayk> <div id="back-to-top-btn" class="back-to-top-btn hide flex items-center rounded-2xl overflow-hidden transition" onclick="backToTop()" data-astro-cid-eymb5ayk> <button aria-label="Back to Top" class="btn-card h-[3.75rem] w-[3.75rem]" data-astro-cid-eymb5ayk> <svg width="1em" height="1em" class="mx-auto" data-astro-cid-eymb5ayk="true" data-icon="material-symbols:keyboard-arrow-up-rounded">   <symbol id="ai:material-symbols:keyboard-arrow-up-rounded" viewBox="0 0 24 24"><path fill="currentColor" d="m12 10.8l-3.9 3.9q-.275.275-.7.275t-.7-.275t-.275-.7t.275-.7l4.6-4.6q.3-.3.7-.3t.7.3l4.6 4.6q.275.275.275.7t-.275.7t-.7.275t-.7-.275z"/></symbol><use href="#ai:material-symbols:keyboard-arrow-up-rounded"></use>  </svg> </button> </div> </div>  <script>
+    function backToTop() {
+        // 直接使用原生滚动，避免OverlayScrollbars冲突
+        window.scroll({top: 0, behavior: 'smooth'});
+    }
+</script>  </div> </div>  <div class="absolute w-full z-0 hidden 2xl:block" data-astro-cid-haiuh7kc> <div class="relative max-w-[var(--page-width)] mx-auto" data-astro-cid-haiuh7kc> <div id="toc-wrapper" class="hidden lg:block transition absolute top-0 w-[var(--toc-width)] items-center -right-[var(--toc-width)]" data-astro-cid-haiuh7kc> <div id="toc-inner-wrapper" class="fixed top-14 w-[var(--toc-width)] max-h-[calc(100vh_-_10rem)] overflow-hidden" data-astro-cid-haiuh7kc> <div id="toc-container" class="w-full transition-swup-fade" data-astro-cid-haiuh7kc> <table-of-contents id="toc" data-astro-cid-7ckeuxew="true" class="group"> <!-- TOC内容将由JavaScript动态生成 --> </table-of-contents> <script type="module" src="/_astro/TOC.astro_astro_type_script_index_0_lang.zga0xClO.js"></script>  </div> </div> </div> </div> </div>  <!-- Music Player - 仅在启用时加载 -->  <!-- Pio 看板娘组件 - 仅在启用时加载 -->  <!-- increase the page height during page transition to prevent the scrolling animation from jumping --> <div id="page-height-extend" class="hidden h-[300vh]" data-astro-cid-sckkx6r4 style="--bannerOffset: 15vh;--banner-height-home: 65vh;--banner-height: 35vh;--configHue: 185;--page-width: 90rem;"></div>  <script type="module" src="/_astro/Layout.astro_astro_type_script_index_0_lang.DSl3BSNt.js"></script> <!-- 代码块折叠功能 --> <script type="module" src="/_astro/Layout.astro_astro_type_script_index_1_lang._R4ib5TO.js"></script> <!-- 主题切换综合性能优化器（包含代码块优化、重型元素优化、性能诊断） --> <script type="module" src="/_astro/Layout.astro_astro_type_script_index_2_lang.DGJQrGZe.js"></script> <!-- 26.09.06 相册图片模块（全局生命周期注册，一次）：
+     album-gallery —— 相册详情页三段式渲染编排（尺寸→占位→懒加载），
+                      顶层注册一次并响应首载 / swup content:replace / page:view，
+                      修复 SPA 跳入相册页脚本不重跑的缺陷；
+     album-prefetch—— 非相册页空闲时预计算全部相册图片尺寸（严禁加载内容，可中止）。
+     模块在浏览器里只被求值一次（Vite 模块缓存），重复 import 无副作用。 --> <script type="module" src="/_astro/Layout.astro_astro_type_script_index_3_lang.YaRPXGCA.js"></script></body></html>   <!-- 相册渲染编排（三段式：尺寸→占位→懒加载）。模块顶层只注册一次，
+     同时响应首载(DOMContentLoaded)与 swup content:replace / page:view，
+     修复 SPA 跳入相册页时页面级脚本不重跑的缺陷。 --> <script type="module" src="/_astro/index.astro_astro_type_script_index_0_lang.FoqUijPm.js"></script> 

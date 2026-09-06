@@ -1040,9 +1040,12 @@ const mainContentClass = `
 }
 
 /* 26.08.31修改，内容为：页面切换只让主网格做一次透明度过渡，左右磁贴、中间内容和页脚因此同时出现 */
+/* 26.09.06修改，内容为：统一跳转控制器时序微调——点击后 leaving 快速进入空白骨架
+   （out 200ms；#main-grid 之外：#top-row/#navbar-wrapper 顶部工具栏与横幅保留，站点骨架不淡出），
+   新内容 content:replace 就绪后再统一淡入（in 250ms，均在 __pageEnteringTimer 360ms 之内） */
 :global(.page-transition-region) {
     opacity: 1;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 :global(body.swup-leaving .page-transition-region) {
@@ -1050,10 +1053,11 @@ const mainContentClass = `
     opacity: 0 !important;
     pointer-events: none;
     will-change: opacity;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 :global(body.page-entering .page-transition-region) {
-    animation: page-region-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both !important;
+    animation: page-region-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1) both !important;
     pointer-events: none;
     will-change: opacity;
 }

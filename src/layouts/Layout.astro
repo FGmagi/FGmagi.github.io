@@ -1077,41 +1077,121 @@ function disableAnimation() {
 			}
 		});
 
-		// 26.08.31修改，内容为：点击站内链接立即标记 swup-leaving，中间内容/白色面板与磁贴即刻开始淡出（不依赖 swup 动画钩子时序，消除延迟消失）
-		document.addEventListener("click", (e) => {
-			const target = e.target as Element | null;
-			const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
-			if (!anchor) return;
-			const href = anchor.getAttribute("href") || "";
+		// 26.09.06修改，内容为：统一跳转控制器（替换旧的文档级 click 拦截 + 2000ms 竞态恢复定时器）。
+		// 只拦「站内普通链接」；显式排除以下情形（否则会被误判为导航并触发 leaving 淡出）：
+		//   # 锚点 / http(s) 外链 / // 协议相对 / target=_blank / download /
+		//   javascript: 链接（灯箱锚 href="javascript:void(0)"）
+		//   [data-fancybox] 与 [data-src] 内部锚（灯箱触发器）
+		//   [data-no-swup]（声明不交 swup 接管）/ 修饰键按下（浏览器新开标签等行为）
+		const shouldIgnoreNavigation = (
+			anchor: HTMLAnchorElement,
+			href: string,
+			event: MouseEvent,
+		): boolean => {
+			if (event.defaultPrevented) return true;
+			if (event.button !== 0) return true; // 非左键
+			if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
+				return true;
+			if ((anchor.target || "").toLowerCase() === "_blank") return true;
+			if (anchor.hasAttribute("download")) return true;
+			if (anchor.closest("[data-no-swup]")) return true;
+			if (
+				anchor.hasAttribute("data-fancybox") ||
+				anchor.hasAttribute("data-src")
+			) {
+				return true;
+			}
 			if (
 				href.startsWith("#") ||
-				href.startsWith("http") ||
 				href.startsWith("//") ||
-				anchor.getAttribute("target") === "_blank"
+				href.startsWith("javascript:") ||
+				/^https?:/i.test(href)
+			) {
+				return true;
+			}
+			return false;
+		};
+
+		document.addEventListener("click", (e) => {
+			const event = e as MouseEvent;
+			const target = e.target as Element | null;
+			const anchor = target?.closest?.(
+				"a[href]",
+			) as HTMLAnchorElement | null;
+			if (!anchor) return;
+			const href = (anchor.getAttribute("href") || "").trim();
+			if (!href) return;
+			if (shouldIgnoreNavigation(anchor, href, event)) return;
+
+			// 仅同源 http(s) 链接进入统一控制器（其它交给浏览器默认行为）
+			let targetUrl: URL;
+			try {
+				targetUrl = new URL(anchor.href, window.location.origin);
+			} catch {
+				return;
+			}
+			if (targetUrl.origin !== window.location.origin) return;
+			if (
+				targetUrl.protocol !== "http:" &&
+				targetUrl.protocol !== "https:"
 			) {
 				return;
 			}
-			// 26.08.31修改，内容为：目标与当前页面相同时不触发 swup 导航，仅做一次淡出-淡入刷新，避免内容隐藏后无法重新显示
-			const samePage =
-				new URL(anchor.href, window.location.origin).pathname ===
-				window.location.pathname;
-			if (samePage) {
+			// 非页面资源（下载/音视频/字体等）不进入 swup：交给浏览器原生处理
+			if (
+				/\.(?:pdf|zip|rar|7z|tar|gz|bz2|xz|mp3|mp4|webm|mov|avi|mkv|exe|msi|dmg|pkg|apk|iso|woff2?|ttf|otf|eot)(?:[?#].*)?$/i.test(
+					targetUrl.pathname,
+				)
+			) {
+				return;
+			}
+
+			// 真·本页刷新判定：路径 + 查询串均相同（路径比较截 query/hash、去尾斜杠、大小写不敏感）。
+			// 查询串不同的同路径（如 /archive/?tag= 筛选、/archive/?q= 搜索）是真跳转 → swup 重新加载内容；
+			// 仅 hash 不同的同页链接交给浏览器原生锚点滚动，不做淡出淡入。
+			const samePath = pathsEqual(
+				targetUrl.pathname,
+				window.location.pathname,
+			);
+			const sameSearch =
+				(targetUrl.search || "") === (window.location.search || "");
+			if (samePath && sameSearch) {
+				if (targetUrl.hash && targetUrl.hash !== window.location.hash) {
+					return; // 同页锚点滚动：浏览器默认行为
+				}
 				e.preventDefault();
 				if ((window as any).__samePageFading) return;
 				(window as any).__samePageFading = true;
 				document.body.classList.add("swup-leaving");
+				clearTimeout((window as any).__swupLeavingTimer);
 				setTimeout(() => {
 					document.body.classList.remove("swup-leaving");
 					(window as any).__samePageFading = false;
 				}, 320);
 				return;
 			}
+
+			const swupReady =
+				!!(window as any).swup &&
+				typeof (window as any).swup.navigate === "function";
+			if (!swupReady) {
+				// swup 未就绪：先 blank 化（仅留顶部工具栏骨架），再 location 兜底真跳转
+				e.preventDefault();
+				document.body.classList.add("swup-leaving");
+				setTimeout(() => {
+					window.location.assign(targetUrl.href);
+				}, 150);
+				return;
+			}
+
+			// swup 就绪：立即标记 leaving 开始淡出（不留旧页迟滞）；导航由 swup 自身 click 拦截完成。
+			// leaving/entering 由 content:replace / page:view 等真实事件驱动清除（见 MainGridLayout 与下方
+			// swup:page:view 监听）；此处仅保留极短兜底，防止 visit 异常中断后页面卡在空白。
 			document.body.classList.add("swup-leaving");
-			// 安全网：若导航异常未触发 content:replace / page:view，超时后恢复显示
 			clearTimeout((window as any).__swupLeavingTimer);
 			(window as any).__swupLeavingTimer = setTimeout(() => {
 				document.body.classList.remove("swup-leaving");
-			}, 2000);
+			}, 1000);
 		});
 		document.addEventListener("swup:page:view", () => {
 			document.body.classList.remove("swup-leaving");
@@ -1514,4 +1594,15 @@ function disableAnimation() {
 <!-- 主题切换综合性能优化器（包含代码块优化、重型元素优化、性能诊断） -->
 <script>
 	import "../scripts/theme-optimizer.js";
+</script>
+
+<!-- 26.09.06 相册图片模块（全局生命周期注册，一次）：
+     album-gallery —— 相册详情页三段式渲染编排（尺寸→占位→懒加载），
+                      顶层注册一次并响应首载 / swup content:replace / page:view，
+                      修复 SPA 跳入相册页脚本不重跑的缺陷；
+     album-prefetch—— 非相册页空闲时预计算全部相册图片尺寸（严禁加载内容，可中止）。
+     模块在浏览器里只被求值一次（Vite 模块缓存），重复 import 无副作用。 -->
+<script>
+	import "../utils/album-gallery.js";
+	import "../scripts/album-prefetch.js";
 </script>

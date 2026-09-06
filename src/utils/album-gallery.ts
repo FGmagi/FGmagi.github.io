@@ -108,7 +108,6 @@ function createSpinner(sizePx = 28): HTMLSpanElement {
  */
 const initializedContainers = new WeakSet<Element>();
 let activeAbort: AbortController | null = null;
-let initScheduled = false;
 
 function newAbort(): AbortController {
 	if (activeAbort) activeAbort.abort();
@@ -206,9 +205,10 @@ async function ensureSizesReady(
 			applyDim(figure, DEFAULT_ASPECT_W, DEFAULT_ASPECT_H);
 		}
 	} finally {
-		if (signal.aborted) return false;
+		// 无论中止与否都清掉 sizing 态，避免容器残留“整卡空白 + 居中圆圈”
 		indicator.remove();
 		container.classList.remove("gallery-sizing");
+		if (signal.aborted) return false;
 	}
 	markSizingDone(container);
 	return true;
@@ -328,11 +328,34 @@ async function loadItem(
 		markError(figure);
 		done();
 	};
+	// 先绑事件再赋 src：保证不丢失异步 load/error
 	img.addEventListener("load", onLoad, { once: true });
 	img.addEventListener("error", onError, { once: true });
 	img.src = src;
+
+	// 独立完成信号 1：decode() 不依赖 load 事件时序
+	// （内存/磁盘缓存瞬时完成、事件派发时机差异等边角都由此兜底）。
+	if (typeof img.decode === "function") {
+		img.decode()
+			.then(() => {
+				img.removeEventListener("load", onLoad);
+				img.removeEventListener("error", onError);
+				afterLoaded(item, layout);
+				done();
+			})
+			.catch(() => {
+				// decode 失败（网络/格式）：error 事件会兜底；若已处于错误终态则直接收尾
+				if (img.complete && img.naturalWidth === 0) {
+					img.removeEventListener("load", onLoad);
+					img.removeEventListener("error", onError);
+					markError(figure);
+					done();
+				}
+			});
+	}
+
+	// 独立完成信号 2：同步缓存命中（老浏览器无 decode / complete 已为真）
 	if (img.complete && img.naturalWidth > 0) {
-		// 命中浏览器缓存，load 可能已不触发
 		img.removeEventListener("load", onLoad);
 		img.removeEventListener("error", onError);
 		afterLoaded(item, layout);
@@ -383,10 +406,13 @@ function tryInitAll(): void {
 /**
  * 一次 swup 访问 = content:replace →（可能多个 page:view 类信号：swup:page:view 与
  * astro:page-load 都挂在同一 hook 上）。用 armed 标志保证：
- *  - 只有 content:replace 之后到达的第一个 page:view 信号才执行中止+初始化；
- *  - 后续重复信号被忽略，避免 abort→restart 打乱尺寸探测。
+ *  - content:replace 到达后，下一个 page:view 信号才执行 中止旧请求 + 初始化；
+ *  - 同一访问的重复 page:view 信号只做幂等 tryInitAll（已初始化容器被 WeakSet 跳过，
+ *    不会再 abort→restart 打乱尺寸探测）。
+ * 若 content:replace 信号因任何原因丢失，page:view 仍会尝试初始化新出现的容器。
  */
 let pageReadyArmed = false;
+let hooksInstalled = false;
 
 function onPageReplaced(): void {
 	// 只中止旧内容在途请求；新内容初始化由随后的 page:view 信号完成
@@ -395,30 +421,46 @@ function onPageReplaced(): void {
 }
 
 function onNewPageReady(): void {
-	if (!pageReadyArmed) return;
-	pageReadyArmed = false;
-	newAbort();
+	if (pageReadyArmed) {
+		pageReadyArmed = false;
+		newAbort();
+	}
+	// 幂等初始化：新容器会被处理；已初始化容器（含重复 page:view 信号）直接跳过
 	tryInitAll();
 }
 
+/**
+ * 注册 swup 生命周期（只成功注册一次）。
+ * 不依赖「模块求值时 swup 是否就绪」：swup 是 loadOnIdle 空闲初始化，模块求值时必然
+ * 尚未就绪；若此处用一次性标志挡住 enable 后的二次注册，content:replace 将永远收不到，
+ * SPA 跳入相册页就永远不初始化（此前缺陷根因）。
+ */
 function installSwupHooks(): void {
-	if (initScheduled) return;
-	initScheduled = true;
+	if (hooksInstalled) return;
 	const swup = (window as any).swup;
 	if (swup && swup.hooks && typeof swup.hooks.on === "function") {
 		swup.hooks.on("content:replace", onPageReplaced);
+		hooksInstalled = true;
 		return;
 	}
-	document.addEventListener("swup:enable", () => {
-		installSwupHooks();
-	});
+	document.addEventListener(
+		"swup:enable",
+		() => {
+			installSwupHooks();
+		},
+		{ once: true },
+	);
 }
 
 if (typeof document !== "undefined" && typeof window !== "undefined") {
-	// 1) swup 钩子（尽早、含初次 enable）
+	// 1) swup 实例 hook（就绪后注册）
 	installSwupHooks();
 
-	// 2) 首载
+	// 2) DOM 级 content:replace：swup 内核会为每个 hook 派发 swup:xxx 自定义事件，
+	//    与实例 hook 注册时机无关——SPA 跳入相册页时必定能武装（双保险，重复武装无害）。
+	document.addEventListener("swup:content:replace", onPageReplaced);
+
+	// 3) 首载
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", () => {
 			tryInitAll();
@@ -434,7 +476,7 @@ if (typeof document !== "undefined" && typeof window !== "undefined") {
 		});
 	}
 
-	// 3) SPA 兜底：@swup/astro 在 page:view 派发 astro:page-load，swup 内核派发 swup:page:view
+	// 4) SPA 兜底：@swup/astro 在 page:view 派发 astro:page-load，swup 内核派发 swup:page:view
 	document.addEventListener("astro:page-load", onNewPageReady);
 	document.addEventListener("swup:page:view", onNewPageReady);
 }

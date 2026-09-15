@@ -1,7 +1,13 @@
 import { siteConfig } from "../config";
 
 export function formatDateToYYYYMMDD(date: Date): string {
-	return date.toISOString().substring(0, 10);
+	// 26.09.15：改为**本地时区**并补零，输出规范形式 2026-01-05。
+	// 旧实现用 toISOString()（UTC）：东八区 0:00–8:00 的日期会显示成前一天，
+	// 且与归档按年份分组（本地时区）口径不一致。
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, "0");
+	const d = String(date.getDate()).padStart(2, "0");
+	return `${y}-${m}-${d}`;
 }
 
 // 国际化日期格式化函数

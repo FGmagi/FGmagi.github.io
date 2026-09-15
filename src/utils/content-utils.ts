@@ -31,7 +31,12 @@ async function getRawSortedPosts() {
 		// 否则按发布日期排序
 		const dateA = new Date(a.data.published);
 		const dateB = new Date(b.data.published);
-		return dateA > dateB ? -1 : 1;
+		// 26.09.15：日期只写到「天」时很多文章时间戳完全相同，
+		// 旧写法（相等也返回 1）会让同日期文章的先后顺序不稳定。
+		// 现在：先按时间倒序，完全相同再按文章 id 字典序兜底 ⇒ 顺序确定、可复现。
+		const diff = dateB.getTime() - dateA.getTime();
+		if (diff !== 0) return diff;
+		return String(a.id).localeCompare(String(b.id));
 	});
 	return sorted;
 }

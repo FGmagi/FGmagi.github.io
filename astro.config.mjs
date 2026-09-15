@@ -25,6 +25,7 @@ import { rehypeWrapTable } from "./src/plugins/rehype-wrap-table.mjs";
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkContent } from "./src/plugins/remark-content.mjs";
+import { remarkRelativeMedia } from "./src/plugins/remark-relative-media.mjs";
 import { rehypeImageWidth } from "./src/plugins/rehype-image-width.mjs";
 
 /**
@@ -238,6 +239,8 @@ export default defineConfig({
 		remarkPlugins: [
 			remarkMath,
 			remarkContent,
+			// 26.09.15：HTML 写的 <img>/<video>/<audio> 也支持相对路径（与 ![]() 一致）
+			remarkRelativeMedia,
 			remarkGithubAdmonitionsToDirectives,
 			remarkDirective,
 			remarkSectionize,

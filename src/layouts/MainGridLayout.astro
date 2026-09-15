@@ -268,6 +268,38 @@ const mainContentClass = `
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug}>
 
+<!-- 26.09.14：首帧预渲染门（解析期同步脚本，位于 body 内容最前）。
+     首次打开网页 / 刷新：页面必须先完成预渲染，再统一渐变显示。
+     为什么必须在这里挂类（而不是等下面那段模块脚本）：
+       · 模块脚本在文档解析完成后才执行，浏览器可能已经绘制过首帧 ⇒ 会先闪一下完整页面；
+       · 本脚本是解析期同步脚本，执行时 body 已存在、主内容尚未解析 ⇒ 不可能出现可见首帧；
+       · 换页时 swup 的 ScriptsPlugin 会把本脚本重放一遍（不是「不再执行」），所以用
+         window.__pageTransitionBooted 做幂等守卫：只有真正首载/刷新才挂门，重放直接退出。
+         挂门 + 该标记就是「首载」的唯一判据（src/utils/page-transition.ts 读
+         window.__pagePrerenderArmed 决定是否走首载分支）。
+     可见性规则见 Layout.astro 的 <head> 内联 <style>（同一次布局计算内即可生效）。 -->
+<script is:inline>
+	(function () {
+		// ⚠ 换页时 swup 的 ScriptsPlugin 会把本文档里的内联脚本重放一遍 ⇒ 本段会被重复执行。
+		//   只有「首次打开 / 刷新」才该挂门：已启动过就直接退出，否则重放会把预渲染门
+		//   在换页之后重新挂回 body，而此时控制器已经收尾（phase=idle）不会再来摘它
+		//   ⇒ 新页面永久停在不可见。
+		if (window.__pageTransitionBooted) return;
+		window.__pageTransitionBooted = true;
+		var b = document.body;
+		if (!b) return;
+		// 标记「本次是首载 / 刷新」：控制器据此走首载分支，预渲染完成后由它摘掉
+		window.__pagePrerenderArmed = true;
+		b.classList.add('page-prerender');
+	})();
+</script>
+
+<!-- 26.09.14：页面切换渐变控制器（模块副作用：写 CSS 时长变量、注册 swup 钩子、
+     处理首载预渲染后的统一渐显）。用普通 <script> 让 Vite 打包，写法和本仓库其余模块脚本一致。 -->
+<script>
+	import "../utils/page-transition.ts";
+</script>
+
 <script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling}}>
 
 	// 26.08.30修改，内容为：页面渲染前始终强制使用列表模式（布局切换按钮已隐藏），并应用简洁模式（默认开启，隐藏左右磁贴）
@@ -311,20 +343,16 @@ const mainContentClass = `
 				break;
 		}
 		
-		// 立即调整主内容区域位置和布局模式（避免闪烁和位置错误）
+		// 立即应用布局模式（避免闪烁和位置错误）
 		// 使用 requestAnimationFrame 确保 DOM 准备好
 		requestAnimationFrame(function() {
-			const mainContent = document.querySelector('.absolute.w-full.z-30.pointer-events-none');
-			if (mainContent) {
-				if (wallpaperMode === 'banner') {
-					// 让主内容区域从banner顶部开始，这样波浪线会自然覆盖内容上部
-					mainContent.style.top = `${BANNER_HEIGHT}vh`;
-				} else {
-					// fullscreen 或 none 模式
-					mainContent.style.top = '5.5rem';
-				}
-			}
-			
+			// ⚠ 26.09.14：这里原本还会用 requestAnimationFrame 写 mainContent.style.top
+			//   （banner → `${BANNER_HEIGHT}vh`，其余 → 5.5rem）——横幅模式遗留代码。
+			//   主面板的 top 现在完全由 CSS 按模式与断点决定（body.enable-banner 的
+			//   70vh/75vh/60vh/35vh 与 body.no-banner-mode 的 5.5rem），而且模式类在解析期
+			//   就已写好、早于首帧 ⇒ 首载时没有任何位置变化。留着这段 JS 只会在首帧之后再改
+			//   一次内联 top，把「内部修正」变成可见位移（首屏内容卡片上移的成因之一）。
+			//
 			// 立即应用布局模式，避免闪烁
 			const mainGrid = document.getElementById('main-grid');
 			if (mainGrid) {
@@ -545,31 +573,39 @@ const mainContentClass = `
 		}
 	});
 
+	/** 摘掉新页容器内所有入场动画类：只摘类、不动内联样式，避免与 CSS 动画打架 */
+	function stripRegionEnterAnimations(region) {
+		if (!region) return;
+		const nodes = region.querySelectorAll('.onload-animation');
+		if (nodes.length > 0) {
+			nodes.forEach(function(element) {
+				element.classList.remove('onload-animation');
+			});
+		}
+		// #toc-swup-region 本身可能是空壳（非文章页），此时什么都不用做
+	}
+
 	// 26.08.31修改，内容为：Swup 页面切换统一由 #main-grid 控制淡出和淡入，清除新节点动画并保留 page-entering 至渐变结束
+	// 26.09.14修改，内容为：连带清除 #toc-swup-region（目录 rail 随 swup 换页换新，同样带 onload-animation）——
+	// 否则该类自己的 150ms 延迟 + 500ms 淡入会在 page-entering 结束后重新触发，目录闪一下。
 	function clearPageRegionAnimations() {
-		const transitionRegion = document.getElementById('main-grid');
-		if (!transitionRegion) return;
-		transitionRegion.querySelectorAll('.onload-animation').forEach((element) => {
-			element.classList.remove('onload-animation');
+		const regions = ['#main-grid', '#toc-swup-region'];
+		regions.forEach(function(selector) {
+			stripRegionEnterAnimations(document.querySelector(selector));
 		});
 	}
+
+	/* 26.09.14：页面切换渐变改由独立控制器负责（src/utils/page-transition.ts，在本布局顶部 import）。
+	   控制器统一处理：点击 → 整页渐变消失(fadeOut) → 目标页加载 → 预渲染 → 统一渐变显示(fadeIn)，
+	   同 URL 点击同样「消失 → 重新加载 → 重新预渲染 → 渐显」，首载/刷新也必须先预渲染再渐显。
+	   本文件只保留与「布局」强相关的职责（与渐变时序无关）：
+	     · stripRegionEnterAnimations / clearPageRegionAnimations：摘掉新页容器的入场动画类；
+	     · setupSwupLayoutSync：布局模式应用、主页壁纸切换、新页入场动画清理。
+	   时长唯一来源：siteConfig.pageTransition（见 config.ts），CSS 侧读 --page-fade-out / --page-fade-in。 */
 
 	function setupSwupLayoutSync() {
 		// @ts-ignore
 		if (typeof window !== 'undefined' && window.swup) {
-			// 关键：在 content:replace 之前（animation:out:start）就准备好布局状态
-			// @ts-ignore
-			window.swup.hooks.on('animation:out:start', function() {
-				// 26.08.30修改，内容为：离开动画开始前标记 swup-leaving，左中右卡片同步淡出并冻结网格布局
-				document.body.classList.add('swup-leaving');
-				// 保存当前布局状态，以便在新页面中立即应用
-				const savedLayout = localStorage.getItem('postListLayout');
-				if (savedLayout) {
-					// @ts-ignore
-					window.__pendingLayoutMode = savedLayout;
-				}
-			});
-
 			// 26.09.01 [3]：visit:start 阶段记录目标页是否为主页（content:replace 阶段 location 可能尚未更新），供主页背景切换判断
 			// @ts-ignore
 			window.swup.hooks.on('visit:start', function(visit) {
@@ -579,24 +615,20 @@ const mainContentClass = `
 				} catch (e) { /* 保持原始字符串 */ }
 				window.__pendingTargetHome = targetPath === '/' || targetPath === '';
 			});
-			
+
 			// 在内容替换后立即应用布局，不等待其他脚本
+			// ⚠ 本钩子用 on() 注册 ⇒ 位于 swup 默认 handler（content:replace 的默认 handler 才是真正换 DOM）
+			// **之后**（Hooks.getHandlers/call 的执行序 = before → 默认 handler → on()）⇒ 这里拿到的已经是【新 DOM】。
 			// @ts-ignore
-			window.swup.hooks.on('content:replace', function() {
-				// 26.08.31修改，内容为：内容替换后先清除主网格子元素动画，再由主网格统一淡入，避免中间卡片单独延迟
-				document.body.classList.remove('swup-leaving');
+			window.swup.hooks.on('content:replace', function(visit) {
+				// 新页节点就位后先清除其入场动画，再让 #main-grid 统一渐变（避免中间卡片各自延迟）
 				clearPageRegionAnimations();
-				document.body.classList.add('page-entering');
-				clearTimeout(window.__pageEnteringTimer);
-				window.__pageEnteringTimer = setTimeout(() => {
-					document.body.classList.remove('page-entering');
-				}, 360);
 				const mainGrid = document.getElementById('main-grid');
 				if (mainGrid) {
 					// @ts-ignore
 					const currentLayout = window.__pendingLayoutMode || localStorage.getItem('postListLayout') || defaultPostListLayout;
 					mainGrid.setAttribute('data-layout-mode', currentLayout);
-					
+
 					const rightSidebar = document.querySelector('.right-sidebar-container');
 					if (rightSidebar) {
 						if (currentLayout === 'grid') {
@@ -605,13 +637,13 @@ const mainContentClass = `
 							rightSidebar.classList.remove('hidden-in-grid-mode');
 						}
 					}
-					
+
 					// 关键：同时更新文章列表容器的CSS类
 					const postListContainer = document.getElementById('post-list-container');
 					if (postListContainer) {
 						// 移除现有布局类
 						postListContainer.classList.remove('list-mode', 'grid-mode');
-						
+
 						if (currentLayout === 'grid') {
 							postListContainer.classList.add('grid-mode');
 							postListContainer.classList.add('grid', 'grid-cols-1', 'lg:grid-cols-2', 'gap-6');
@@ -622,7 +654,7 @@ const mainContentClass = `
 							postListContainer.classList.remove('grid', 'grid-cols-1', 'lg:grid-cols-2', 'gap-6');
 						}
 					}
-					
+
 					// 清除临时状态
 					// @ts-ignore
 					delete window.__pendingLayoutMode;
@@ -634,30 +666,36 @@ const mainContentClass = `
 				}
 				delete window.__pendingTargetHome;
 			});
-			
+
+			// 目标页布局状态：主页/非主页的磁贴显隐与网格列同步（swup 只替换容器内容，不更新 #main-grid 的类）
+			// @ts-ignore
+			window.swup.hooks.on('page:view', function() {
+				clearPageRegionAnimations();
+			});
+
 			return true;
 		}
 		return false;
 	}
-	
-	// 尝试立即设置，如果失败则延迟重试
+
+	// 尝试立即设置，如果失败则延迟重试（swup 是 loadOnIdle 惰性初始化）
 	if (!setupSwupLayoutSync()) {
 		const checkSwup = setInterval(function() {
 			if (setupSwupLayoutSync()) {
 				clearInterval(checkSwup);
 			}
 		}, 50);
-		
+
 		setTimeout(function() {
 			clearInterval(checkSwup);
-		}, 2000);
+		}, 4000);
 	}
 	
 	// 支持 Swup 页面过渡
 	// 26.08.30修改，内容为：swup 页面切换后重新应用简洁模式（simple-mode 类），避免切页后磁贴显示状态残留
 
 	document.addEventListener('swup:page:view', function() {
-		// 26.08.31修改，内容为：新页面节点插入后再次清除加载动画，page-entering继续到统一渐变完成，避免跨页瞬间显示
+		// 26.08.31修改，内容为：新页面节点插入后再次清除加载动画，避免跨页瞬间各自淡入（统一由 #main-grid 渐变）
 		clearPageRegionAnimations();
 		applyWallpaperMode();
 		
@@ -719,11 +757,20 @@ const mainContentClass = `
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
-<div id="top-row" class="z-50 pointer-events-none relative transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" class:list={[""]}>
-    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-all">
+<!-- 26.09.06：吸顶职责上移到 #top-row；#navbar-wrapper 回到 relative，宽度与文章宽度（--content-width）保持一致 -->
+<!-- 26.09.14：吸顶由 sticky 改为 fixed —— 「所有页面导航栏始终位于顶部、下拉时不消失」。
+     sticky 的问题：吸附位置取决于元素在文档流中的位置与自身高度，本行在 banner 模式被撑到
+     ≈30vh，吸附后导航栏落在视口上方 ⇒ 滚动即整条消失，且各页面/模式表现不一致（用户报告）。
+     fixed 与文档流彻底解耦：任何页面、任何壁纸模式、任何滚动位置都在视口顶部。
+     原本由文档流让出的空间改由紧随其后的 #top-row-space 占位（高度与 --top-row-h 恒等），
+     因此首屏布局与改动前逐像素一致，不会把首屏内容顶到导航栏下面。 -->
+<div id="top-row" class="z-50 pointer-events-none fixed top-0 left-0 right-0 transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" data-navbar-pinned={siteConfig.navbar?.pinned === false ? "false" : "true"}>
+    <div id="navbar-wrapper" class="pointer-events-auto relative transition-all h-full">
         <Navbar></Navbar>
     </div>
 </div>
+<!-- #top-row 因 fixed 脱离文档流，这里补回等高的占位块，保证首屏排版不变 -->
+<div id="top-row-space" class="w-full pointer-events-none" aria-hidden="true"></div>
 
 <!-- Banner - 始终渲染，通过 JS 控制显示隐藏 -->
 <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
@@ -921,8 +968,8 @@ const mainContentClass = `
 <!-- Main content -->
 <div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${siteConfig.wallpaperMode.defaultMode === 'none' ? 'no-banner-layout' : ''}`} style={`top: ${finalMainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-    <div class="relative max-w-[var(--page-width)] mx-auto pointer-events-auto">
-        <div id="main-grid" class={`page-transition-region transition-opacity duration-300 ease-out w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? 'mobile-no-sidebar' : ''} ${hasRightSidebarComponents ? 'mobile-both-sidebar' : ''}`}
+    <div class="relative max-w-[var(--content-width)] mx-auto pointer-events-auto">
+        <div id="main-grid" class={`page-transition-region w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? 'mobile-no-sidebar' : ''} ${hasRightSidebarComponents ? 'mobile-both-sidebar' : ''}`}
              data-layout-mode={defaultPostListLayout}
         >
             <!-- Banner image credit -->
@@ -973,38 +1020,166 @@ const mainContentClass = `
 </div>
 
 <!-- 侧边栏TOC模式 -->
-{siteConfig.toc.enable && isSidebarTOC && (
-    <div class="absolute w-full z-0 hidden 2xl:block">
-        <div class="relative max-w-[var(--page-width)] mx-auto">
-            <div id="toc-wrapper" class:list={["hidden lg:block transition absolute top-0 w-[var(--toc-width)] items-center",
-                "-right-[var(--toc-width)]",
+{siteConfig.toc.enable && isSidebarTOC && headings.length > 0 && (
+    <script is:inline>
+        /* 解析期置位：让 rail 在首帧即 display:block，与卡片同帧起跑（避免首载偏移）。
+           门槛必须与 src/scripts/toc-layout.js 的桌面门**同源**：
+             wideEnough ⇔ documentElement.clientWidth ≥ 88 × f，
+             f = 当前根字号（pageScaling 会写 <html> font-size）。
+           ⚠ 不能用 matchMedia('(min-width: 88rem)')：媒体查询里的 rem 恒按初始 16px 解析
+             （不受 pageScaling 的 <html> font-size 影响）⇒ 固定等价 1408px，而 JS 侧在
+             非触摸横屏（f≈13.6px）只需 ≈1197px，于是 viewport 1281–1407 会出现
+             「JS 判 desktop、此处未置位」的缺口带（用户窗口 1280–1536 正好覆盖它）。
+           ⚠ 读实际根字号是可行的：pageScaling 的 adjustPageScale() 在 Layout.astro 的
+             <head> 里以**经典同步 inline 脚本**（is:inline + define:vars，无 type=module）
+             立即执行一次，早于本文档体中的本脚本，故此处 getComputedStyle 已能读到。
+           ⚠ 安全方向：本门与 JS 门**恒等**（同一公式、同一 f 含义），不会出现
+             「预置 desktop 但 JS 判 narrow」的闪现；若将来改窄本门需重新论证。
+             改动 toc-layout.js 的门槛公式时，必须同步改这里。 */
+        const f = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        if (document.documentElement.clientWidth >= 88 * f)
+            document.documentElement.setAttribute('data-toc-layout', 'desktop');
+    </script>
+)}
+{/* 26.09.14：目录区外壳（恒渲染）+ swup 容器。
+     为什么需要它：侧栏目录不能放进 main（会被 #main-grid 的透明度动画父子相乘成二次淡入），
+     而此前它只是 body 下的一块「本页标记」——swup 只替换 main / #sidebar-swup-container，
+     切页时这块标记保持旧页状态：从非文章页进文章页时目录压根不存在；文章页→文章页时
+     目录条目要等客户端 100ms 后才重建（表现为「目录没进入预渲染」）。
+     现在把目录标记包进恒存在的 #toc-swup-region 并登记为 swup 容器（astro.config.mjs）：
+     swup 换页整体替换该容器 ⇒ 目标页目录（含 SSR 条目）在 content:replace 阶段即就位，
+     随后与文章卡片一起在预渲染帧内排版、同一帧开始渐变。 */}
+<div id="toc-swup-region">
+{siteConfig.toc.enable && isSidebarTOC && headings.length > 0 ? (
+    // 26.09.14：不再用 hidden(display:none)——目录轨道常驻渲染（只切 visibility），
+    // 这样切宽窄时是「已有排版的目录做收放动画」，不必先重排再动画（用户要求：提前渲染/缓存）。
+    <div id="toc-rail-wrapper" data-toc-present="true" class="absolute w-full z-0 onload-animation">
+        <div class="relative max-w-[var(--content-width)] mx-auto">
+            <!-- 26.09.06：卡片宽度 = 右侧余量的 60%（--toc-card-width）；横向定位改由 style 块的
+                 #toc-inner-wrapper 规则负责（在「文章卡片右边缘 → 视口右边缘」的余量内居中，
+                 并以距视口右 --toc-edge-gap 为底线）；此处 #toc-wrapper 仅承载显隐与宽高 -->
+            <div id="toc-wrapper" class:list={["block transition absolute top-0 w-[var(--toc-card-width)] items-center",
                 {"toc-hide": siteConfig.wallpaperMode.defaultMode === "banner"}]}
             >
-                <div id="toc-inner-wrapper" class="fixed top-14 w-[var(--toc-width)] max-h-[calc(100vh_-_10rem)] overflow-hidden">
-                    <div id="toc-container" class="w-full transition-swup-fade">
+                <div id="toc-inner-wrapper" class="fixed w-[var(--toc-card-width)]">
+                    <div id="toc-container" class="w-full">
                         <TOC headings={headings}></TOC>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+) : (
+    /* 保留此元素以确保Swup正常工作（float 模式 / 未启用目录 / 本页无标题时占位） */
+    <div id="toc-container" class="hidden"></div>
 )}
-
-<!-- 保留此元素以确保Swup正常工作 -->
-{(!siteConfig.toc.enable || isFloatTOC) && <div id="toc-container" class="hidden"></div>}
+</div>
 </Layout>
 {/* 26.08.30修改，内容为：新增简洁模式与非首页时隐藏左右磁贴、主内容占满整行的样式 */}
 
 
-<style>
+<style define:vars={{
+    'page-fade-out': `${siteConfig.pageTransition.fadeOut}ms`,
+    'page-fade-in': `${siteConfig.pageTransition.fadeIn}ms`,
+}}>
+/* 26.09.14：渐变动画时长（唯一来源 siteConfig.pageTransition）——只在此处写一次，
+   src/styles/transition.css 的过渡/动画时长全部读这两个变量，改 config 即同步生效。
+   ⚠ 不要在这里或 transition.css 里写死毫秒值（下面的 :root 兜底值只为「模块尚未执行」时仍有值）。
+   ⚠ 变量落在 :root（继承属性）⇒ 任何位置的选择器都能读到，也是 transition.css（全局样式表）
+      与 Layout.astro 首帧内联样式共用的前提。
+   ⚠ Astro 对含 define:vars 的样式会把变量写到「该选择器自身」，所以选择器必须是 :root，
+      而且规则里不能再引用同名变量（自引用会解析失败）。 */
+:root {
+    --page-fade-out: 200ms;
+    --page-fade-in: 250ms;
+}
+
 :global(.sidebar-force-hidden) {
     display: none !important;
+}
+
+/* 26.09.14：导航栏常驻吸顶（fixed）+ 等高占位块。
+   #top-row 已由 Layout.astro 给出 --top-row-h（banner 模式跟随横幅高度，其余模式 3.6rem）；
+   这里把同一变量写给占位块，保证「脱离文档流」与「补回空间」严格等值 ⇒ 首屏排版零变化。
+   ⚠ 若将来再调 --top-row-h 的取值，占位块无需改动（同源变量）。 */
+:global(#top-row-space) {
+    height: var(--top-row-h, 3.6rem);
+}
+
+/* 导航栏在任何页面/壁纸模式下都不许被隐藏或移出视口：
+   全站禁用 .navbar-hidden（历史遗留的滚动隐藏类），并把可能影响 fixed 定位的
+   transform/opacity 复位，避免父级动画把吸顶条一起带走。 */
+:global(.navbar-hidden) {
+    opacity: 1 !important;
+    transform: none !important;
+}
+:global(#top-row) {
+    position: fixed !important;
+    top: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* 26.09.15：导航栏「悬挂」（吸顶）开关 —— siteConfig.navbar.pinned
+   · true（默认）：#top-row 固定悬挂在视口顶部，下拉时始终可见（原行为，本段不生效）；
+   · false：#top-row 回到文档流（position:static），导航栏随页面一起滚走、不再悬挂；
+     紧随其后的等高占位块 #top-row-space 同步取消，否则会多出一段空白。 */
+:global(#top-row[data-navbar-pinned="false"]) {
+    position: static !important;
+    top: auto !important;
+}
+
+:global(#top-row[data-navbar-pinned="false"] + #top-row-space) {
+    display: none !important;
+}
+
+/* 切页期间导航栏同样常驻：#main-grid 淡出/预渲染/淡入时，#top-row 保持可见不被牵连
+   （对应 Layout.astro 注释中「#top-row/#navbar-wrapper 顶部工具栏保留，站点骨架不淡出」）。 */
+:global(body.swup-leaving) #top-row,
+:global(body.page-entering) #top-row,
+:global(body.page-prerender) #top-row {
+    opacity: 1 !important;
+    animation: none !important;
+    pointer-events: none;
+}
+
+:global(body.swup-leaving) #top-row #navbar-wrapper,
+:global(body.page-entering) #top-row #navbar-wrapper,
+:global(body.page-prerender) #top-row #navbar-wrapper {
+    opacity: 1 !important;
+    animation: none !important;
+    pointer-events: auto;
 }
 
 /* 非主页：隐藏左右磁贴（覆盖初始加载时 SideBar 内部样式，以及 swup 切换后的旧状态） */
 :global(body:not(.lg\:is-home) .home-sidebar),
 :global(body:not(.lg\:is-home) .home-right-sidebar) {
     display: none !important;
+}
+
+/* 26.09.14：导航栏与主卡片重合时的下边界描边。
+   需求：下拉后导航栏与主卡片（文章卡片/友链卡片/图片卡片…）宽度常常相同，需要可视区分；
+   只在「被压住的那段卡片宽度」上、于导航栏下边界画一条主题色横线，带阴影，随重合淡入淡出。
+   ⚠ 刻意不做圆角：观感要接近一条横线，而不是圆角矩形的下边线。 */
+:global(#navbar-card-separator) {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 1px;
+    border-radius: 0;
+    /* 降低线宽与透明度：1px 细线 + 主题色 55% 透明度。
+       阴影用 drop-shadow（跟着实际画的像素走），这样多段线之间的空隙不会拖出阴影。 */
+    background: color-mix(in oklab, var(--primary) 55%, transparent);
+    filter: drop-shadow(0 1px 3px color-mix(in oklab, var(--primary) 30%, transparent));
+    opacity: 0;
+    pointer-events: none;
+    z-index: 60;
+    transition: opacity 260ms ease;
+}
+
+:global(#navbar-card-separator.is-visible) {
+    opacity: 1;
 }
 
 /* 非主页：主内容区占满整行，与上方导航栏等宽居中（覆盖 swup 切换后残留的旧网格列模板） */
@@ -1037,53 +1212,6 @@ const mainContentClass = `
 :global(#content-wrapper.home-content-fill) {
     display: flex;
     flex-direction: column;
-}
-
-/* 26.08.31修改，内容为：页面切换只让主网格做一次透明度过渡，左右磁贴、中间内容和页脚因此同时出现 */
-/* 26.09.06修改，内容为：统一跳转控制器时序微调——点击后 leaving 快速进入空白骨架
-   （out 200ms；#main-grid 之外：#top-row/#navbar-wrapper 顶部工具栏与横幅保留，站点骨架不淡出），
-   新内容 content:replace 就绪后再统一淡入（in 250ms，均在 __pageEnteringTimer 360ms 之内） */
-:global(.page-transition-region) {
-    opacity: 1;
-    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-:global(body.swup-leaving .page-transition-region) {
-    animation: none !important;
-    opacity: 0 !important;
-    pointer-events: none;
-    will-change: opacity;
-    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-:global(body.page-entering .page-transition-region) {
-    animation: page-region-fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1) both !important;
-    pointer-events: none;
-    will-change: opacity;
-}
-
-/* Swup 的子容器不再拥有独立透明度，避免与主网格形成两次淡入 */
-:global(body.swup-leaving .page-transition-region #swup-container),
-:global(body.page-entering .page-transition-region #swup-container),
-:global(body.swup-leaving .page-transition-region #content-wrapper),
-:global(body.page-entering .page-transition-region #content-wrapper) {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-}
-
-/* 新页面的卡片只跟随主网格显示，不再执行 onload-animation */
-:global(body.swup-leaving .page-transition-region .onload-animation),
-:global(body.page-entering .page-transition-region .onload-animation) {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-}
-
-@keyframes page-region-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 /* 26.08.31修改，内容为：常规模式（fill 页面）下文章列表区拉伸至视口底部，仅高于切页按钮 */
@@ -1121,19 +1249,81 @@ body.no-banner-mode .absolute.w-full.z-30 {
     top: 5.5rem !important;
 }
 
-/* TOC 垂直对齐优化 */
-body.no-banner-mode #toc-inner-wrapper {
-    top: 5.5rem !important;
-    max-height: calc(100vh - 8rem) !important;
+/* TOC 垂直对齐优化（26.09.06：几何改由 toc-layout.js 写入 --toc-top/--toc-max-h，
+   两种模式（banner / no-banner）统一读同一组变量，不再各自硬编码 max-height）。
+   这里给出无 JS / 未重算时的兜底值（不依赖 Tailwind 任意值解析）。 */
+#toc-inner-wrapper {
+    top: var(--toc-top, 3.5rem);
+    max-height: var(--toc-max-h, calc(100vh - 10rem));
+    overflow: hidden;
+    /* 26.09.06：目录卡片在「文章卡片右边缘 → 视口右边缘」的右侧余量内居中。
+       余量 R = --toc-width + --article-gutter，卡宽 T = --toc-card-width，
+       居中 ⇒ 右侧空隙 = (R − T) / 2；max() 第二分支是距视口右 1rem 的硬性下限。
+       横向定位只此一处：#toc-wrapper（absolute）已不再持有任何 right 规则，
+       避免两套定位规则并存。 */
+    right: max(
+        calc((var(--toc-width) + var(--article-gutter) - var(--toc-card-width)) / 2),
+        var(--toc-edge-gap, 1rem)
+    );
 }
 
-/* 全屏壁纸模式下的 TOC 毛玻璃背景 - 仅在 TOC 加载完成后显示 */
+body.no-banner-mode #toc-inner-wrapper {
+    top: var(--toc-top, 5.5rem) !important;
+    max-height: var(--toc-max-h, calc(100vh - 8rem)) !important;
+}
+
+/* 26.09.14：侧栏目录轨道「始终渲染、只切换可见性」。
+   要求（用户）：目录要提前渲染好/缓存起来，切宽窄时直接动画收放，不再 display:none 后重新排版。
+   做法：有轨道的文章页恒 display:block（排版常驻），默认 visibility:hidden + opacity:0；
+   只有 toc-layout.js 判定 desktop 时才可见（JS 之前的首帧也不会闪）。
+   narrow 时由 toc-layout.js 播「收进导航栏按钮」动画，动画期间用内联 visibility 临时可见，
+   结束后交还给 CSS。 */
+:global(#toc-rail-wrapper[data-toc-present="true"]) {
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+:global(html[data-toc-layout="desktop"]) #toc-rail-wrapper[data-toc-present="true"] {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* JS 尚未判定（无 data-toc-layout）但视口足够宽时也先显示：
+   swup 换页那一下 #toc-swup-region 是同步替换的，属性可能还停留在上一页的取值，
+   这时必须按结构（data-toc-present）+ 宽度兜住，保证目录在预渲染帧里就位。 */
+@media (min-width: 1280px) {
+    :global(html:not([data-toc-layout="narrow"])) #toc-rail-wrapper[data-toc-present="true"] {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+/* 26.09.14：预渲染帧内目录 rail 必须「已经在位」。
+   问题（用户报告：从其它页面跳转文章页时 toc 没有进入预渲染）：
+   `html[data-toc-layout]` 是 toc-layout.js 的**客户端**判定结果，而 swup 换页是同步替换
+   #toc-swup-region —— 预渲染帧里 rail 刚被换成新节点，属性却还可能停留在「上一页」的取值
+   （从首页/列表页进入时是 narrow 或干脆没有），于是 rail 在预渲染帧里 display:none，
+   下一帧才被重算点亮 ⇒ 目录在渐变结束后才「跳」出来，与文章卡片不同步。
+   这里补一条不依赖任何 JS 时序的可见性来源：结构数据（data-toc-layout）或
+   节点自身的 data-toc-present（SSR 只在本页确实渲染了 rail 时输出）任一满足即显示。
+   ⚠ 必须用 min-width 媒体查询兜住：媒体查询里的 rem 恒按初始 16px 解析，
+     88rem = 1408px，正好是「解析期脚本置位 desktop」与「JS 判 narrow」之间的分界带
+     （详见下方解析期脚本的长注释）。1280px 档位（= MOBILE_ENTRY_MAX / lg 断点）与
+     toc-layout.js 的 MOBILE_ENTRY_MAX 同源，不会出现「CSS 判定显示、JS 判定窄屏」的闪烁。 */
+/* 全屏壁纸模式下的 TOC 毛玻璃背景 - 仅在 TOC 加载完成后显示
+   （--toc-inner-pad 供 table-of-contents 的 max-height 扣掉卡片内边距，
+     否则最后一个条目的文字/图标会溢出卡片下边缘） */
 body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded="true"]) {
     background: var(--card-bg-transparent) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
     border-radius: var(--radius-large);
     padding: 0.5rem;
+    --toc-inner-pad: 0.5rem;
     box-shadow: var(--shadow-lg);
 }
 
@@ -1493,8 +1683,13 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
         transition: transform 0.3s ease-in, opacity 0.2s ease-in !important;
     }
     
-    /* 手机端非首页时主内容区域从顶部开始 - 延迟出现的动画 */
-    .absolute.w-full.z-30 {
+    /* 主内容区域位置过渡：⚠ 26.09.14 改为只跟着「显式切换壁纸模式」走（横幅模式遗留修复）。
+       原先无条件给 .absolute.w-full.z-30 挂 `transition: top 0.4s ... 0.1s`，
+       于是「首载时按当前模式把 top 修正到正确值」这件纯内部的事被播成了 0.4 秒的可见位移
+       （配合上面那条漏写模式前缀的横屏规则 ⇒ 首屏内容卡片上移一段）。
+       现在首载/换页一律即时就位；只有 applyWallpaperMode(animate=true) 期间
+       （body.wallpaper-mode-transition，全屏↔隐藏壁纸）才播这段过渡。 */
+    body.wallpaper-mode-transition .absolute.w-full.z-30 {
         transition: top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s;
         /* 硬件加速优化 */
         will-change: top;
@@ -1507,7 +1702,9 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     .absolute.w-full.z-30.mobile-main-no-banner {
         top: 5.5rem !important;
         min-height: calc(100vh - 5.5rem) !important;
-        /* 内容区域快速上移 */
+        /* 内容区域快速上移：这是移动端横幅模式**专属**的编排（离开首页时 banner 收起、
+           内容跟着上移），过渡只挂在这个类上 ⇒ 只有 JS 主动加类时才播，
+           首载/刷新永远不会因此出现位移（首载位置由模式类一次定死）。 */
         transition: top 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s !important;
     }
 }
@@ -1686,13 +1883,21 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 
 /* 移动端横屏优化 */
 @media (max-width: 1279px) and (orientation: landscape) {
-    #banner-wrapper:not(.mobile-hide-banner) {
+    body.enable-banner #banner-wrapper:not(.mobile-hide-banner) {
         top: 0 !important; /* 横屏模式从顶部开始，避免被导航栏覆盖 */
         height: 60vh !important;
     }
-    
-    /* 主内容区域位置调整 - 确保在banner下面，但不影响非首页 */
-    .absolute.w-full.z-30:not(.mobile-main-no-banner) {
+
+    /* 主内容区域位置调整 - 确保在banner下面，但不影响非首页
+       ⚠ 26.09.14：必须带 body.enable-banner 模式前缀（横幅模式遗留 bug）。
+       这条规则的含义是「横幅高 60vh ⇒ 内容从 60vh 开始」，只有横幅模式才成立；
+       此前漏写前缀，于是默认的 fullscreen（以及 none）模式下：
+         ① 首帧没有任何模式类时，主面板被这条 !important 规则顶到 60vh；
+         ② body.no-banner-mode 生效后再压回 5.5rem；
+         ③ 面板又带着 transition: top 0.4s ⇒ 首屏内容卡片肉眼可见地上移一段。
+       现在按模式限定，非横幅模式的 top 只由 body.no-banner-mode 那条规则决定，
+       首帧起就恒为 5.5rem，不存在「先错位再拉回」。 */
+    body.enable-banner .absolute.w-full.z-30:not(.mobile-main-no-banner) {
         top: 60vh !important; /* 与banner高度对应 */
         min-height: calc(100vh - 60vh) !important;
     }

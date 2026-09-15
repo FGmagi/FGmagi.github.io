@@ -1,0 +1,128 @@
+[
+ {
+  "step": "initial",
+  "c": {
+   "path": "/",
+   "postListContainers": 1,
+   "searchBars": 1,
+   "siteStats": 1,
+   "calendars": 1,
+   "tagFilter": 1,
+   "profiles": 5,
+   "sidebars": 1,
+   "rightSidebars": 1,
+   "walls": 1,
+   "navbars": 1,
+   "blankCards": 3,
+   "cards": 2,
+   "footers": 2,
+   "bodyClass": "min-h-screen lg:is-home wallpaper-transparent no-banner-mode",
+   "scripts": 105,
+   "pagePrerender": false,
+   "mainGridOpacity": "1"
+  }
+ },
+ {
+  "step": "swup-present",
+  "swup": "object",
+  "hooks": true
+ },
+ {
+  "step": "to-archive",
+  "clicked": "/archive/",
+  "c": {
+   "path": "/archive/",
+   "postListContainers": 0,
+   "searchBars": 0,
+   "siteStats": 1,
+   "calendars": 1,
+   "tagFilter": 1,
+   "profiles": 5,
+   "sidebars": 1,
+   "rightSidebars": 1,
+   "walls": 1,
+   "navbars": 1,
+   "blankCards": 0,
+   "cards": 0,
+   "footers": 2,
+   "bodyClass": "min-h-screen wallpaper-transparent no-banner-mode",
+   "scripts": 101,
+   "pagePrerender": false,
+   "mainGridOpacity": "1"
+  }
+ },
+ {
+  "step": "back-home",
+  "clicked": "/",
+  "c": {
+   "path": "/archive/",
+   "postListContainers": 0,
+   "searchBars": 0,
+   "siteStats": 1,
+   "calendars": 1,
+   "tagFilter": 1,
+   "profiles": 5,
+   "sidebars": 1,
+   "rightSidebars": 1,
+   "walls": 1,
+   "navbars": 1,
+   "blankCards": 0,
+   "cards": 0,
+   "footers": 2,
+   "bodyClass": "min-h-screen wallpaper-transparent no-banner-mode",
+   "scripts": 103,
+   "pagePrerender": false,
+   "mainGridOpacity": "1"
+  }
+ },
+ {
+  "step": "round-0",
+  "c": {
+   "path": "/archive/",
+   "postListContainers": 1,
+   "searchBars": 1,
+   "siteStats": 1,
+   "calendars": 1,
+   "tagFilter": 1,
+   "profiles": 5,
+   "sidebars": 1,
+   "rightSidebars": 1,
+   "walls": 1,
+   "navbars": 1,
+   "blankCards": 3,
+   "cards": 2,
+   "footers": 2,
+   "bodyClass": "min-h-screen wallpaper-transparent no-banner-mode lg:is-home swup-leaving",
+   "scripts": 105,
+   "pagePrerender": false,
+   "mainGridOpacity": "0.224464"
+  }
+ },
+ {
+  "step": "round-1",
+  "c": {
+   "path": "/",
+   "postListContainers": 1,
+   "searchBars": 1,
+   "siteStats": 1,
+   "calendars": 1,
+   "tagFilter": 1,
+   "profiles": 5,
+   "sidebars": 1,
+   "rightSidebars": 1,
+   "walls": 1,
+   "navbars": 1,
+   "blankCards": 3,
+   "cards": 2,
+   "footers": 2,
+   "bodyClass": "min-h-screen wallpaper-transparent no-banner-mode lg:is-home swup-leaving",
+   "scripts": 103,
+   "pagePrerender": false,
+   "mainGridOpacity": "0.224464"
+  }
+ },
+ {
+  "step": "errors",
+  "errors": []
+ }
+]

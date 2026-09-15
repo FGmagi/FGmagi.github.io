@@ -1,0 +1,96 @@
+{
+ "light": {
+  "title": {
+   "color": "rgba(0, 0, 0, 0.9)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "desc": {
+   "color": "rgba(0, 0, 0, 0.75)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "card": {
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(255, 255, 255, 0.8)"
+  },
+  "leftCard": {
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(255, 255, 255, 0.8)"
+  },
+  "searchInput": {
+   "color": "rgba(0, 0, 0, 0.75)",
+   "bg": "oklch(0.95 0.025 185)"
+  },
+  "chip": {
+   "color": "oklch(0.55 0.12 185)",
+   "bg": "oklch(0.95 0.025 185)"
+  },
+  "stats": {
+   "color": "rgb(23, 23, 23)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "calDay": {
+   "color": "rgb(23, 23, 23)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "pager": {
+   "color": "rgb(255, 255, 255)",
+   "bg": "oklch(0.7 0.14 185)"
+  },
+  "navLink": {
+   "color": "rgba(0, 0, 0, 0.75)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "bodyText": {
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(0, 0, 0, 0)"
+  }
+ },
+ "dark": {
+  "title": {
+   "color": "rgba(255, 255, 255, 0.9)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "desc": {
+   "color": "rgba(255, 255, 255, 0.75)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "card": {
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(23, 23, 23, 0.8)"
+  },
+  "leftCard": {
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(23, 23, 23, 0.8)"
+  },
+  "searchInput": {
+   "color": "rgba(255, 255, 255, 0.75)",
+   "bg": "oklch(0.33 0.035 185)"
+  },
+  "chip": {
+   "color": "rgba(255, 255, 255, 0.75)",
+   "bg": "oklch(0.33 0.035 185)"
+  },
+  "stats": {
+   "color": "rgb(245, 245, 245)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "calDay": {
+   "color": "rgb(245, 245, 245)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "pager": {
+   "color": "rgba(0, 0, 0, 0.7)",
+   "bg": "oklch(0.75 0.14 185)"
+  },
+  "navLink": {
+   "color": "rgba(255, 255, 255, 0.75)",
+   "bg": "rgba(0, 0, 0, 0)"
+  },
+  "bodyText": {
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(0, 0, 0, 0)"
+  }
+ },
+ "htmlClass": "bg-[var(--page-bg)] text-[14px] md:text-[16px] swup-enabled dark",
+ "bodyClass": "min-h-screen lg:is-home wallpaper-transparent no-banner-mode"
+}

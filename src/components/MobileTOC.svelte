@@ -4,6 +4,7 @@ import Icon from "@iconify/svelte";
 import { onMount } from "svelte";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import { jumpToHeading } from "../utils/anchor-nav";
 import { navigateToPage } from "../utils/navigation-utils";
 import { panelManager } from "../utils/panel-manager.js";
 
@@ -136,20 +137,14 @@ const checkIsHomePage = () => {
 };
 
 const scrollToHeading = (id: string) => {
-	const element = document.getElementById(id);
-	if (element) {
-		// 关闭面板
-		setPanelVisibility(false);
+	// 关闭面板
+	setPanelVisibility(false);
 
-		// 滚动到目标位置，考虑导航栏高度
-		const offset = 80;
-		const elementPosition = element.offsetTop - offset;
-
-		window.scrollTo({
-			top: elementPosition,
-			behavior: "smooth",
-		});
-	}
+	// 26.09.14：与宽屏侧栏目录共用 src/utils/anchor-nav.ts
+	//   · 导航栏底边 + config.toc.navigation.offset 避让，标题不会被吸顶导航栏挡住；
+	//   · 自绘 rAF 平滑滚动（更慢更平滑，时长可配）；
+	//   · 距离超过 longJumpViewports 个视口高度时改为「渐变消失 → 瞬移 → 预渲染 → 渐显」。
+	jumpToHeading(id);
 };
 
 const navigateToPost = (url: string) => {
@@ -314,16 +309,16 @@ if (typeof window !== "undefined") {
 }
 </script>
 
-<!-- TOC toggle button for mobile -->
-<!--
+<!-- TOC toggle button：可见性由 toc-layout.js 写入的 html[data-toc-layout="narrow"] 驱动
+     （宽屏文章页用右侧栏目录，窄屏/宽度不足时退化到此入口；不再用固定断点隐藏） -->
 <button
 	on:click={togglePanel}
 	aria-label="Table of Contents"
 	id="mobile-toc-switch"
-	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 lg:!hidden theme-switch-btn"
+	class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90 theme-switch-btn"
 >
 	<Icon icon="material-symbols:format-list-bulleted" class="text-[1.25rem]" />
-</button>-->
+</button>
 
 <!-- Mobile TOC Panel -->
 <div 
@@ -394,9 +389,22 @@ if (typeof window !== "undefined") {
 </div>
 
 <style>
+	/* 26.09.06：入口按钮默认隐藏，仅在窄屏/宽度不足（narrow）模式显示 */
+	#mobile-toc-switch {
+		display: none;
+	}
+
+	:global(html[data-toc-layout="narrow"]) #mobile-toc-switch {
+		display: inline-flex;
+	}
+
 	.mobile-toc-panel {
-		max-height: calc(100vh - 120px);
+		/* 与右侧栏目录共用同一高度上限（已为回顶按钮预留间距），避免面板与按钮重叠 */
+		max-height: var(--toc-max-h, calc(100vh - 120px));
+		/* 26.09.14：条目改换行后行数变多 ⇒ 由面板自己滚动 + 裁切，
+		   超出圆角卡片（背景/边框）的部分一律裁掉，不会渲染到卡片外。 */
 		overflow-y: auto;
+		overflow-x: hidden;
 		background: var(--card-bg);
 		border: 1px solid var(--line-color);
 		backdrop-filter: blur(10px);
@@ -421,7 +429,8 @@ if (typeof window !== "undefined") {
 
 	.toc-item {
 		display: flex;
-		align-items: center;
+		/* 26.09.14：条目可能换行成多行 ⇒ 徽标/圆点对第一行对齐（原来居中，多行时会飘到中间） */
+		align-items: flex-start;
 		width: 100%;
 		text-align: left;
 		padding: 8px 12px;
@@ -517,6 +526,8 @@ if (typeof window !== "undefined") {
 		justify-content: center;
 		min-width: 20px;
 		height: 20px;
+		/* 与第一行文字视觉居中对齐（条目已改为 flex-start 对齐） */
+		margin-top: 1px;
 		padding: 0 4px;
 		border-radius: 6px;
 		background: var(--toc-badge-bg);
@@ -531,6 +542,7 @@ if (typeof window !== "undefined") {
 		display: inline-block;
 		width: 8px;
 		height: 8px;
+		margin-top: 6px; /* (行高 19px − 8px) / 2，与第一行文字居中 */
 		border-radius: 2px;
 		background: var(--toc-badge-bg);
 		flex-shrink: 0;
@@ -540,6 +552,7 @@ if (typeof window !== "undefined") {
 		display: inline-block;
 		width: 6px;
 		height: 6px;
+		margin-top: 7px; /* (行高 19px − 6px) / 2，与第一行文字居中 */
 		border-radius: 2px;
 		background: rgba(0, 0, 0, 0.05);
 		flex-shrink: 0;
@@ -551,10 +564,14 @@ if (typeof window !== "undefined") {
 
 	.toc-text {
 		display: block;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 		flex: 1;
+		min-width: 0;
+		/* 26.09.14：单行放不下就换行（与宽屏侧栏目录一致）；长英文/URL 强制断行，
+		   行数变多由外层面板滚动 + 圆角裁切兜住（见 .mobile-toc-panel）。 */
+		white-space: normal;
+		overflow-wrap: anywhere;
+		word-break: break-word;
+		line-height: 1.35;
 	}
 
 	.post-item {

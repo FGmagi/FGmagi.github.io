@@ -3,6 +3,8 @@
  *
  * - 浏览器：写入 localStorage，命名空间前缀 `mzAlbumPhoto:`，键 = photoKey 原始复合串（不编码）。
  *   值 = {"w":..,"h":..,"t":<epoch_ms>}；schema 头键 `mzAlbumPhoto:schema` = "1"。
+ *   26.09.14：运行期探测复核过的条目额外带 `"v":"1"`（校验版本，见 PHOTO_CACHE_VERIFY_SCHEMA），
+ *   用于「构建期已知尺寸」的运行期校验式预取；老条目无 v 仍按旧语义可读。
  * - 无 localStorage 环境（SSR/build/Node 测试）：安全降级为进程内内存 Map，绝不抛错。
  *
  * 与既有根级键（theme / postListLayout / simpleMode 等）互不干扰：本模块只读写自己前缀的键。
@@ -13,11 +15,19 @@ export interface CachedPhotoSize {
 	w: number;
 	h: number;
 	t: number; // epoch ms
+	/** 26.09.14：校验版本号（仅运行期探测所得条目写入；见 PHOTO_CACHE_VERIFY_SCHEMA） */
+	v?: string;
 }
 
 export const PHOTO_CACHE_PREFIX = "mzAlbumPhoto:";
 export const PHOTO_CACHE_SCHEMA_KEY = `${PHOTO_CACHE_PREFIX}schema`;
 export const PHOTO_CACHE_SCHEMA = "1";
+/**
+ * 26.09.14：校验版本。构建期 sharp 探测出的尺寸在运行期会被 Range 探测复核一次，
+ * 复核通过的条目写入本版本号（字段 `v`）。
+ * 语义：升版本即可强制「重新校验」而不必清缓存（旧版本号的条目会被 verifiedOnly 视为未校验）。
+ */
+export const PHOTO_CACHE_VERIFY_SCHEMA = "1";
 
 /** 修剪上限：超过该条数按 t 清最旧 20% */
 export const PHOTO_CACHE_MAX_KEYS = 800;
@@ -112,7 +122,14 @@ function parseEntry(raw: string): CachedPhotoSize | null {
 			v.h > 0 &&
 			(typeof v.t === "number" || typeof v.t === "undefined")
 		) {
-			return { w: v.w, h: v.h, t: typeof v.t === "number" ? v.t : now() };
+			const entry: CachedPhotoSize = {
+				w: v.w,
+				h: v.h,
+				t: typeof v.t === "number" ? v.t : now(),
+			};
+			// 26.09.14：带出校验标记（仅字符串有效；其它类型一律丢弃）
+			if (typeof v.v === "string") entry.v = v.v;
+			return entry;
 		}
 	} catch {
 		/* invalid */
@@ -134,8 +151,12 @@ function ensureSchema(): void {
 /**
  * 读取某 photoKey 的缓存尺寸。键必须不带前缀。
  * 损坏/过期条目返回 null（并把过期条目顺手清掉）。
+ * 26.09.14：options.verifiedOnly = true 时只认「本版校验号」条目；不传该选项时与旧版行为完全一致。
  */
-export function getSize(key: string): CachedPhotoSize | null {
+export function getSize(
+	key: string,
+	options?: { verifiedOnly?: boolean },
+): CachedPhotoSize | null {
 	if (!key) return null;
 	const raw = readRaw(key);
 	if (raw === null) return null;
@@ -145,20 +166,41 @@ export function getSize(key: string): CachedPhotoSize | null {
 		removeRaw(PHOTO_CACHE_PREFIX + key);
 		return null;
 	}
+	// 校验未通过的条目只对「校验式调用方」不可见：不删除，普通读取仍可用
+	if (
+		options?.verifiedOnly === true &&
+		entry.v !== PHOTO_CACHE_VERIFY_SCHEMA
+	) {
+		return null;
+	}
 	return entry;
 }
 
-/** 写入某 photoKey 的尺寸缓存（epoch 毫秒）。 */
-export function setSize(key: string, w: number, h: number): void {
+/**
+ * 写入某 photoKey 的尺寸缓存（epoch 毫秒）。
+ * 26.09.14：options.verify = true 时写入本版校验号（表示该尺寸已被运行期探测复核）；
+ * 不传该选项时**保留既有条目的 v**（一次普通写入不会把已校验标记降级）。
+ */
+export function setSize(
+	key: string,
+	w: number,
+	h: number,
+	options?: { verify?: boolean },
+): void {
 	if (!key) return;
 	const ww = Math.round(w);
 	const hh = Math.round(h);
 	if (!(ww > 0 && hh > 0)) return;
 	ensureSchema();
-	writeRaw(
-		PHOTO_CACHE_PREFIX + key,
-		JSON.stringify({ w: ww, h: hh, t: now() }),
-	);
+	// 26.09.14：先读旧值再写（否则会被本次写入覆盖，v 丢失）
+	const prev = options?.verify === true ? null : getSize(key);
+	const entry: CachedPhotoSize = { w: ww, h: hh, t: now() };
+	if (options?.verify === true) {
+		entry.v = PHOTO_CACHE_VERIFY_SCHEMA;
+	} else if (prev && typeof prev.v === "string") {
+		entry.v = prev.v;
+	}
+	writeRaw(PHOTO_CACHE_PREFIX + key, JSON.stringify(entry));
 	amortizedPrune();
 }
 

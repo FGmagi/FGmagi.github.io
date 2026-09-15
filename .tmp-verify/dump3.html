@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<title>prerender/fade verification</title>
+</head>
+<body style="margin:0;font:12px/1.4 monospace">
+<!-- gate：延迟响应把顶层 load 推迟到实验结束（--dump-dom 在 load 后落盘） -->
+<img id="gate" src="/__delay?ms=28000" alt="" style="position:fixed;left:-9999px;top:0">
+<iframe id="frame" src="/archive/" style="width:1440px;height:820px;border:0"></iframe>
+<pre id="report">{"phases":[{"name":"start","swup":true,"ready":"complete","snap":{"tag":"on-/archive/","cls":"min-h-screen","gridOp":"1","tocOp":"1","rail":false,"railDisp":null,"entries":0,"first":null,"layout":null,"maxH":"","gridH":209,"tocH":0}},{"name":"archive -&gt; posts/slove1","frames":[{"t":1198,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":""},{"t":1716,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"},{"t":2023,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"},{"t":2372,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"},{"t":2557,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"},{"t":2725,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"},{"t":2786,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"},{"t":2799,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"}],"classes":[{"t":1400,"cls":"min-h-screen"},{"t":1714,"cls":"min-h-screen"}],"settled":{"tag":"p1-end","cls":"min-h-screen","gridOp":"1","tocOp":"1","rail":true,"railDisp":"block","entries":27,"first":"#二维背包问题","layout":"desktop","maxH":"600px","gridH":16538,"tocH":600}},{"name":"posts/slove1 -&gt; posts/nvm","frames":[{"t":2936,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":27,"lay":"desktop","maxH":"600px"},{"t":3058,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3107,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3162,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3215,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3225,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3243,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3258,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3312,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3363,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3416,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3427,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3484,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3545,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3662,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3718,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3725,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3785,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3841,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3885,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3928,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3940,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3956,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3974,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":3989,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4005,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4024,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4039,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4056,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4073,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4089,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4106,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4123,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4140,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4156,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4173,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4189,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4205,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4223,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4239,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4256,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4272,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4290,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4306,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4323,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4339,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4356,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4373,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4389,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"},{"t":4406,"cls":"min-h-screen","g":"1","c":"1","r":true,"disp":"block","n":2,"lay":"desktop","maxH":"600px"}],"classes":[{"t":3041,"cls":"min-h-screen"},{"t":3057,"cls":"min-h-screen"}],"settled":{"tag":"p2-end","cls":"min-h-screen","gridOp":"1","tocOp":"1","rail":true,"railDisp":"block","entries":2,"first":"#省流版","layout":"desktop","maxH":"600px","gridH":3077,"tocH":61}},{"name":"posts/nvm -&gt; posts/about","frames":[{"t":4468,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4473,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4513,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4523,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4539,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4556,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4572,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4589,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4607,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4629,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4639,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4683,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4693,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4735,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4779,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4816,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4856,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4900,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4953,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":4993,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5036,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5085,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5141,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5187,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5225,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5239,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5256,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5272,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5289,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5307,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5322,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5339,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5356,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5373,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5389,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5406,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5422,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5439,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5456,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5473,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5489,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5506,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5522,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5540,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5556,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5573,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5589,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5605,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5623,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5639,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5656,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5672,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5689,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5707,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5723,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5739,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5756,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5773,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5790,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5806,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5822,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5840,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5856,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5872,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5889,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5906,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5922,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5939,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5956,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5972,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":5990,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"},{"t":6006,"cls":"min-h-screen","g":"1","c":"1","r":false,"disp":null,"n":0,"lay":null,"maxH":"600px"}],"classes":[{"t":4451,"cls":"min-h-screen"},{"t":4468,"cls":"min-h-screen"}],"settled":{"tag":"p3-end","cls":"min-h-screen","gridOp":"1","tocOp":"1","rail":false,"railDisp":null,"entries":0,"first":null,"layout":null,"maxH":"600px","gridH":358,"tocH":0}}],"errors":[]}</pre>
+<script>
+const frame = document.getElementById("frame");
+const out = document.getElementById("report");
+const report = { phases: [], errors: [] };
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function waitFor(check, maxMs) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    try {
+      if (check()) return true;
+    } catch (e) {
+      /* 未就绪 */
+    }
+    await sleep(100);
+  }
+  return false;
+}
+
+/** 在 iframe 内安装逐帧记录器（只读计算样式，不做布局读取，避免拖慢被测页面） */
+function installRecorder(win) {
+  win.eval(`(function () {
+    if (window.__rec) { window.__rec.frames = []; window.__rec.classes = []; return 'reused'; }
+    window.__rec = { frames: [], classes: [], t0: performance.now() };
+    new MutationObserver(function () {
+      window.__rec.classes.push({ t: Math.round(performance.now()), cls: document.body.className.replace(/\\s+/g, ' ').trim() });
+    }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    var tick = function () {
+      var g = document.getElementById('main-grid');
+      var c = document.getElementById('toc-container');
+      var r = document.getElementById('toc-rail-wrapper');
+      var a = document.querySelectorAll("#toc a[href^='#']");
+      var root = document.documentElement;
+      window.__rec.frames.push({
+        t: Math.round(performance.now()),
+        cls: document.body.className.replace(/\\s+/g, ' ').trim(),
+        g: g ? getComputedStyle(g).opacity : null,
+        c: c ? getComputedStyle(c).opacity : null,
+        r: !!r,
+        disp: r ? getComputedStyle(r).display : null,
+        n: a.length,
+        lay: root.getAttribute('data-toc-layout'),
+        maxH: getComputedStyle(root).getPropertyValue('--toc-max-h').trim()
+      });
+      window.__rec.raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return 'installed';
+  })()`);
+}
+
+function readRec(win) {
+  return JSON.parse(win.eval("JSON.stringify({ frames: window.__rec.frames, classes: window.__rec.classes })"));
+}
+
+function resetRec(win) {
+  win.eval("window.__rec.frames = []; window.__rec.classes = [];");
+}
+
+function snap(win, tag) {
+  return JSON.parse(
+    win.eval(`JSON.stringify((function(){
+      var d = document;
+      var g = d.getElementById('main-grid');
+      var c = d.getElementById('toc-container');
+      var r = d.getElementById('toc-rail-wrapper');
+      var toc = d.getElementById('toc');
+      var a = toc ? toc.querySelectorAll("a[href^='#']") : [];
+      return {
+        tag: ${JSON.stringify(tag)},
+        cls: d.body.className.replace(/\\s+/g,' ').trim(),
+        gridOp: g ? getComputedStyle(g).opacity : null,
+        tocOp: c ? getComputedStyle(c).opacity : null,
+        rail: !!r,
+        railDisp: r ? getComputedStyle(r).display : null,
+        entries: a.length,
+        first: a.length ? a[0].getAttribute('href') : null,
+        layout: d.documentElement.getAttribute('data-toc-layout'),
+        maxH: getComputedStyle(d.documentElement).getPropertyValue('--toc-max-h').trim(),
+        gridH: g ? Math.round(g.getBoundingClientRect().height) : null,
+        tocH: c ? Math.round(c.getBoundingClientRect().height) : null
+      };
+    })())`)
+  );
+}
+
+frame.addEventListener("load", () => {
+  void run();
+});
+
+async function run() {
+  const win = frame.contentWindow;
+  try {
+    const swupReady = await waitFor(() => win.swup && typeof win.swup.navigate === "function", 15000);
+    await sleep(500);
+    report.phases.push({ name: "start", swup: !!swupReady, ready: win.document.readyState, snap: snap(win, "on-/archive/") });
+    if (!swupReady) {
+      report.errors.push("swup 未就绪");
+    } else {
+      installRecorder(win);
+
+      // 阶段 1：非文章页 → 文章页（目录此前不存在，必须与新卡片同时就位并同步渐变）
+      resetRec(win);
+      win.swup.navigate("/posts/slove1/");
+      await sleep(1600);
+      report.phases.push(Object.assign({ name: "archive -> posts/slove1" }, readRec(win), { settled: snap(win, "p1-end") }));
+
+      // 阶段 2：文章页 → 另一篇文章页（目录条目必须整体换新）
+      resetRec(win);
+      win.swup.navigate("/posts/nvmnode%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/");
+      await sleep(1600);
+      report.phases.push(Object.assign({ name: "posts/slove1 -> posts/nvm" }, readRec(win), { settled: snap(win, "p2-end") }));
+
+      // 阶段 3：文章页 → 无标题页（目录应整体消失）
+      resetRec(win);
+      win.swup.navigate("/posts/about/");
+      await sleep(1600);
+      report.phases.push(Object.assign({ name: "posts/nvm -> posts/about" }, readRec(win), { settled: snap(win, "p3-end") }));
+    }
+  } catch (e) {
+    report.errors.push(String(e && e.stack ? e.stack : e));
+  }
+  out.textContent = JSON.stringify(report);
+}
+</script>
+
+
+</body></html>

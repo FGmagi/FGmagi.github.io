@@ -1,0 +1,325 @@
+### NAVBAR ###
+div#top-row.z-50.pointer-events-none.fixed.top-0.left-0  @94,0 1224x49
+  div#navbar-wrapper.pointer-events-auto.relative.transition-all.h-full  @108,0 1197x49
+    div#navbar.z-50  @108,0 1197x49
+      div.absolute.h-8.left-0.right-0.-top-8  @108,-27 1197x27 » 
+      div.!overflow-visible.max-w-[var(--page-width)].h-[3.6rem].mx-auto.flex  @108,0 1197x49
+        div.flex.items-center.shrink-0.space-x-1  @121,6 207x37
+          a.btn-plain.scale-animation.rounded-lg.h-[2.5rem].px-4  @121,7 120x34
+            div.flex.flex-row.items-center.text-md  @135,9 93x31
+              img.h-[2.25rem].max-w-full.object-contain  @135,9 93x31 [overflow:clip] » 
+          div.dropdown-container.group  @245,6 83x37
+            a.btn-plain.scale-animation.rounded-lg.h-11.font-bold  @245,6 83x37
+              span.truncate.hidden.md:inline  @284,14 27x20 [overflow:hidden] » 主页
+          script  [display:none]
+        div.flex.items-center.gap-1.ml-auto.shrink-0  @924,6 366x37
+          div.hidden.md:flex.items-center.space-x-1.text-sm  @928,6 163x37
+            div.dropdown-container.group  @928,6 80x37
+              a.btn-plain.scale-animation.rounded-lg.h-11.font-bold  @928,6 80x37
+                span.truncate.hidden.md:inline  @967,16 24x17 [overflow:hidden] » 全部
+            div.dropdown-container.group  @1011,6 80x37
+              button.btn-plain.scale-animation.rounded-lg.h-11.font-bold  @1011,6 80x37
+                span.truncate.hidden.md:inline  @1049,16 24x17 [overflow:hidden] » 目录
+              div.dropdown-menu  @1011,35 163x190 [hidden] [opacity:0]
+                div.dropdown-content  @1011,42 163x184 [hidden]
+                  a.dropdown-item  @1018,49 150x34 [hidden]
+                    div.flex.items-center  @1031,57 46x17 [hidden]
+                      span  @1052,57 26x17 [hidden] » 追番
+                  a.dropdown-item  @1018,83 150x34 [hidden]
+                    div.flex.items-center  @1031,91 46x17 [hidden]
+                      span  @1052,91 26x17 [hidden] » 友链
+                  a.dropdown-item  @1018,117 150x34 [hidden]
+                    div.flex.items-center  @1031,125 46x17 [hidden]
+                      span  @1052,125 26x17 [hidden] » 图片
+                  a.dropdown-item  @1018,151 150x34 [hidden]
+                    div.flex.items-center  @1031,159 46x17 [hidden]
+                      span  @1052,159 26x17 [hidden] » 我的
+                  a.dropdown-item  @1018,185 150x34 [hidden]
+                    div.flex.items-center  @1031,193 46x17 [hidden]
+                      span  @1052,193 26x17 [hidden] » 关于
+          button#display-settings-switch.btn-plain.scale-animation.rounded-lg.h-11.px-3  @1094,6 78x37
+            span.hidden.md:inline.text-sm.font-bold  @1126,16 36x17 » 主题色
+          style  [display:none]
+          script  [display:none]
+          script  [display:none]
+          astro-island  @0,0 0x0
+            div.wallpaper-actions.relative.z-50.s-_t9CdkZhBN3Z  @1175,6 116x37
+              div.relative.z-50.s-_t9CdkZhBN3Z  @1175,6 44x37
+                button#wallpaper-mode-switch.relative.btn-plain.scale-animation.rounded-lg.h-11  @1175,6 44x37
+                  span.hidden.md:inline.text-sm.font-bold.s-_t9CdkZhBN3Z  @1185,16 24x17 » 模式
+                div#wallpaper-mode-panel.absolute.transition.float-panel-closed.top-11.-right-2  @1182,43 44x0 [opacity:0]
+                  div.card-base.float-panel.p-2.s-_t9CdkZhBN3Z  @1182,43 44x0
+                    button.flex.transition.whitespace-nowrap.items-center.!justify-start  @1185,43 37x0 » 全屏模式
+                    div.my-1.border-t.border-black/10.dark:border-white/10.s-_t9CdkZhBN3Z  @1185,43 37x0 » 
+                    button.flex.transition.whitespace-nowrap.items-center.!justify-start  @1185,43 37x0 » 简洁模式
+                    div.my-1.border-t.border-black/10.dark:border-white/10.s-_t9CdkZhBN3Z  @1185,43 37x0 » 
+                    button.flex.transition.whitespace-nowrap.items-center.!justify-start  @1185,43 37x0 » 夜晚模式
+              div.wallpaper-cycle-host.s-_t9CdkZhBN3Z.cycle-shown  @1223,6 68x37 [overflow:hidden]
+                div.wallpaper-cycle-inner.s-_t9CdkZhBN3Z  @1223,6 68x37
+                  button#wallpaper-cycle-btn.btn-plain.scale-animation.rounded-lg.h-11.px-3  @1223,6 68x37
+                    span.hidden.md:inline.text-sm.font-bold.s-_t9CdkZhBN3Z  @1233,16 48x17 » 切换壁纸
+          astro-island  @0,0 0x0
+            button#mobile-toc-switch.btn-plain.scale-animation.rounded-lg.h-11.w-11  [display:none]
+            div#mobile-toc-panel.float-panel.float-panel-closed.mobile-toc-panel.absolute.md:w-[20rem]  @1100,68 190x0 [opacity:0] [overflow:hidden auto]
+              div.flex.items-center.justify-between.mb-4.s-qRtBQjN9b-V6  @1110,68 171x0
+                h3.text-lg.font-bold.text-[var(--primary)].s-qRtBQjN9b-V6  @1110,68 43x0 » 文章列表
+                button.btn-plain.rounded-lg.h-8.w-8.active:scale-90  @1262,68 19x0 » 
+              div.text-center.py-8.text-black/50.dark:text-white/50.s-qRtBQjN9b-V6  @1110,68 171x0
+                p.s-qRtBQjN9b-V6  @1110,68 171x0 » 暂无文章
+          button#nav-menu-switch.btn-plain.scale-animation.rounded-lg.w-11.h-11  [display:none]
+          div#nav-menu-panel.float-panel.float-panel-closed.absolute.transition-all.fixed  @1221,71 69x0 [opacity:0] [overflow:hidden auto]
+            div.mobile-menu-item  @1226,71 61x0
+              a.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                div.flex.items-center.transition.text-black/75.dark:text-white/75  @1232,71 32x0
+            div.mobile-menu-item  @1226,71 61x0
+              a.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                div.flex.items-center.transition.text-black/75.dark:text-white/75  @1232,71 32x0
+            div.mobile-menu-item  @1226,71 61x0
+              div.mobile-dropdown  @1226,71 61x0
+                button.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                  div.flex.items-center.transition.text-black/75.dark:text-white/75  @1232,71 32x0
+                div.mobile-submenu  @1226,71 61x0 [overflow:hidden]
+                  a.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1239,71 32x0
+                  a.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1239,71 32x0
+                  a.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1239,71 32x0
+                  a.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1239,71 32x0
+                  a.group.flex.justify-between.items-center.py-2  @1226,71 61x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1239,71 32x0
+          script  [display:none]
+          astro-island  @0,0 0x0
+            div#display-setting.float-panel.float-panel-closed.absolute.transition-all.w-80  @1128,71 163x0 [opacity:0] [overflow:hidden]
+              div.flex.flex-row.gap-2.mb-3.items-center  @1136,71 147x0
+                div.flex.gap-2.font-bold.text-lg.text-neutral-900  @1142,71 37x0
+                  button.btn-regular.w-7.h-7.rounded-md.active:scale-90  @1164,71 14x0 [opacity:0]
+                    div.text-[var(--btn-content)].s-bnFe51qDpoe9  @1171,71 0x0 » 
+                div.flex.gap-1.s-bnFe51qDpoe9  @1262,71 20x0
+                  div#hueValue.transition.bg-[var(--btn-regular-bg)].w-10.h-7.rounded-md  @1262,71 20x0 » 185
+              div.w-full.h-6.px-1.bg-[oklch(0.80_0.10_0)].dark:bg-[oklch(0.70_0.10_0)]  @1136,71 147x0
+                input#colorSlider.slider.s-bnFe51qDpoe9  @1138,71 143x0 » 
+    script  [display:none]
+
+### PAGE CONTENT (from #main-grid) ###
+div.relative.max-w-[var(--content-width)].mx-auto.pointer-events-auto  @94,75 1224x598
+  div#main-grid.page-transition-region.w-full.left-0.right-0.grid  @94,75 1224x598
+    div#sidebar-swup-container.contents  @0,0 0x0
+      div#sidebar.block.md:block.md:mb-4.md:max-w-[17.5rem].lg:block  @108,75 238x584
+        div.flex.flex-col.w-full.gap-4.mb-4  @108,75 238x454
+          div.flex.flex-col.w-full.gap-4.md:hidden  [display:none]
+          div.hidden.md:flex.flex-col.w-full.gap-4  @108,75 238x454
+            div.card-base.p-3  @108,75 238x323
+              div.group.block.relative.mx-auto.mt-1  @118,85 218x226 [overflow:hidden]
+                div.mx-auto.lg:w-full.h-full.lg:mt-0.overflow-hidden  @118,85 218x226 [overflow:hidden]
+                  div.transition.absolute.inset-0.dark:bg-black/10.bg-opacity-50  @118,85 218x226 » 
+                  img.w-full.h-full.object-cover  @118,85 218x226 [overflow:clip] » 
+              div.px-2  @118,321 218x58
+                div.font-bold.text-xl.text-center.mb-1.dark:text-neutral-50  @125,321 204x24 » FGmagi
+                div.h-1.w-5.bg-[var(--primary)].mx-auto.rounded-full  @218,349 17x3 » 
+                div.text-center.text-neutral-400.mb-2.5.transition  @125,359 204x20
+                  span.typewriter.inline-block  @165,359 122x20 » 弱水三千，只取一瓢
+            widget-layout.pb-4.card-base  @108,411 238x117
+              div.font-bold.transition.text-lg.text-neutral-900.dark:text-neutral-100  @135,425 211x24 » 公告
+              div#announcement.collapse-wrapper.px-4.overflow-hidden  @108,456 238x59 [overflow:hidden]
+                div  @121,456 211x59
+                  div.text-neutral-600.dark:text-neutral-300.leading-relaxed.mb-3  @121,456 211x22 » 施工中，暂无告示
+                  div.flex.items-center.justify-between.gap-3  @121,488 211x27
+                    div  @121,488 86x27
+                      a.btn-regular.rounded-lg.px-3.py-1.5.text-sm  @121,488 86x27 » Learn More
+        div#sidebar-sticky.transition-all.duration-700.flex.flex-col.w-full  @108,542 238x78
+          div.hidden.md:flex.flex-col.w-full.gap-4  @108,542 238x78
+            widget-layout.pb-4.card-base  @108,542 238x78
+              div.font-bold.transition.text-lg.text-neutral-900.dark:text-neutral-100  @135,556 211x24 » 标签筛选
+              div#tag-filter.collapse-wrapper.px-4.overflow-hidden  @108,586 238x20 [overflow:hidden]
+                div.tag-filter-list  @121,586 211x20
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @121,586 42x20
+                    span.tag-filter-label.max-w-full.truncate  @128,590 28x14 [overflow:hidden] » “技术”
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @170,586 34x20
+                    span.tag-filter-label.max-w-full.truncate  @176,590 20x14 [overflow:hidden] » 笔记
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @210,586 54x20
+                    span.tag-filter-label.max-w-full.truncate  @217,590 41x14 [overflow:hidden] » 环境配置
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @272,586 34x20
+                    span.tag-filter-label.max-w-full.truncate  @278,590 20x14 [overflow:hidden] » 技术
+                  span.tag-filter-filler  @312,597 20x0 [hidden] » 
+            script  [display:none]
+      script  [display:none]
+      div.right-sidebar-container.home-right-sidebar.hidden.md:hidden.lg:block  @1066,75 238x584
+        div#right-sidebar.w-full  @1066,75 238x550
+          div.flex.flex-col.w-full.gap-4.mb-4  @1066,75 238x550
+            widget-layout.pb-4.card-base  @1066,75 238x241
+              div.font-bold.transition.text-lg.text-neutral-900.dark:text-neutral-100  @1094,88 211x24 » 站点统计
+              div#site-stats.collapse-wrapper.px-4.overflow-hidden  @1066,119 238x184 [overflow:hidden]
+                div.flex.flex-col.gap-1  @1080,119 211x184
+                  div.flex.items-center.justify-between.px-2.py-2  @1080,119 211x34
+                    div.flex.items-center.gap-2.5.flex-1.min-w-0  @1087,127 179x17
+                      div.text-[var(--primary)].text-xl.shrink-0  @1087,127 17x17
+                      span.text-neutral-700.dark:text-neutral-300.font-medium.text-sm.break-words  @1112,129 24x15 » 文章
+                    div.flex.items-center.ml-3.shrink-0  @1276,126 8x20
+                      span.text-base.font-bold.text-neutral-900.dark:text-neutral-100  @1276,126 8x20 » 2
+                  div.flex.items-center.justify-between.px-2.py-2  @1080,156 211x34
+                    div.flex.items-center.gap-2.5.flex-1.min-w-0  @1087,165 179x17
+                      div.text-[var(--primary)].text-xl.shrink-0  @1087,165 17x17
+                      span.text-neutral-700.dark:text-neutral-300.font-medium.text-sm.break-words  @1112,166 24x15 » 标签
+                    div.flex.items-center.ml-3.shrink-0  @1276,163 8x20
+                      span.text-base.font-bold.text-neutral-900.dark:text-neutral-100  @1276,163 8x20 » 4
+                  div.flex.items-center.justify-between.px-2.py-2  @1080,194 211x34
+                    div.flex.items-center.gap-2.5.flex-1.min-w-0  @1087,202 150x17
+                      div.text-[var(--primary)].text-xl.shrink-0  @1087,202 17x17
+                      span.text-neutral-700.dark:text-neutral-300.font-medium.text-sm.break-words  @1112,203 36x15 » 总字数
+                    div.flex.items-center.ml-3.shrink-0  @1247,201 37x20
+                      span.text-base.font-bold.text-neutral-900.dark:text-neutral-100  @1247,201 37x20 » 2,614
+                  div.flex.items-center.justify-between.px-2.py-2  @1080,231 211x34
+                    div.flex.items-center.gap-2.5.flex-1.min-w-0  @1087,240 147x17
+                      div.text-[var(--primary)].text-xl.shrink-0  @1087,240 17x17
+                      span.text-neutral-700.dark:text-neutral-300.font-medium.text-sm.break-words  @1112,241 48x15 » 运行天数
+                    div.flex.items-center.ml-3.shrink-0  @1244,238 40x20
+                      span.text-base.font-bold.text-neutral-900.dark:text-neutral-100  @1244,238 25x20 » 210
+                      span.text-sm.text-neutral-500.dark:text-neutral-400.ml-1  @1272,240 12x17 » 天
+                  div.flex.items-center.justify-between.px-2.py-2  @1080,269 211x34
+                    div.flex.items-center.gap-2.5.flex-1.min-w-0  @1087,277 143x17
+                      div.text-[var(--primary)].text-xl.shrink-0  @1087,277 17x17
+                      span.text-neutral-700.dark:text-neutral-300.font-medium.text-sm.break-words  @1112,278 48x15 » 最后活动
+                    div.flex.items-center.ml-3.shrink-0  @1240,275 44x20
+                      span.text-base.font-bold.text-neutral-900.dark:text-neutral-100  @1240,275 17x20 » 14
+                      span.text-sm.text-neutral-500.dark:text-neutral-400.ml-1  @1260,277 24x17 » 天前
+            script  [display:none]
+            widget-layout.pb-4.card-base.hidden.md:block  @1066,330 238x295
+              div#calendar-widget.collapse-wrapper.px-4.overflow-hidden  @1066,330 238x282 [overflow:hidden]
+                div.flex.justify-between.items-center.mb-2.mt-2  @1080,337 211x37
+                  div.font-bold.transition.text-lg.text-neutral-900.dark:text-neutral-100  @1094,337 89x37
+                    div#calendar-title-container.flex.justify-center.items-center.cursor-pointer.hover:bg-[var(--btn-plain-bg-hover)]  @1087,337 96x37
+                      span#calendar-title.text-lg.font-bold.text-neutral-900.dark:text-neutral-100.select-none  @1094,343 82x24 » 2026年 9月
+                  div.flex.items-center.gap-1.shrink-0.ml-2  @1202,338 88x34
+                    button#back-to-today-btn.p-1.5.rounded-md.hover:bg-[var(--btn-plain-bg-hover)].text-[var(--primary)].transition-all  @1202,342 27x27 [hidden]
+                    button#prev-month-btn.p-1.5.rounded-md.hover:bg-[var(--btn-plain-bg-hover)].text-neutral-600.dark:text-neutral-400  @1233,338 27x34 » ＜
+                    button#next-month-btn.p-1.5.rounded-md.hover:bg-[var(--btn-plain-bg-hover)].text-neutral-600.dark:text-neutral-400  @1264,338 27x34 » ＞
+                div.relative.w-full.overflow-hidden  @1080,381 211x231 [overflow:hidden]
+                  div#calendar-view.w-full.opacity-100  @1080,381 211x231
+                    div.grid.grid-cols-7.gap-1.mb-2  @1080,381 211x20
+                      div.text-center.text-xs.text-neutral-500.dark:text-neutral-400.font-medium  @1080,381 27x20 » 一
+                      div.text-center.text-xs.text-neutral-500.dark:text-neutral-400.font-medium  @1111,381 27x20 » 二
+                      div.text-center.text-xs.text-neutral-500.dark:text-neutral-400.font-medium  @1141,381 27x20 » 三
+                      div.text-center.text-xs.text-neutral-500.dark:text-neutral-400.font-medium  @1172,381 27x20 » 四
+                      div.text-center.text-xs.text-neutral-500.dark:text-neutral-400.font-medium  @1202,381 27x20 » 五
+                      div.text-center.text-xs.text-neutral-500.dark:text-neutral-400.font-medium  @1233,381 27x20 » 六
+                      div.text-center.text-xs.text-neutral-500.dark:text-neutral-400.font-medium  @1264,381 27x20 » 日
+                    div#calendar-grid.grid.grid-cols-7.gap-1  @1080,408 211x150
+                      div.aspect-square  @1080,408 27x27 » 
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1111,408 27x27
+                        span.absolute.bottom-1.w-1.h-1.rounded-full  @1122,427 3x3 » 
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1141,408 27x27 » 2
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1172,408 27x27 » 3
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1202,408 27x27 » 4
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1233,408 27x27 » 5
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1264,408 27x27 » 6
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1080,439 27x27 » 7
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1111,439 27x27 » 8
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1141,439 27x27 » 9
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1172,439 27x27 » 10
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1202,439 27x27 » 11
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1233,439 27x27 » 12
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1264,439 27x27 » 13
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1080,469 27x27 » 14
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1111,469 27x27 » 15
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1141,469 27x27 » 16
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1172,469 27x27 » 17
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1202,469 27x27 » 18
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1233,469 27x27 » 19
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1264,469 27x27 » 20
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1080,500 27x27 » 21
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1111,500 27x27 » 22
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1141,500 27x27 » 23
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1172,500 27x27 » 24
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1202,500 27x27 » 25
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1233,500 27x27 » 26
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1264,500 27x27 » 27
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1080,530 27x27 » 28
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1111,530 27x27 » 29
+                      div.calendar-day.aspect-square.flex.items-center.justify-center  @1141,530 27x27 » 30
+                    div#calendar-posts.mt-4  @1080,571 211x40
+                      div#calendar-posts-divider.h-[1px].w-full.bg-neutral-200.dark:bg-neutral-700.mb-2  @1080,571 211x1 » 
+                      div#calendar-posts-list.flex.flex-col.gap-1.max-h-[9.375rem].overflow-y-auto  @1080,579 211x33 [overflow:auto]
+                        a.flex.items-center.justify-between.text-sm.transition-colors  @1080,579 211x33
+                          span.truncate.flex-1.font-bold.transition-colors  @1088,587 172x17 [overflow:hidden] » nvm+node环境配置笔记
+                          span.text-xs.ml-2.whitespace-nowrap.transition-colors.text-neutral-400  @1267,588 16x14 » 9-1
+                  div#selection-panel.absolute.inset-0.bg-[var(--card-bg)].z-10.flex  [display:none]
+            script  [display:none]
+        script  [display:none]
+    main#swup-container.transition-swup-fade.overflow-hidden.w-full.col-span-1.row-start-1  @359,75 694x598 [overflow:hidden]
+      div#content-wrapper.transition-leaving.home-content-fill  @359,75 694x598
+        script  [display:none]
+        astro-island  @0,0 0x0
+          div.home-search-bar.mb-4.s-uAOWrccsW9eS  @359,75 694x35
+            div.relative.s-uAOWrccsW9eS  @359,75 694x35
+              input.post-search-input.w-full.px-4.py-2.pl-10  @359,75 694x35 [overflow:clip] » 
+              span.absolute.right-4.top-1/2.-translate-y-1/2.pointer-events-none  @1010,84 29x18 » Enter
+        div#post-list-container.transition-opacity.duration-500.ease-in-out.rounded-[var(--radius-large)].bg-[var(--card-bg)]  @359,124 694x498 [overflow:hidden]
+          div.card-base.group.flex.flex-col-reverse.md:flex-col  @359,124 694x120
+            div.post-card-hover-dim.absolute.inset-0.z-30.pointer-events-none  @359,124 694x120 [opacity:0] » 
+            a.absolute.inset-0.z-10.rounded-[var(--radius-large)]  @359,124 694x120 » 
+            div.post-card-content.pl-6.md:pl-9.pr-6.md:pr-[0.667rem]  @359,124 524x120
+              div.flex.flex-wrap.items-end.justify-between.gap-x-4  @390,141 485x31
+                a.transition.min-w-0.flex-1.block.font-bold  @390,141 458x31 » nvm+node环境配置笔记
+                div.flex.flex-wrap.text-neutral-500.dark:text-neutral-400.items-center  @861,171 0x0
+                  div.flex.items-center.meta-date  [display:none]
+                  div.flex.items-center.meta-words  [display:none]
+              div.transition.text-75.mt-[0.3rem].mb-[0.575rem].pr-4  @390,181 364x20 [overflow:hidden] » windows系统 node 18.20.8 配置笔记
+              div.post-card-bottom-row.flex.flex-wrap.items-center.justify-between  @390,210 485x20
+                div.flex.flex-wrap.gap-2  @390,210 114x20
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @390,210 64x20 » # 环境配置
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @461,210 44x20 » # 技术
+                span.post-card-bottom-date.btn-regular.h-6.px-2.rounded-lg  @804,210 70x20 » 2026-09-01
+            a.post-cover-link.max-h-[20vh].md:max-h-none.mx-4.mt-4  @884,139 159x90 [overflow:hidden]
+              div.w-full.h-full.overflow-hidden.relative  @884,139 159x90 [overflow:hidden]
+                img.w-full.h-full.object-cover.cover-landscape  @884,139 159x90 [overflow:clip] » 
+          div.post-card-divider.transition.border-t-[1px].border-dashed.mx-6  [display:none]
+          style  [display:none]
+          div.card-base.group.flex.flex-col-reverse.md:flex-col  @359,244 694x120
+            div.post-card-hover-dim.absolute.inset-0.z-30.pointer-events-none  @359,244 694x120 [opacity:0] » 
+            a.absolute.inset-0.z-10.rounded-[var(--radius-large)]  @359,244 694x120 » 
+            div.post-card-content.pl-6.md:pl-9.pr-6.md:pr-[0.667rem]  @359,244 524x120
+              div.flex.flex-wrap.items-end.justify-between.gap-x-4  @390,261 485x31
+                a.transition.min-w-0.flex-1.block.font-bold  @390,261 458x31 » 刷题笔记
+                div.flex.flex-wrap.text-neutral-500.dark:text-neutral-400.items-center  @861,291 0x0
+                  div.flex.items-center.meta-date  [display:none]
+                  div.flex.items-center.meta-words  [display:none]
+              div.transition.text-75.mt-[0.3rem].mb-[0.575rem].pr-4  @390,301 485x20 [overflow:hidden] » 暴力出奇迹，打表出AC
+              div.post-card-bottom-row.flex.flex-wrap.items-center.justify-between  @390,330 485x20
+                div.flex.flex-wrap.gap-2  @390,330 102x20
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @390,330 51x20 » # “技术”
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @448,330 44x20 » # 笔记
+                span.post-card-bottom-date.btn-regular.h-6.px-2.rounded-lg  @804,330 70x20 » 2026-07-08
+            a.post-cover-link.max-h-[20vh].md:max-h-none.mx-4.mt-4  @884,259 159x90 [overflow:hidden]
+              div.w-full.h-full.overflow-hidden.relative  @884,259 159x90 [overflow:hidden]
+                img.w-full.h-full.object-cover.cover-landscape  @884,259 159x90 [overflow:clip] » 
+          div.post-card-divider.transition.border-t-[1px].border-dashed.mx-6  [display:none]
+          style  [display:none]
+          div.blank-post-card  @359,364 694x86 [opacity:0] » 
+          div.blank-post-card  @359,450 694x86 [opacity:0] » 
+          div.blank-post-card  @359,536 694x86 [opacity:0] » 
+        script  [display:none]
+        script  [display:none]
+        div.mx-auto.mt-auto.flex.flex-row.gap-3  @640,635 133x37
+          a.btn-card.overflow-hidden.rounded-lg.text-[var(--primary)].w-11  @640,635 37x37 [overflow:hidden]
+          div.bg-[var(--card-bg)].flex.flex-row.rounded-lg.items-center  @687,635 37x37
+            div.h-11.w-11.rounded-lg.bg-[var(--primary)].flex  @687,635 37x37 » 1
+          a.btn-card.overflow-hidden.rounded-lg.text-[var(--primary)].w-11  @735,635 37x37 [overflow:hidden]
+        div.footer.col-span-full.hidden.lg:block  @359,673 694x0 » 
+    div.footer.col-span-full.block.lg:hidden  [display:none]
+  div.back-to-top-wrapper.block  @1267,75 51x51
+    div#back-to-top-btn.back-to-top-btn.hide.flex.items-center.rounded-2xl  @1350,688 46x46 [opacity:0] [overflow:hidden]
+      button.btn-card.h-[3.75rem].w-[3.75rem]  @1350,688 46x46
+  script  [display:none]
+
+### FULLSCREEN WALLPAPER ###
+div.fixed.inset-0.w-full.h-full.overflow-hidden  @0,0 1412x804 [opacity:0.28] [overflow:hidden]
+  script  [display:none]
+  div.hidden.md:block.w-full.h-full.relative  @0,0 1412x804
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1412x804 [overflow:clip] » 
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1412x804 [opacity:0] [overflow:clip] » 
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1412x804 [opacity:0] [overflow:clip] » 
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1412x804 [opacity:0] [overflow:clip] » 
+  div.block.md:hidden.w-full.h-full.relative  [display:none]
+  script  [display:none]

@@ -1,0 +1,65 @@
+· <!DOCTYPE html>
+html.bg-[var(--page-bg)].text-[14px].md:text-[16px].swup-enabled
+  head
+    · <!-- 第三方分析脚本 - 延迟加载优化 --><!-- 26.09.14：首帧预渲染门 —— 首次打开网页或刷新时必…
+    body
+      · 开头）。 本样式块位于
+      head
+        · ，早于所有页面内容 ⇒ 类名先于元素生效，不存在「未样式化首帧」。 ⚠ 这里保留一份与 src/styles/trans…
+        title
+          · FGmagi Blog - 少女祈祷中
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        meta
+        link
+        link
+        · <!-- Set the theme before the page is rendered to avoid a fl…
+        html
+          body
+            · and some other elements idk why --><!-- Pio 看板娘样式 - 仅在启用时加载 …
+            link
+            · <!-- Umami Analytics -->
+          body.min-h-screen.lg:is-home.wallpaper-transparent.no-banner-mode
+            noscript
+              iframe
+            · <!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
+            div.top-gradient-highlight
+            · <!-- 全局配置载体 -->
+            div#config-carrier
+            · <!-- 引入Umami Share工具脚本 --> <!-- 26.09.02 [14]：容器暴露 SSR 解析后的桌…
+            div.fixed.inset-0.w-full.h-full
+              div.hidden.md:block.w-full.h-full
+                img.absolute.inset-0.w-full.h-full
+                img.absolute.inset-0.w-full.h-full
+                img.absolute.inset-0.w-full.h-full
+                img.absolute.inset-0.w-full.h-full
+              div.block.md:hidden.w-full.h-full
+                img.absolute.inset-0.w-full.h-full
+                img.absolute.inset-0.w-full.h-full
+                img.absolute.inset-0.w-full.h-full
+            · <!-- Iconify图标库加载器 --> <!-- 为不支持JavaScript的情况提供备用方案 -->
+            noscript
+            div#top-row.z-50.pointer-events-none.fixed.top-0
+              div#navbar-wrapper.pointer-events-auto.relative.transition-all.h-full
+                div#navbar.z-50
+                  div.absolute.h-8.left-0.right-0
+                  · <!-- used for onload animation -->
+                  div.!overflow-visible.max-w-[var(--page-width)].h-[3.6rem].mx-auto
+                    · <!-- 区域1（左）：主页，维持原位 -->
+                    div.flex.items-center.shrink-0.space-x-1
+                      a.btn-plain.scale-animation.rounded-lg.h-[2.5rem]
+                        div.flex.flex-row.items-center.text-md
+                          img.h-[2.25rem].max-w-full.object-contain
+                      div.dropdown-container.group
+                        a.btn-plain.scale-animation.rounded-lg.h-11

@@ -114,7 +114,9 @@ const galleryItems = album.photos.map((photo: Photo, index: number) => {
         )}
       </header>
 
-      <!-- 照片网格：尺寸未知时整卡空白 + 居中旋转圆圈，绝不渲染未排版占位 -->
+      <!-- 照片网格：26.09.14 起不再有「整卡空白 + 居中圆圈」的尺寸期——
+           尺寸未知的项立即按默认宽高比排版（可读、可滚动），Worker 探到真实尺寸后按帧批量校正。
+           每张图自己的旋转圆圈占位保留（已排版、未加载）。 -->
       <div 
         class={`photo-gallery ${album.layout === 'masonry' ? 'masonry-layout' : 'grid-layout'}`}
         data-layout={album.layout || 'grid'}
@@ -138,16 +140,22 @@ const galleryItems = album.photos.map((photo: Photo, index: number) => {
               class="photo-link group"
               aria-label={photo.alt || photo.title || `Photo ${index + 1}`}
             >
+              <!-- 26.09.14：补 loading="lazy"，避免日后有人给该 img 补上 src 时首屏并发拉取全部外链 -->
               <img 
                 alt={photo.alt}
                 class="photo-image cursor-pointer"
                 data-key={key}
                 data-src={photo.src}
                 decoding="async"
+                loading="lazy"
                 width={dimKnown ? photo.width : undefined}
                 height={dimKnown ? photo.height : undefined}
               />
             </a>
+            <!-- 26.09.14：JS 未执行（脚本报错/被拦/被禁）时的兜底直出图，避免永久停在空占位 -->
+            <noscript>
+              <img class="photo-fallback-image" src={photo.src} alt={photo.alt} loading="lazy" decoding="async" />
+            </noscript>
           </figure>
         ))}
       </div>
@@ -251,6 +259,17 @@ const galleryItems = album.photos.map((photo: Photo, index: number) => {
     transform: scale(1.05);
   }
   
+  /* 26.09.14：JS 未执行时的兜底直出图（noscript 内），避免永久停在空占位。
+     占位层是 position:absolute + z-index:0，兜底图必须抬到它之上，
+     否则会被 10% 灰底压暗，且 spinner 会一直在图上转。 */
+  .photo-fallback-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    position: relative;
+    z-index: 2;
+  }
+
   /* 加载完成：显示图片并隐藏占位层 */
   .photo-item.photo-loaded .photo-image {
     opacity: 1;
@@ -289,21 +308,37 @@ const galleryItems = album.photos.map((photo: Photo, index: number) => {
     }
   }
 
-  /* ============ 尺寸期（S0）：整卡空白 + 正中央旋转圆圈 ============ */
-  .photo-gallery.gallery-sizing {
+  /* ============ 位图通道：<img> 被替换为 canvas 后的呈现规则 ============ */
+  /* canvas 与 img 共用 .photo-image 类，这里只补 canvas 侧的差异：
+     canvas 以内在像素为准，必须靠 object-fit 铺满盒子（masonry 盒子比例已由 aspect-ratio 定好） */
+  canvas.photo-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* 尺寸探测回填的过渡：比例变化时平滑一点，避免整列瞬间跳变
+     （prefers-reduced-motion 下直接跳变） */
+  .masonry-layout .photo-item {
+    transition: aspect-ratio 0.25s ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .masonry-layout .photo-item {
+      transition: none;
+    }
+  }
+</style>
+
+<!-- 26.09.14：<noscript> 子元素可能拿不到 Astro 作用域属性（编译器对 noscript 内容的
+     作用域注入存在已知问题），故用 is:global 再兜一份，确保无 JS 时兜底图仍铺满宽度。
+     该选择器只命中 noscript 内的兜底图，JS 正常时该元素不存在，无副作用。 -->
+<style is:global>
+  .photo-fallback-image {
+    width: 100%;
+    height: auto;
+    display: block;
     position: relative;
-    min-height: 300px;
-  }
-  .photo-gallery.gallery-sizing > .photo-item {
-    visibility: hidden;
-  }
-  .gallery-sizing-indicator {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
+    z-index: 2;
   }
 </style>

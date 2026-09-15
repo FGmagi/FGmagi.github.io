@@ -1,0 +1,295 @@
+{
+ "url": "/",
+ "viewport": {
+  "w": 504,
+  "h": 748,
+  "dpr": 1
+ },
+ "bodyClass": "min-h-screen lg:is-home wallpaper-transparent no-banner-mode",
+ "doc": {
+  "scrollW": 494,
+  "clientW": 494,
+  "scrollH": 1004,
+  "rootFontSize": "14px"
+ },
+ "fonts": {
+  "status": "loaded",
+  "size": 29
+ },
+ "errors": [
+  {
+   "msg": "warn: Iconify load attempt 1 failed: Error: Script load timeout"
+  },
+  {
+   "msg": "warn: Iconify load attempt 2 failed: Error: Script load error"
+  },
+  {
+   "msg": "warn: Iconify load attempt 3 failed: Error: Script load error"
+  }
+ ],
+ "resources": {
+  "total": 250,
+  "byType": {
+   "1:4399/@vite/client": 1,
+   "js": 68,
+   "css": 23,
+   "astro": 48,
+   "styl": 2,
+   "svelte": 9,
+   "webp": 56,
+   "png": 5,
+   "1:4399/@id/__x00__astro:toolbar:internal": 1,
+   "mjs": 1,
+   "ms/tag/tjr3vkhj8i": 1,
+   "json": 10,
+   "ts": 23,
+   "ico": 1,
+   "1:4399/": 1
+  },
+  "failed": [],
+  "transferKB": 12390.16
+ },
+ "images": {
+  "count": 13,
+  "loadingAttr": {
+   "eager": 3,
+   "lazy": 10
+  },
+  "broken": []
+ },
+ "overflowing": [],
+ "clippedText": [],
+ "cards": [
+  {
+   "el": "div.card-base.p-3",
+   "x": 7,
+   "y": 563.5,
+   "w": 480,
+   "h": 277.83,
+   "r": 487,
+   "b": 841.33
+  },
+  {
+   "el": "widget-layout.pb-4.card-base",
+   "x": 7,
+   "y": 855.33,
+   "w": 480,
+   "h": 120.75,
+   "r": 487,
+   "b": 976.08
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 7,
+   "y": 127.2,
+   "w": 480,
+   "h": 174.3,
+   "r": 487,
+   "b": 301.5
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 7,
+   "y": 308.5,
+   "w": 480,
+   "h": 153.5,
+   "r": 487,
+   "b": 462
+  }
+ ],
+ "key": {
+  "topRow": {
+   "x": 0,
+   "y": 0,
+   "w": 494,
+   "h": 50.39,
+   "r": 494,
+   "b": 50.39
+  },
+  "navbar": {
+   "x": 0,
+   "y": 0,
+   "w": 494,
+   "h": 50.39,
+   "r": 494,
+   "b": 50.39
+  },
+  "navbarCard": {
+   "x": 0,
+   "y": 0,
+   "w": 494,
+   "h": 50.39,
+   "r": 494,
+   "b": 50.39
+  },
+  "mainGrid": {
+   "x": 0,
+   "y": 77,
+   "w": 494,
+   "h": 927.08,
+   "r": 494,
+   "b": 1004.08
+  },
+  "leftSidebar": {
+   "x": 7,
+   "y": 563.5,
+   "w": 480,
+   "h": 426.58,
+   "r": 487,
+   "b": 990.08
+  },
+  "mainContent": {
+   "x": 0,
+   "y": 77,
+   "w": 494,
+   "h": 927.08,
+   "r": 494,
+   "b": 1004.08
+  },
+  "postList": {
+   "x": 7,
+   "y": 127.2,
+   "w": 480,
+   "h": 355.8,
+   "r": 487,
+   "b": 483
+  },
+  "searchBar": {
+   "x": 7,
+   "y": 77,
+   "w": 480,
+   "h": 36.2,
+   "r": 487,
+   "b": 113.2
+  }
+ },
+ "posts": [],
+ "sideWidgets": [
+  {
+   "el": "div.flex.flex-col.w-full",
+   "x": 7,
+   "y": 563.5,
+   "w": 480,
+   "h": 412.58,
+   "r": 487,
+   "b": 976.08
+  },
+  {
+   "el": "div#sidebar-sticky.transition-all.duration-700.flex",
+   "x": 7,
+   "y": 990.08,
+   "w": 480,
+   "h": 0,
+   "r": 487,
+   "b": 990.08
+  }
+ ],
+ "pairs": [
+  {
+   "name": "navbar-vs-main",
+   "overlap": false,
+   "gapX": -494,
+   "a": {
+    "x": 0,
+    "y": 0,
+    "w": 494,
+    "h": 50.39,
+    "r": 494,
+    "b": 50.39
+   },
+   "b": {
+    "x": 0,
+    "y": 77,
+    "w": 494,
+    "h": 927.08,
+    "r": 494,
+    "b": 1004.08
+   }
+  },
+  {
+   "name": "navbar-vs-postList",
+   "overlap": false,
+   "gapX": -487,
+   "a": {
+    "x": 0,
+    "y": 0,
+    "w": 494,
+    "h": 50.39,
+    "r": 494,
+    "b": 50.39
+   },
+   "b": {
+    "x": 7,
+    "y": 127.2,
+    "w": 480,
+    "h": 355.8,
+    "r": 487,
+    "b": 483
+   }
+  },
+  {
+   "name": "left-vs-postList",
+   "overlap": false,
+   "gapX": -480,
+   "a": {
+    "x": 7,
+    "y": 563.5,
+    "w": 480,
+    "h": 426.58,
+    "r": 487,
+    "b": 990.08
+   },
+   "b": {
+    "x": 7,
+    "y": 127.2,
+    "w": 480,
+    "h": 355.8,
+    "r": 487,
+    "b": 483
+   }
+  },
+  {
+   "name": "searchBar-vs-postList",
+   "overlap": false,
+   "gapX": -480,
+   "a": {
+    "x": 7,
+    "y": 77,
+    "w": 480,
+    "h": 36.2,
+    "r": 487,
+    "b": 113.2
+   },
+   "b": {
+    "x": 7,
+    "y": 127.2,
+    "w": 480,
+    "h": 355.8,
+    "r": 487,
+    "b": 483
+   }
+  }
+ ],
+ "edges": {
+  "#navbar": {
+   "left": 0,
+   "right": 10,
+   "width": 494
+  },
+  "#post-list-container": {
+   "left": 7,
+   "right": 17,
+   "width": 480
+  },
+  ".home-sidebar": {
+   "left": 7,
+   "right": 17,
+   "width": 480
+  },
+  ".home-search-bar": {
+   "left": 7,
+   "right": 17,
+   "width": 480
+  }
+ }
+}

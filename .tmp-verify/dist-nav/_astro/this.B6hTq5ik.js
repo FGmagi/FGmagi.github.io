@@ -1,0 +1,1 @@
+import{$ as t,a0 as b,u as h,W as k,a1 as S}from"./template.CQ3VMNHt.js";function u(r,i){return r===i||r?.[S]===i}function d(r={},i,f,T){return t(()=>{var a,s;return b(()=>{a=s,s=[],h(()=>{r!==f(...s)&&(i(r,...s),a&&u(f(...a),r)&&i(null,...a))})}),()=>{k(()=>{s&&u(f(...s),r)&&i(null,...s)})}}),r}export{d as b};

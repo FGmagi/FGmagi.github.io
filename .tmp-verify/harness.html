@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>prerender/fade verification</title>
+</head>
+<body style="margin:0;font:12px/1.4 monospace">
+<img id="gate" src="/__delay?ms=30000" alt="" style="position:fixed;left:-9999px;top:0">
+<iframe id="frame" src="/archive/?__probe=1" style="width:1440px;height:820px;border:0"></iframe>
+<pre id="report">RUNNING</pre>
+<script>
+const frame = document.getElementById("frame");
+const out = document.getElementById("report");
+const report = { phases: [], errors: [] };
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function waitFor(check, maxMs) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    try {
+      if (check()) return true;
+    } catch (e) {
+      /* 未就绪 */
+    }
+    await sleep(100);
+  }
+  return false;
+}
+
+/** 在 iframe 内记录：① 每次 classList.add/remove/toggle 调用；② 逐帧透明度与目录状态 */
+function installRecorder(win) {
+  win.eval(`(function () {
+    if (window.__rec) { window.__rec.calls = []; window.__rec.frames = []; return 'reused'; }
+    window.__rec = { calls: [], frames: [] };
+    var now = function () { return Math.round(performance.now()); };
+    ['add', 'remove', 'toggle'].forEach(function (m) {
+      var orig = DOMTokenList.prototype[m];
+      DOMTokenList.prototype[m] = function () {
+        try {
+          window.__rec.calls.push({ t: now(), m: m, a: Array.prototype.join.call(arguments, ' '), cls: String(this.value).slice(0, 90) });
+        } catch (e) {}
+        return orig.apply(this, arguments);
+      };
+    });
+    var tick = function () {
+      var g = document.getElementById('main-grid');
+      var c = document.getElementById('toc-container');
+      var r = document.getElementById('toc-rail-wrapper');
+      var a = document.querySelectorAll("#toc a[href^='#']");
+      window.__rec.frames.push({
+        t: now(),
+        cls: document.body.className.replace(/\\s+/g, ' ').trim(),
+        g: g ? getComputedStyle(g).opacity : null,
+        c: c ? getComputedStyle(c).opacity : null,
+        r: !!r,
+        n: a.length
+      });
+      window.__rec.raf = requestAnimationFrame(tick);
+    };
+    tick();
+    return 'installed';
+  })()`);
+}
+
+function readRec(win) {
+  return JSON.parse(win.eval("JSON.stringify({ calls: window.__rec.calls, frames: window.__rec.frames })"));
+}
+function resetRec(win) {
+  win.eval("window.__rec.calls = []; window.__rec.frames = [];");
+}
+function snap(win, tag) {
+  return JSON.parse(
+    win.eval(`JSON.stringify((function(){
+      var g = document.getElementById('main-grid');
+      var c = document.getElementById('toc-container');
+      var r = document.getElementById('toc-rail-wrapper');
+      var toc = document.getElementById('toc');
+      var a = toc ? toc.querySelectorAll("a[href^='#']") : [];
+      return {
+        tag: ${JSON.stringify(tag)},
+        cls: document.body.className.replace(/\\s+/g,' ').trim(),
+        gridOp: g ? getComputedStyle(g).opacity : null,
+        tocOp: c ? getComputedStyle(c).opacity : null,
+        rail: !!r,
+        railDisp: r ? getComputedStyle(r).display : null,
+        entries: a.length,
+        first: a.length ? a[0].getAttribute('href') : null,
+        layout: document.documentElement.getAttribute('data-toc-layout'),
+        maxH: getComputedStyle(document.documentElement).getPropertyValue('--toc-max-h').trim(),
+        gridH: g ? Math.round(g.getBoundingClientRect().height) : null
+      };
+    })())`)
+  );
+}
+
+/** 真实用户路径：点击 iframe 内第一个指向文章页的链接 */
+function clickPostLink(win) {
+  return win.eval(`(function(){
+    var a = document.querySelector('a[href*="/posts/"]');
+    if (!a) return null;
+    a.click();
+    return a.getAttribute('href');
+  })()`);
+}
+
+frame.addEventListener("load", () => {
+  void run();
+});
+
+async function run() {
+  const win = frame.contentWindow;
+  try {
+    const swupReady = await waitFor(() => win.swup && typeof win.swup.navigate === "function", 15000);
+    await sleep(500);
+    report.phases.push({ name: "start", swup: !!swupReady, snap: snap(win, "on-/archive/") });
+
+    // 诊断：早期错误 / 事件时序 / MainGridLayout 模块是否执行（用 wallpaper-mode-change 探针）
+    report.diag = JSON.parse(
+      win.eval(`JSON.stringify((function(){
+        var reg = null;
+        try {
+          var r = window.swup && window.swup.hooks && window.swup.hooks.registry;
+          reg = r ? { contentReplace: r.get('content:replace') ? r.get('content:replace').size : null,
+                      outStart: r.get('animation:out:start') ? r.get('animation:out:start').size : null,
+                      pageView: r.get('page:view') ? r.get('page:view').size : null,
+                      visitStart: r.get('visit:start') ? r.get('visit:start').size : null } : 'no-registry';
+        } catch (e) { reg = 'err:' + e; }
+        var before = document.body.className;
+        window.dispatchEvent(new Event('wallpaper-mode-change'));
+        var after = document.body.className;
+        return {
+          early: window.__early || null,
+          registry: reg,
+          bodyBefore: before,
+          bodyAfterWallpaperEvent: after,
+          moduleRan: before !== after,
+          tocLayout: document.documentElement.getAttribute('data-toc-layout')
+        };
+      })())`)
+    );
+    if (!swupReady) {
+      report.errors.push("swup 未就绪");
+    } else {
+      installRecorder(win);
+
+      // 阶段 1：非文章页 --点击--> 文章页
+      resetRec(win);
+      report.clickedHref = clickPostLink(win);
+      await sleep(1800);
+      report.phases.push(Object.assign({ name: "click: /archive/ -> post" }, readRec(win), { settled: snap(win, "p1-end") }));
+
+      // 阶段 2：文章页 -> 另一篇文章页
+      resetRec(win);
+      win.swup.navigate("/posts/nvmnode%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/");
+      await sleep(1800);
+      report.phases.push(Object.assign({ name: "navigate: post -> post" }, readRec(win), { settled: snap(win, "p2-end") }));
+
+      // 阶段 3：文章页 -> 无标题页（目录整体消失）
+      resetRec(win);
+      win.swup.navigate("/posts/about/");
+      await sleep(1500);
+      report.phases.push(Object.assign({ name: "navigate: post -> about" }, readRec(win), { settled: snap(win, "p3-end") }));
+    }
+  } catch (e) {
+    report.errors.push(String(e && e.stack ? e.stack : e));
+  }
+  out.textContent = JSON.stringify(report);
+}
+</script>
+</body>
+</html>

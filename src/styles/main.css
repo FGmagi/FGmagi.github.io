@@ -1,7 +1,12 @@
+/* 全局设计变量（--primary / --card-bg / --content-width / --toc-* 等）与 Tailwind 指令的宿主。
+   必须排在所有 @import 之后、@tailwind 之前（postcss-import 要求 @import 置顶）。 */
+@import "./variables.styl";
 /* 导入相册样式 */
 @import "./albums.css";
-/* 导入追番页面样式 */
-@import "./anime.css";
+/* 26.09.06：anime.css 不在此引入——它只服务 /anime 页，由 pages/anime.astro 单独 import。
+   来源：恢复 main.css 入口后，此处 @import 会把 anime.css 内联进**每个**页面的 CSS 包，
+   并与 /anime 页自身的 JS import 形成同一份样式双份打包（Vite 只对 JS 模块去重，
+   对「内联副本」不去重）。 */
 /* 导入动画样式 */
 @import "./transition.css";
 @import "./animation-enhancements.css";

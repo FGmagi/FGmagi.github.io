@@ -71,7 +71,6 @@ const [homeLink, ...restLinks] = links;
                 return <DropdownMenu link={l} />;
             })}
         </div>
-        {siteConfig.toc.enable && <MobileTOC client:only="svelte"></MobileTOC>}
         {!siteConfig.themeColor.fixed && (
             <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 px-3 active:scale-90 flex items-center gap-1.5" id="display-settings-switch">
                 <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
@@ -79,6 +78,10 @@ const [homeLink, ...restLinks] = links;
             </button>
         )}
         <WallpaperSwitch client:only="svelte"></WallpaperSwitch>
+        <!-- 26.09.14：窄屏目录入口（#mobile-toc-switch，仅 html[data-toc-layout="narrow"] 显示）
+             放到「模式 / 切换壁纸」右侧；整个组件只是浮窗（#mobile-toc-panel 是相对 #navbar-wrapper
+             定位的 absolute 浮层），在行内的先后顺序不影响浮窗位置。 -->
+        {siteConfig.toc.enable && <MobileTOC client:only="svelte"></MobileTOC>}
         <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
             <Icon name="material-symbols:unfold-more" class="text-[1.25rem]"></Icon>
         </button>

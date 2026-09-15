@@ -1,0 +1,295 @@
+{
+ "url": "/",
+ "viewport": {
+  "w": 750,
+  "h": 804,
+  "dpr": 1
+ },
+ "bodyClass": "min-h-screen lg:is-home wallpaper-transparent no-banner-mode",
+ "doc": {
+  "scrollW": 740,
+  "clientW": 740,
+  "scrollH": 1010,
+  "rootFontSize": "14px"
+ },
+ "fonts": {
+  "status": "loaded",
+  "size": 29
+ },
+ "errors": [
+  {
+   "msg": "warn: Iconify load attempt 1 failed: Error: Script load timeout"
+  },
+  {
+   "msg": "warn: Iconify load attempt 2 failed: Error: Script load error"
+  },
+  {
+   "msg": "warn: Iconify load attempt 3 failed: Error: Script load error"
+  }
+ ],
+ "resources": {
+  "total": 239,
+  "byType": {
+   "1:4399/@vite/client": 1,
+   "js": 68,
+   "css": 23,
+   "astro": 48,
+   "styl": 2,
+   "svelte": 9,
+   "webp": 46,
+   "png": 4,
+   "1:4399/@id/__x00__astro:toolbar:internal": 1,
+   "mjs": 1,
+   "ms/tag/tjr3vkhj8i": 1,
+   "json": 10,
+   "ts": 23,
+   "ico": 1,
+   "1:4399/": 1
+  },
+  "failed": [],
+  "transferKB": 11179.12
+ },
+ "images": {
+  "count": 13,
+  "loadingAttr": {
+   "eager": 3,
+   "lazy": 10
+  },
+  "broken": []
+ },
+ "overflowing": [],
+ "clippedText": [],
+ "cards": [
+  {
+   "el": "div.card-base.p-3",
+   "x": 7,
+   "y": 569.53,
+   "w": 726,
+   "h": 277.83,
+   "r": 733,
+   "b": 847.36
+  },
+  {
+   "el": "widget-layout.pb-4.card-base",
+   "x": 7,
+   "y": 861.36,
+   "w": 726,
+   "h": 120.75,
+   "r": 733,
+   "b": 982.11
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 7,
+   "y": 127.2,
+   "w": 726,
+   "h": 178.23,
+   "r": 733,
+   "b": 305.44
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 7,
+   "y": 312.44,
+   "w": 726,
+   "h": 155.59,
+   "r": 733,
+   "b": 468.03
+  }
+ ],
+ "key": {
+  "topRow": {
+   "x": 0,
+   "y": 0,
+   "w": 740,
+   "h": 50.39,
+   "r": 740,
+   "b": 50.39
+  },
+  "navbar": {
+   "x": 0,
+   "y": 0,
+   "w": 740,
+   "h": 50.39,
+   "r": 740,
+   "b": 50.39
+  },
+  "navbarCard": {
+   "x": 0,
+   "y": 0,
+   "w": 740,
+   "h": 50.39,
+   "r": 740,
+   "b": 50.39
+  },
+  "mainGrid": {
+   "x": 0,
+   "y": 77,
+   "w": 740,
+   "h": 933.11,
+   "r": 740,
+   "b": 1010.11
+  },
+  "leftSidebar": {
+   "x": 7,
+   "y": 569.53,
+   "w": 726,
+   "h": 426.58,
+   "r": 733,
+   "b": 996.11
+  },
+  "mainContent": {
+   "x": 0,
+   "y": 77,
+   "w": 740,
+   "h": 933.11,
+   "r": 740,
+   "b": 1010.11
+  },
+  "postList": {
+   "x": 7,
+   "y": 127.2,
+   "w": 726,
+   "h": 361.83,
+   "r": 733,
+   "b": 489.03
+  },
+  "searchBar": {
+   "x": 7,
+   "y": 77,
+   "w": 726,
+   "h": 36.2,
+   "r": 733,
+   "b": 113.2
+  }
+ },
+ "posts": [],
+ "sideWidgets": [
+  {
+   "el": "div.flex.flex-col.w-full",
+   "x": 7,
+   "y": 569.53,
+   "w": 726,
+   "h": 412.58,
+   "r": 733,
+   "b": 982.11
+  },
+  {
+   "el": "div#sidebar-sticky.transition-all.duration-700.flex",
+   "x": 7,
+   "y": 996.11,
+   "w": 726,
+   "h": 0,
+   "r": 733,
+   "b": 996.11
+  }
+ ],
+ "pairs": [
+  {
+   "name": "navbar-vs-main",
+   "overlap": false,
+   "gapX": -740,
+   "a": {
+    "x": 0,
+    "y": 0,
+    "w": 740,
+    "h": 50.39,
+    "r": 740,
+    "b": 50.39
+   },
+   "b": {
+    "x": 0,
+    "y": 77,
+    "w": 740,
+    "h": 933.11,
+    "r": 740,
+    "b": 1010.11
+   }
+  },
+  {
+   "name": "navbar-vs-postList",
+   "overlap": false,
+   "gapX": -733,
+   "a": {
+    "x": 0,
+    "y": 0,
+    "w": 740,
+    "h": 50.39,
+    "r": 740,
+    "b": 50.39
+   },
+   "b": {
+    "x": 7,
+    "y": 127.2,
+    "w": 726,
+    "h": 361.83,
+    "r": 733,
+    "b": 489.03
+   }
+  },
+  {
+   "name": "left-vs-postList",
+   "overlap": false,
+   "gapX": -726,
+   "a": {
+    "x": 7,
+    "y": 569.53,
+    "w": 726,
+    "h": 426.58,
+    "r": 733,
+    "b": 996.11
+   },
+   "b": {
+    "x": 7,
+    "y": 127.2,
+    "w": 726,
+    "h": 361.83,
+    "r": 733,
+    "b": 489.03
+   }
+  },
+  {
+   "name": "searchBar-vs-postList",
+   "overlap": false,
+   "gapX": -726,
+   "a": {
+    "x": 7,
+    "y": 77,
+    "w": 726,
+    "h": 36.2,
+    "r": 733,
+    "b": 113.2
+   },
+   "b": {
+    "x": 7,
+    "y": 127.2,
+    "w": 726,
+    "h": 361.83,
+    "r": 733,
+    "b": 489.03
+   }
+  }
+ ],
+ "edges": {
+  "#navbar": {
+   "left": 0,
+   "right": 10,
+   "width": 740
+  },
+  "#post-list-container": {
+   "left": 7,
+   "right": 17,
+   "width": 726
+  },
+  ".home-sidebar": {
+   "left": 7,
+   "right": 17,
+   "width": 726
+  },
+  ".home-search-bar": {
+   "left": 7,
+   "right": 17,
+   "width": 726
+  }
+ }
+}

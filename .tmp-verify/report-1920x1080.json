@@ -1,0 +1,343 @@
+{
+ "url": "/",
+ "viewport": {
+  "w": 1902,
+  "h": 984,
+  "dpr": 1
+ },
+ "bodyClass": "min-h-screen lg:is-home wallpaper-transparent no-banner-mode",
+ "doc": {
+  "scrollW": 1892,
+  "clientW": 1902,
+  "scrollH": 984,
+  "rootFontSize": "15.216px"
+ },
+ "fonts": {
+  "status": "loaded",
+  "size": 29
+ },
+ "errors": [
+  {
+   "msg": "warn: Iconify load attempt 1 failed: Error: Script load timeout"
+  },
+  {
+   "msg": "warn: Iconify load attempt 2 failed: Error: Script load error"
+  },
+  {
+   "msg": "warn: Iconify load attempt 3 failed: Error: Script load error"
+  }
+ ],
+ "resources": {
+  "total": 239,
+  "byType": {
+   "1:4399/@vite/client": 1,
+   "js": 68,
+   "css": 23,
+   "astro": 48,
+   "styl": 2,
+   "svelte": 9,
+   "webp": 46,
+   "png": 4,
+   "1:4399/@id/__x00__astro:toolbar:internal": 1,
+   "mjs": 1,
+   "ms/tag/tjr3vkhj8i": 1,
+   "json": 10,
+   "ts": 23,
+   "ico": 1,
+   "1:4399/": 1
+  },
+  "failed": [],
+  "transferKB": 11179.12
+ },
+ "images": {
+  "count": 13,
+  "loadingAttr": {
+   "eager": 3,
+   "lazy": 10
+  },
+  "broken": []
+ },
+ "overflowing": [],
+ "clippedText": [],
+ "cards": [
+  {
+   "el": "div.card-base.p-3",
+   "x": 276.48,
+   "y": 83.69,
+   "w": 266.27,
+   "h": 361.36,
+   "r": 542.75,
+   "b": 445.05
+  },
+  {
+   "el": "widget-layout.pb-4.card-base",
+   "x": 276.48,
+   "y": 460.25,
+   "w": 266.27,
+   "h": 131.17,
+   "r": 542.75,
+   "b": 591.42
+  },
+  {
+   "el": "widget-layout.pb-4.card-base",
+   "x": 276.48,
+   "y": 606.63,
+   "w": 266.27,
+   "h": 87.44,
+   "r": 542.75,
+   "b": 694.06
+  },
+  {
+   "el": "widget-layout.pb-4.card-base",
+   "x": 1349.25,
+   "y": 83.69,
+   "w": 266.27,
+   "h": 269.89,
+   "r": 1615.52,
+   "b": 353.58
+  },
+  {
+   "el": "widget-layout.pb-4.card-base.hidden",
+   "x": 1349.25,
+   "y": 368.78,
+   "w": 266.27,
+   "h": 329.98,
+   "r": 1615.52,
+   "b": 698.77
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 557.95,
+   "y": 138.03,
+   "w": 776.09,
+   "h": 134.23,
+   "r": 1334.05,
+   "b": 272.27
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 557.95,
+   "y": 272.27,
+   "w": 776.09,
+   "h": 134.23,
+   "r": 1334.05,
+   "b": 406.5
+  }
+ ],
+ "key": {
+  "topRow": {
+   "x": 261.28,
+   "y": 0,
+   "w": 1369.44,
+   "h": 54.77,
+   "r": 1630.72,
+   "b": 54.77
+  },
+  "navbar": {
+   "x": 276.48,
+   "y": 0,
+   "w": 1339.03,
+   "h": 54.77,
+   "r": 1615.52,
+   "b": 54.77
+  },
+  "navbarCard": {
+   "x": 276.48,
+   "y": 0,
+   "w": 1339.03,
+   "h": 54.77,
+   "r": 1615.52,
+   "b": 54.77
+  },
+  "mainGrid": {
+   "x": 261.28,
+   "y": 83.69,
+   "w": 1369.44,
+   "h": 668.59,
+   "r": 1630.72,
+   "b": 752.28
+  },
+  "leftSidebar": {
+   "x": 276.48,
+   "y": 83.69,
+   "w": 266.27,
+   "h": 653.39,
+   "r": 542.75,
+   "b": 737.08
+  },
+  "mainContent": {
+   "x": 0,
+   "y": 83.69,
+   "w": 1892,
+   "h": 668.59,
+   "r": 1892,
+   "b": 752.28
+  },
+  "postList": {
+   "x": 557.95,
+   "y": 138.03,
+   "w": 776.09,
+   "h": 557.2,
+   "r": 1334.05,
+   "b": 695.23
+  },
+  "searchBar": {
+   "x": 557.95,
+   "y": 83.69,
+   "w": 776.09,
+   "h": 39.14,
+   "r": 1334.05,
+   "b": 122.83
+  }
+ },
+ "posts": [],
+ "sideWidgets": [
+  {
+   "el": "div.flex.flex-col.w-full",
+   "x": 276.48,
+   "y": 83.69,
+   "w": 266.27,
+   "h": 507.73,
+   "r": 542.75,
+   "b": 591.42
+  },
+  {
+   "el": "div#sidebar-sticky.transition-all.duration-700.flex",
+   "x": 276.48,
+   "y": 606.63,
+   "w": 266.27,
+   "h": 87.44,
+   "r": 542.75,
+   "b": 694.06
+  }
+ ],
+ "pairs": [
+  {
+   "name": "navbar-vs-main",
+   "overlap": false,
+   "gapX": -1354.24,
+   "a": {
+    "x": 276.48,
+    "y": 0,
+    "w": 1339.03,
+    "h": 54.77,
+    "r": 1615.52,
+    "b": 54.77
+   },
+   "b": {
+    "x": 261.28,
+    "y": 83.69,
+    "w": 1369.44,
+    "h": 668.59,
+    "r": 1630.72,
+    "b": 752.28
+   }
+  },
+  {
+   "name": "navbar-vs-postList",
+   "overlap": false,
+   "gapX": -1057.57,
+   "a": {
+    "x": 276.48,
+    "y": 0,
+    "w": 1339.03,
+    "h": 54.77,
+    "r": 1615.52,
+    "b": 54.77
+   },
+   "b": {
+    "x": 557.95,
+    "y": 138.03,
+    "w": 776.09,
+    "h": 557.2,
+    "r": 1334.05,
+    "b": 695.23
+   }
+  },
+  {
+   "name": "left-vs-postList",
+   "overlap": false,
+   "gapX": 15.2,
+   "a": {
+    "x": 276.48,
+    "y": 83.69,
+    "w": 266.27,
+    "h": 653.39,
+    "r": 542.75,
+    "b": 737.08
+   },
+   "b": {
+    "x": 557.95,
+    "y": 138.03,
+    "w": 776.09,
+    "h": 557.2,
+    "r": 1334.05,
+    "b": 695.23
+   }
+  },
+  {
+   "name": "postList-vs-right",
+   "overlap": false,
+   "gapX": 15.2,
+   "a": {
+    "x": 557.95,
+    "y": 138.03,
+    "w": 776.09,
+    "h": 557.2,
+    "r": 1334.05,
+    "b": 695.23
+   },
+   "b": {
+    "x": 1349.25,
+    "y": 83.69,
+    "w": 266.27,
+    "h": 653.39,
+    "r": 1615.52,
+    "b": 737.08
+   }
+  },
+  {
+   "name": "searchBar-vs-postList",
+   "overlap": false,
+   "gapX": -776.1,
+   "a": {
+    "x": 557.95,
+    "y": 83.69,
+    "w": 776.09,
+    "h": 39.14,
+    "r": 1334.05,
+    "b": 122.83
+   },
+   "b": {
+    "x": 557.95,
+    "y": 138.03,
+    "w": 776.09,
+    "h": 557.2,
+    "r": 1334.05,
+    "b": 695.23
+   }
+  }
+ ],
+ "edges": {
+  "#navbar": {
+   "left": 276.48,
+   "right": 286.48,
+   "width": 1339.03
+  },
+  "#post-list-container": {
+   "left": 557.95,
+   "right": 567.95,
+   "width": 776.09
+  },
+  ".home-sidebar": {
+   "left": 276.48,
+   "right": 1359.25,
+   "width": 266.27
+  },
+  ".home-search-bar": {
+   "left": 557.95,
+   "right": 567.95,
+   "width": 776.09
+  }
+ }
+}

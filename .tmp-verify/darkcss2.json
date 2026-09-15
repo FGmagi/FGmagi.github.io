@@ -1,0 +1,61 @@
+{
+ "htmlClass": "bg-[var(--page-bg)] text-[14px] md:text-[16px] swup-enabled dark",
+ "title": {
+  "class": "transition min-w-0 flex-1 block font-bold text-3xl text-90\n\t\t\t\tbefore:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]\n\t\t\t\tbefore:absolute\n\t\t\t\tbefore:top-[2.1875rem] before:left-[1.125rem] before:hidden md:before:block",
+  "color": "rgba(0, 0, 0, 0.9)",
+  "matchesDark": true,
+  "matchesIsDark": true
+ },
+ "desc": {
+  "class": "transition text-75 mt-[0.3rem] mb-[0.575rem] pr-4 line-clamp-1 max-w-[75%]",
+  "color": "rgba(0, 0, 0, 0.75)"
+ },
+ "stats": {
+  "class": "text-base font-bold text-neutral-900 dark:text-neutral-100",
+  "color": "rgb(23, 23, 23)"
+ },
+ "rules": [
+  {
+   "href": "inline",
+   "media": "",
+   "selector": "a",
+   "color": "inherit"
+  },
+  {
+   "href": "inline",
+   "media": "",
+   "selector": "a",
+   "color": "inherit"
+  },
+  {
+   "href": "inline",
+   "media": "",
+   "selector": ".text-90",
+   "color": "rgba(0, 0, 0, 0.9)"
+  },
+  {
+   "href": "inline",
+   "media": "",
+   "selector": ".text-90:is(.dark *)",
+   "color": "rgba(255, 255, 255, 0.9)"
+  }
+ ],
+ "freshText90": "rgba(255, 255, 255, 0.9)",
+ "freshText75": "rgba(255, 255, 255, 0.75)",
+ "freshDarkVariant": "rgb(255, 255, 255)",
+ "freshAnchorText90": "rgba(255, 255, 255, 0.9)",
+ "chain": [
+  "A.transition.min-w-0.flex-1.block color=rgba(0, 0, 0, 0.9)",
+  "DIV.flex.flex-wrap.items-end.justify-between color=rgb(0, 0, 0)",
+  "DIV.post-card-content.pl-6.md:pl-9.pr-6 color=rgb(0, 0, 0)",
+  "DIV.card-base.group.flex.flex-col-reverse color=rgb(0, 0, 0)",
+  "DIV.transition-opacity.duration-500.ease-in-out.rounded-[var(--radius-large)] color=rgb(0, 0, 0)",
+  "DIV.transition-leaving.home-content-fill color=rgb(0, 0, 0)",
+  "MAIN.transition-swup-fade.overflow-hidden.w-full.col-span-1 color=rgb(0, 0, 0)",
+  "DIV.page-transition-region.w-full.left-0.right-0 color=rgb(0, 0, 0)",
+  "DIV.relative.max-w-[var(--content-width)].mx-auto.pointer-events-auto color=rgb(0, 0, 0)",
+  "DIV.absolute.w-full.z-30.pointer-events-none color=rgb(0, 0, 0)",
+  "BODY.min-h-screen.lg:is-home.wallpaper-transparent.no-banner-mode color=rgb(0, 0, 0)",
+  "HTML.bg-[var(--page-bg)].text-[14px].md:text-[16px].swup-enabled color=rgb(0, 0, 0)"
+ ]
+}

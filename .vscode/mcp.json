@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "gitbash": {
+      "command": "D:\\make\\Compiler\\nodejs\\node.exe",
+      "args": [
+        "D:\\make\\Compiler\\NVM\\nvm\\v18.20.8\\node_modules\\gitbash-mcp\\bin\\gitbash-mcp.js"
+      ],
+      "env": {
+        "GITBASH_BASH": "C:\\windows\\system32\\bash.EXE"
+      }
+    }
+  }
+}

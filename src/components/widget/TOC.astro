@@ -1,7 +1,6 @@
 ---
 import type { MarkdownHeading } from "astro";
-
-// import { siteConfig } from "../../config";
+import { siteConfig } from "../../config";
 
 // import { url } from "../../utils/url-utils";
 
@@ -18,27 +17,104 @@ for (const heading of headings) {
 }
 
 const className = Astro.props.class;
-// const isPostsRoute =
-// 	Astro.url.pathname.includes("/posts/") || headings.length > 0;
 
-// const removeTailingHash = (text: string) => {
-// 	let lastIndexOfHash = text.lastIndexOf("#");
-// 	if (lastIndexOfHash !== text.length - 1) {
-// 		return text;
-// 	}
-//
-// 	return text.substring(0, lastIndexOfHash);
-// };
+/* 26.09.06：SSR 预生成目录条目。
+   此前 <table-of-contents> 恒为空壳，条目完全依赖客户端 regenerateTOC()，
+   再叠加 connectedCallback 里的 animationend / setTimeout 延迟，
+   导致目录比文章卡片晚一大拍淡入。现在改为服务端直接输出与 regenerateTOC()
+   完全同构的 HTML，客户端只在内容不一致时才重建。 */
+const maxDepth = siteConfig.toc.depth;
+const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
-// let heading1Count = 1;
+// 与客户端 regenerateTOC() 内的字符集完全一致（勿单独改动其中一处）
+const japaneseKatakana = [
+	"ア", "イ", "ウ", "エ", "オ",
+	"カ", "キ", "ク", "ケ", "コ",
+	"サ", "シ", "ス", "セ", "ソ",
+	"タ", "チ", "ツ", "テ", "ト",
+	"ナ", "ニ", "ヌ", "ネ", "ノ",
+	"ハ", "ヒ", "フ", "ヘ", "ホ",
+	"マ", "ミ", "ム", "メ", "モ",
+	"ヤ", "ユ", "ヨ",
+	"ラ", "リ", "ル", "レ", "ロ",
+	"ワ", "ヲ", "ン",
+];
 
-// const maxLevel = siteConfig.toc.depth;
+interface TocEntry {
+	depth: number;
+	slug: string;
+	text: string;
+	badgeContent: string;
+}
+
+// 与客户端同构：<(minDepth + maxLevel) 过滤；depth 决定缩进与徽章形态
+const tocEntries: TocEntry[] = (() => {
+	const entries: TocEntry[] = [];
+	let heading1Count = 1;
+	for (const heading of headings) {
+		if (!(heading.depth < minDepth + maxDepth)) continue;
+		let badgeContent: string;
+		if (heading.depth === minDepth) {
+			badgeContent =
+				useJapaneseBadge && heading1Count - 1 < japaneseKatakana.length
+					? japaneseKatakana[heading1Count - 1]
+					: heading1Count.toString();
+			heading1Count++;
+		} else if (heading.depth === minDepth + 1) {
+			badgeContent =
+				'<div class="transition w-2 h-2 rounded-[0.1875rem] bg-[var(--toc-badge-bg)]"></div>';
+		} else {
+			badgeContent =
+				'<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
+		}
+		entries.push({
+			depth: heading.depth,
+			slug: heading.slug,
+			// 与客户端一致：去掉结尾的 # 锚点残留
+			text: (heading.text || "").replace(/#+\s*$/, ""),
+			badgeContent,
+		});
+	}
+	return entries;
+})();
+
+const hasTocEntries = tocEntries.length > 0;
 ---
-<table-of-contents class:list={[className, "group"]} id="toc">
-    <!-- TOC内容将由JavaScript动态生成 -->
+<table-of-contents class:list={[className, "group"]} id="toc" data-loaded={hasTocEntries ? "true" : undefined}>
+    {tocEntries.map((entry) => (
+        <a
+            href={`#${entry.slug}`}
+            class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl overflow-hidden hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2"
+        >
+            <div
+                class:list={[
+                    "transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
+                    entry.depth === minDepth ? "" : entry.depth === minDepth + 1 ? "ml-4" : "ml-8",
+                    entry.depth === minDepth ? "bg-[var(--toc-badge-bg)] text-[var(--btn-content)]" : "",
+                ]}
+                set:html={entry.badgeContent}
+            />
+            <div
+                class:list={[
+                    "toc-text transition text-sm",
+                    entry.depth <= minDepth + 1 ? "text-50" : "text-30",
+                ]}
+                set:html={entry.text}
+            />
+        </a>
+    ))}
+    {hasTocEntries && (
+        <div
+            id="active-indicator"
+            style="opacity: 0"
+            class="-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all border-2 border-[var(--toc-btn-hover)] border-dashed"
+        />
+    )}
 </table-of-contents>
 
 <script>
+  // 26.09.14：目录跳转统一实现（导航栏避让 + 可配平滑时长 + 长距离渐变过渡）
+  import { jumpToHeading } from "../../utils/anchor-nav";
 class TableOfContents extends HTMLElement {
     tocEl: HTMLElement | null = null;
     visibleClass = "visible";
@@ -50,6 +126,14 @@ class TableOfContents extends HTMLElement {
     tocEntries: HTMLAnchorElement[] = [];
     active: boolean[] = [];
     activeIndicator: HTMLElement | null = null;
+    // 26.09.06：窗口/文档级监听是否已注册（#toc 跨页存活，init() 会被反复调用）
+    bound = false;
+
+    // 26.09.06：resize / toc:relayout（toc-layout.js 重算 TOC 高度后派发）→
+    // 重新计算高亮指示条并让高亮项重新居中，避免目录高度变化后高亮错位
+    relayoutHandler = () => {
+        this.update();
+    };
 
     constructor() {
         super();
@@ -112,40 +196,102 @@ class TableOfContents extends HTMLElement {
         }
     };
 
-    scrollToActiveHeading = () => {
-        // If the TOC widget can accommodate both the topmost
-        // and bottommost items, scroll to the topmost item. 
-        // Otherwise, scroll to the bottommost one.
+    // 26.09.06（T4·改动 2）：判断某个目录条目当前是否已完整落在 #toc 可视区内。
+    // 用于「只在必要时滚动」——否则 scroll 事件每帧都会发起一次平滑滚动，抖动且不收敛。
+    isEntryVisibleInToc = (entry: HTMLAnchorElement) => {
+        if (!this.tocEl) return false;
+        const rect = entry.getBoundingClientRect();
+        const tocRect = this.tocEl.getBoundingClientRect();
+        const margin = 4; // 容差：避免恰好贴边时反复触发
+        return (
+            rect.top >= tocRect.top + margin &&
+            rect.bottom <= tocRect.bottom - margin
+        );
+    };
 
+    // 26.09.14（需求：目录滚动跟随 + 当前项居中锁定 + 边界约束）：
+    // 把高亮项尽量锁在 #toc 可视区垂直中心（打字机模式）；容器已滚到顶/底、
+    // 无法再让目标居中时自然贴边（clamp 的必然结果）。注意：这里只动
+    // this.tocEl.scrollTop，与「点击条目后的页面滚动补偿」是两个独立滚动。
+    centerActiveHeadingInToc = () => {
         if (this.anchorNavTarget || !this.tocEl) return;
-        const activeHeading =
-            document.querySelectorAll<HTMLDivElement>(`#toc .${this.visibleClass}`);
-        if (!activeHeading.length) return;
+        const entry = this.tocEl.querySelector<HTMLAnchorElement>(
+            `a.${this.visibleClass}`,
+        );
+        if (!entry) return;
 
-        const topmost = activeHeading[0];
-        const bottommost = activeHeading[activeHeading.length - 1];
-        const tocHeight = this.tocEl.clientHeight;
+        const container = this.tocEl;
+        const maxScroll = Math.max(
+            0,
+            container.scrollHeight - container.clientHeight,
+        );
+        const desired =
+            entry.offsetTop - (container.clientHeight - entry.offsetHeight) / 2;
+        const top = Math.min(Math.max(desired, 0), maxScroll);
+        if (Math.abs(top - container.scrollTop) < 1) return;
 
-        let top: number;
-        if (bottommost.getBoundingClientRect().bottom -
-            topmost.getBoundingClientRect().top < 0.9 * tocHeight)
-            top = topmost.offsetTop - 32;
-        else
-            top = bottommost.offsetTop - tocHeight * 0.8;
-
-        this.tocEl.scrollTo({
+        container.scrollTo({
             top,
             left: 0,
-            behavior: "smooth",
+            behavior: this.reduceMotionQuery.matches ? "auto" : "smooth",
         });
     };
 
-    update = () => {
+    scrollToActiveHeading = (_force = false) => {
+        this.centerActiveHeadingInToc();
+    };
+
+    // 26.09.06（任务三·需求②）：只高亮「当前页面上方最近的那个标题」。
+    // 以吸顶导航栏底边为判定线，取最后一个 top ≤ 判定线的 section；
+    // 滚到最顶部（无 section 越过判定线）时回落到第 0 条。
+    // 判定线优先读真实导航栏底边（toc-layout.js 的几何也用它），
+    // 读不到时回退到 96px（≈ 3.5rem 顶部偏移 + 3.6rem 导航栏高）。
+    NAVBAR_FALLBACK_PX = 96;
+
+    // 26.09.14：用户「减少动态效果」偏好。必须在使用时读 .matches
+    // （而非在此处冻结成布尔值），否则系统偏好切换后不会生效。
+    reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    currentIndex = () => {
+        if (!this.sections.length) return -1;
+        const nav = document.getElementById("navbar");
+        const navRect = nav ? nav.getBoundingClientRect() : null;
+        const line = navRect && navRect.height > 0 ? navRect.bottom : this.NAVBAR_FALLBACK_PX;
+        let idx = 0;
+        for (let i = 0; i < this.sections.length; i++) {
+            const section = this.sections[i];
+            if (!section) continue;
+            if (section.getBoundingClientRect().top <= line) {
+                idx = i;
+            } else {
+                break;
+            }
+        }
+        return idx;
+    };
+
+    // 26.09.06（T4·改动 2）：scroll 监听必须走这个无参包装，不能直接把 update 当处理器——
+    // 事件对象会被当成 forceScroll=true 传入，导致每帧仍强制滚动（优化失效）。
+    scrollHandler = () => {
+        this.update();
+    };
+
+    update = (forceScroll = false) => {
         requestAnimationFrame(() => {
+            // 先把 active 收敛成唯一一项，再走既有高亮/指示条逻辑：
+            // min === max 时 toggleActiveHeading() 天然退化为单条高亮 + 单条指示条。
+            const idx = this.currentIndex();
+            const changed = idx >= 0 && this.active[idx] !== true;
+            if (idx >= 0) {
+                this.active = this.active.map((_, i) => i === idx);
+            }
             this.toggleActiveHeading();
-            // requestAnimationFrame(() => {
-            this.scrollToActiveHeading();
-            // });
+            // 26.09.06（T4·改动 2）：scroll 已按帧调用本函数，若此处每帧都发起平滑滚动
+            // 会抖动且不收敛。策略：① 高亮索引变化 → 允许一次滚动；② 索引未变
+            // （含滚动中/无变化的 scroll 事件）→ 仅当高亮项已不在 #toc 可视区内才滚动；
+            // ③ 外部（点击/锚点/resize/relayout）可传 forceScroll=true 强制归位。
+            // 平滑滚动本身保留，功能（高亮项自动滚入视野）不丢。
+            this.scrollToActiveHeading(forceScroll || changed);
         });
     };
 
@@ -181,15 +327,12 @@ class TableOfContents extends HTMLElement {
             const targetElement = document.getElementById(id);
             
             if (targetElement) {
-                // 计算目标位置，与移动端保持一致
-                const navbarHeight = 80; // 导航栏高度
-                const targetTop = targetElement.getBoundingClientRect().top + window.scrollY - navbarHeight;
-                
-                // 使用与移动端相同的滚动方式
-                window.scrollTo({
-                    top: targetTop,
-                    behavior: "smooth"
-                });
+                // 26.09.14：跳转统一走 src/utils/anchor-nav.ts
+                //   · 目标标题落在「导航栏底边 + config.toc.navigation.offset」之下，不会被吸顶导航栏挡住；
+                //   · 自绘 rAF 平滑滚动（时长/缓动可配，比原生 smooth 更慢更平滑）；
+                //   · 距离超过 longJumpViewports 个视口高度时，改为
+                //     「文章卡片 + 目录一起渐变消失 → 瞬移 → 预渲染 → 统一渐显」。
+                jumpToHeading(id);
             }
             
             const idx = this.headingIdxMap.get(id);
@@ -205,36 +348,130 @@ class TableOfContents extends HTMLElement {
         return min < value && value < max;
     };
 
+    // 26.09.06（任务三·需求③）：SSR 已输出目录条目 → 立刻初始化，
+    // 不再等 .custom-md 的 animationend（约 150+500ms）或 setTimeout(300)，
+    // 使目录与文章卡片在同一动画时基内一起出现。
+    // 26.09.06：click 用稳定引用（capture 版包装），使 #toc 跨页存活时也能被精准移除
+    clickHandler = (event: Event) => {
+        this.handleAnchorClick(event);
+    };
+
     connectedCallback() {
-        // 优先监听动画结束，兜底定时初始化，确保二次刷新也能正常显示 TOC
-        const element = document.querySelector('.custom-md') || document.querySelector('.prose') || document.querySelector('.markdown-content');
-        let initialized = false;
-        const tryInit = () => {
-            if (!initialized) {
-                initialized = true;
-                this.init();
-            }
-        };
-        if (element) {
-            element.addEventListener('animationend', tryInit, { once: true });
-            // 兜底：无论动画是否触发，300ms后强制初始化一次
-            setTimeout(tryInit, 300);
-        } else {
-            // 没有动画元素，直接初始化，兜底再延迟一次
-            tryInit();
-            setTimeout(tryInit, 300);
-        }
+        this.init();
+    };
+
+    // 与 SSR 同构地生成目录 HTML（字符集/过滤/缩进/徽章规则必须与
+    // TOC.astro 的 frontmatter 逐条一致，改一处必须改两处）
+    buildTOCHtml(headings: { depth: number; slug: string; text: string }[]) {
+        if (headings.length === 0) return '';
+        const minDepth = Math.min(...headings.map((h) => h.depth));
+        // 获取配置信息
+        const siteConfig = (window as any).siteConfig || {};
+        const maxLevel = siteConfig.toc?.depth || 3;
+        const useJapaneseBadge = siteConfig.toc?.useJapaneseBadge || false;
+
+        // 日语片假名字符集
+        const japaneseKatakana = [
+            "ア", "イ", "ウ", "エ", "オ",
+            "カ", "キ", "ク", "ケ", "コ",
+            "サ", "シ", "ス", "セ", "ソ",
+            "タ", "チ", "ツ", "テ", "ト",
+            "ナ", "ニ", "ヌ", "ネ", "ノ",
+            "ハ", "ヒ", "フ", "ヘ", "ホ",
+            "マ", "ミ", "ム", "メ", "モ",
+            "ヤ", "ユ", "ヨ",
+            "ラ", "リ", "ル", "レ", "ロ",
+            "ワ", "ヲ", "ン"
+        ];
+
+        let heading1Count = 1;
+        const tocHTML = headings
+            .filter(heading => heading.depth < minDepth + maxLevel)
+            .map(heading => {
+                const depthClass = heading.depth === minDepth ? '' : 
+                    heading.depth === minDepth + 1 ? 'ml-4' : 'ml-8';
+                
+                let badgeContent = '';
+                if (heading.depth === minDepth) {
+                    if (useJapaneseBadge && heading1Count - 1 < japaneseKatakana.length) {
+                        badgeContent = japaneseKatakana[heading1Count - 1];
+                    } else {
+                        badgeContent = heading1Count.toString();
+                    }
+                    heading1Count++;
+                } else if (heading.depth === minDepth + 1) {
+                    badgeContent = '<div class="transition w-2 h-2 rounded-[0.1875rem] bg-[var(--toc-badge-bg)]"></div>';
+                } else {
+                    badgeContent = '<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
+                }
+                
+                return `<a href="#${heading.slug}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl overflow-hidden hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2">
+                    <div class="transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${depthClass} ${heading.depth === minDepth ? 'bg-[var(--toc-badge-bg)] text-[var(--btn-content)]' : ''}">
+                        ${badgeContent}
+                    </div>
+                    <div class="toc-text transition text-sm ${heading.depth <= minDepth + 1 ? 'text-50' : 'text-30'}">${heading.text}</div>
+                </a>`;
+            }).join('');
+        if (!tocHTML) return '';
+        return tocHTML + '<div id="active-indicator" style="opacity: 0" class="-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all border-2 border-[var(--toc-btn-hover)] border-dashed"></div>';
+    };
+
+    // SSR 条目与当前文档标题一一对应？（条数/顺序/文本全等）→ 是则跳过重建，避免闪动
+    // ⚠ 26.09.06 已知事实（T4 登记，暂不修）：本比对用 innerHTML.trim() 字符串全等，
+    // 而 Astro 编译 SSR 模板时会剥离「含换行的空白文本节点」，buildTOCHtml() 则显式输出
+    // '\n'+缩进 ⇒ 两者恒不相等，本函数实际**恒返回 false**，即「仅在必要时重建」的优化
+    // 从未生效（每次都走 regenerateTOC()）。
+    // 方向是安全的（只会多重建、不会漏建，不会把已错的条目误判为一致），
+    // 故本轮仅登记；若将来要真正生效，应改为结构化比对（条数 + slug/文本序列）。
+    tocHtmlMatchesDocument(headings: { depth: number; slug: string; text: string }[]) {
+        const html = this.buildTOCHtml(headings);
+        if (!html) return false;
+        return this.innerHTML.trim() === html.trim();
     };
 
     init() {
-        // 重新生成TOC内容
-        this.regenerateTOC();
+        // 从当前页面重新获取标题（SSR 后用于比对；swup 换页后可能已变）
+        const readHeadings = () =>
+            Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'))
+                .filter(h => h.id)
+                .map(h => ({
+                    depth: parseInt(h.tagName.substring(1)),
+                    slug: h.id,
+                    text: (h.textContent || '').replace(/#+\s*$/, '')
+                }));
+        // 仅在条目错位时才重建（SSR 已渲染到位就跳过，避免闪动）
+        const retryRegenerate = (retryCount = 0) => {
+            const headings = readHeadings();
+            if (headings.length === 0 && retryCount < 3) {
+                setTimeout(() => retryRegenerate(retryCount + 1), 120);
+                return;
+            }
+            this.regenerateTOC();
+        };
+        if (!this.tocHtmlMatchesDocument(readHeadings())) {
+            retryRegenerate();
+        }
 
         this.tocEl = this;
 
-        this.tocEl.addEventListener("click", this.handleAnchorClick, {
-            capture: true,
-        });
+        // 26.09.06：先断掉对上一页 section 的观察，否则旧节点持续被观察、高亮判定串页。
+        // 放在早退之前，保证「新页无目录条目」时也能清干净。
+        this.observer.disconnect();
+
+        // 26.09.06：#toc 元素跨页存活（swup 只替换内容区），disconnectedCallback 不会执行，
+        // 若每次 init() 都注册一遍，N 次导航后会累积 N 份监听 → 用布尔守卫只注册一次。
+        if (!this.bound) {
+            // 尺寸/位置变化后重新居中高亮项（配合 toc-layout.js 的 --toc-max-h 重算）
+            window.addEventListener("resize", this.relayoutHandler, { passive: true });
+            document.addEventListener("toc:relayout", this.relayoutHandler);
+            // 26.09.06（任务三·需求②）：IntersectionObserver 只在 section 穿越视口时回调，
+            // 判定线（导航栏底边）被越过不一定触发，故补 scroll 监听
+            window.addEventListener("scroll", this.scrollHandler, { passive: true });
+            this.tocEl.addEventListener("click", this.clickHandler, {
+                capture: true,
+            });
+            this.bound = true;
+        }
 
         this.activeIndicator = document.getElementById("active-indicator");
 
@@ -244,6 +481,9 @@ class TableOfContents extends HTMLElement {
 
         if (this.tocEntries.length === 0) return;
 
+        // 26.09.06：observer 已在 init() 开头 disconnect，此处仅重新挂载当前页 section
+        // swup 换页后防残留
+        this.headingIdxMap.clear();
         this.sections = new Array(this.tocEntries.length);
         this.headings = new Array(this.tocEntries.length);
         for (let i = 0; i < this.tocEntries.length; i++) {
@@ -266,7 +506,8 @@ class TableOfContents extends HTMLElement {
         this.update();
     };
 
-    regenerateTOC(retryCount = 0) {
+    // 仅在条目与文档不一致时被 init() 调用（swup 换页 / 无 SSR 条目时）
+    regenerateTOC() {
         // 检查是否为文章页面
         const isPostPage = window.location.pathname.includes('/posts/') || 
                           document.querySelector('.custom-md, .markdown-content') !== null;
@@ -284,69 +525,19 @@ class TableOfContents extends HTMLElement {
                 slug: h.id,
                 text: (h.textContent || '').replace(/#+\s*$/, '')
             }));
-        // 如果没有标题，延迟重试最多3次
-        if (headings.length === 0 && retryCount < 3) {
-            setTimeout(() => this.regenerateTOC(retryCount + 1), 120);
-            return;
-        }
         if (headings.length === 0) {
             this.innerHTML = '';
             delete this.dataset.loaded;
             return;
         }
-        // 重新生成TOC HTML
-        const minDepth = Math.min(...headings.map(h => h.depth));
-        // 获取配置信息
-        const siteConfig = (window as any).siteConfig || {};
-        const maxLevel = siteConfig.toc?.depth || 3;
-        const useJapaneseBadge = siteConfig.toc?.useJapaneseBadge || false;
-        
-        // 添加调试信息
-        console.log('TOC Config in regenerateTOC:', { siteConfig: siteConfig.toc, maxLevel, useJapaneseBadge });
-        
-        // 日语片假名字符集
-        const japaneseKatakana = [
-            "ア", "イ", "ウ", "エ", "オ",
-            "カ", "キ", "ク", "ケ", "コ",
-            "サ", "シ", "ス", "セ", "ソ",
-            "タ", "チ", "ツ", "テ", "ト",
-            "ナ", "ニ", "ヌ", "ネ", "ノ",
-            "ハ", "ヒ", "フ", "ヘ", "ホ",
-            "マ", "ミ", "ム", "メ", "モ",
-            "ヤ", "ユ", "ヨ",
-            "ラ", "リ", "ル", "レ", "ロ",
-            "ワ", "ヲ", "ン"
-        ];
-        
-        let heading1Count = 1;
-        const tocHTML = headings
-            .filter(heading => heading.depth < minDepth + maxLevel)
-            .map(heading => {
-                const depthClass = heading.depth === minDepth ? '' : 
-                    heading.depth === minDepth + 1 ? 'ml-4' : 'ml-8';
-                
-                let badgeContent = '';
-                if (heading.depth === minDepth) {
-                    if (useJapaneseBadge && heading1Count - 1 < japaneseKatakana.length) {
-                        badgeContent = japaneseKatakana[heading1Count - 1];
-                    } else {
-                        badgeContent = heading1Count.toString();
-                    }
-                    heading1Count++;
-                } else if (heading.depth === minDepth + 1) {
-                    badgeContent = '<div class="transition w-2 h-2 rounded-[0.1875rem] bg-[var(--toc-badge-bg)]"></div>';
-                } else {
-                    badgeContent = '<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
-                }
-                
-                return `<a href="#${heading.slug}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2">
-                    <div class="transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${depthClass} ${heading.depth === minDepth ? 'bg-[var(--toc-badge-bg)] text-[var(--btn-content)]' : ''}">
-                        ${badgeContent}
-                    </div>
-                    <div class="transition text-sm ${heading.depth <= minDepth + 1 ? 'text-50' : 'text-30'}">${heading.text}</div>
-                </a>`;
-            }).join('');
-        this.innerHTML = tocHTML + '<div id="active-indicator" style="opacity: 0" class="-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all group-hover:bg-transparent border-2 border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)] border-dashed"></div>';
+        // 重新生成TOC HTML（与 SSR 共用同一套规则）
+        const tocHTML = this.buildTOCHtml(headings);
+        if (!tocHTML) {
+            this.innerHTML = '';
+            delete this.dataset.loaded;
+            return;
+        }
+        this.innerHTML = tocHTML;
         this.dataset.loaded = "true";
     }
 
@@ -355,7 +546,13 @@ class TableOfContents extends HTMLElement {
             this.observer.unobserve(section)
         );
         this.observer.disconnect();
-        this.tocEl?.removeEventListener("click", this.handleAnchorClick);
+        this.tocEl?.removeEventListener("click", this.clickHandler, true);
+        // 26.09.06：清理布局重算与 scroll 监听，避免组件卸载后残留
+        // （与 init() 的 this.bound 守卫对称：解绑后允许重新注册）
+        window.removeEventListener("resize", this.relayoutHandler);
+        document.removeEventListener("toc:relayout", this.relayoutHandler);
+        window.removeEventListener("scroll", this.scrollHandler);
+        this.bound = false;
     };
 }
 
@@ -365,15 +562,94 @@ if (!customElements.get("table-of-contents")) {
 </script>
 
 <style>
+  /* 26.09.06：TOC 自身即滚动容器（平时隐藏滚动条、hover/focus 显现细条）。
+     高度上限来自 toc-layout.js 写入的 --toc-max-h（已为回顶按钮预留间距），
+     与导航栏底部/按钮位置联动，保证目录溢出时内部滚动、绝不与按钮重叠。 */
   table-of-contents#toc {
-      max-height: 100%;
-      overflow: auto;
+      /* 扣掉卡片内边距（全屏毛玻璃卡片有 0.5rem padding），
+         否则最后一个条目会溢出卡片下边缘 */
+      max-height: calc(var(--toc-max-h, calc(100vh - 10rem)) - 2 * var(--toc-inner-pad, 0px));
+      overflow-y: auto;
+      overflow-x: hidden;
       position: relative;
-      scroll-behavior: smooth;
       display: block;
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+      scrollbar-gutter: stable;
+  }
+
+  table-of-contents#toc:hover,
+  table-of-contents#toc:focus-within {
+      scrollbar-color: var(--scrollbar-bg) transparent;
   }
 
   table-of-contents#toc::-webkit-scrollbar {
-      display: none;
+      width: 6px;
+  }
+
+  table-of-contents#toc::-webkit-scrollbar-track {
+      background: transparent;
+  }
+
+  table-of-contents#toc::-webkit-scrollbar-thumb {
+      background: transparent;
+      border-radius: 4px;
+  }
+
+  table-of-contents#toc:hover::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-bg);
+  }
+
+  table-of-contents#toc::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-bg-hover);
+  }
+
+  /* 26.09.14：条目文字「单行放不下就换行」（宽屏侧栏目录；窄屏浮层见 MobileTOC.svelte）。
+     旧版是单行硬裁切（white-space:nowrap + overflow:hidden），长标题直接看不到后半截。
+     现在只负责换行；**裁切交给卡片自身**：
+       · 卡片（玻璃毛玻璃背景、圆角）＝ #toc-inner-wrapper，它已有 overflow:hidden
+         （见 MainGridLayout.astro 的 #toc-inner-wrapper 规则），超出卡片的渲染一律被裁掉；
+       · 滚动容器＝ table-of-contents#toc，max-height 已扣掉卡片内边距（--toc-inner-pad），
+         行数变多时在卡片内部滚动，最后一行只会被卡片/滚动区裁切，不会画到背景之外。
+
+     注意：条目 HTML 由 JS 动态生成，元素不带 Astro 作用域类；Astro 会给复合选择器
+     逐段追加 :where(.astro-xxx)，因此这里的后代选择器必须用 :global() 包住才会生效
+     （否则规则匹配不到动态节点 —— 这正是此前文字仍溢出卡片的原因）。
+     #toc 在页面内唯一，按 id 限定不会外泄。 */
+  :global(table-of-contents#toc a) {
+      overflow: hidden;
+  }
+
+  :global(table-of-contents#toc a > .toc-text) {
+      flex: 1 1 auto;
+      min-width: 0;
+      /* 单行放不下就换行；长英文单词 / URL 也强制断行，避免撑出卡片 */
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      /* 行高略收紧：多行条目不至于把卡片撑得很长 */
+      line-height: 1.35;
+  }
+</style>
+
+<!-- 26.09.14：悬停竖条（与阅读段指示条并存，不互斥）。
+     <a> 由 SSR 与客户端 init() 两处生成，作用域属性不一定存在，
+     故用 is:global 保证两条路径都命中；只命中目录条目，无副作用。 -->
+<style is:global>
+  table-of-contents#toc > a::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--toc-item-active, var(--primary, #0891b2));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+  table-of-contents#toc > a:hover::before {
+    opacity: 1;
   }
 </style>

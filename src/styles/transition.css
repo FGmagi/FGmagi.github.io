@@ -1,11 +1,182 @@
 /* Page transition animations with Swup - Enhanced version inspired by yukina */
 
-/* 26.09.06修改，内容为：统一跳转控制器（Layout.astro）后，主内容区出入场的真正时序在
-   MainGridLayout.astro 的 :global(.page-transition-region) 规则（out 200ms / in 250ms）——
-   本文件仅保留 swup 通用动画类（.transition-main / .transition-leaving / .onload-animation）的
-   既有定义，二者共用 300ms 级时基，互不冲突。 */
+/* ====================================================================
+   26.09.14：页面切换渐变（唯一实现，由 src/utils/page-transition.ts 驱动状态）
+   ────────────────────────────────────────────────────────────────────
+   时序：点击 → 当前整页「渐变消失」→ 目标页加载 → 预渲染静默帧 → 统一「渐变显示」
+        · 同 URL 点击：同样先渐变消失，再强制重新加载该页并重新预渲染、重新渐显
+        · 首载 / 刷新：必须先完成预渲染，再渐变显示
 
-/* 26.08.30修改，内容为：移除 .onload-animation 的 nth-child 递增加载动画延迟样式（已在 config.ts 中同步将递增加载延迟调为 0ms） */
+   ⚠ 机制说明（上一版失效的原因，勿回退）：
+     「渐变消失」与「渐变显示」都是同一个属性的**过渡**，只靠状态类的有无来触发：
+       · 消失：加 body.swup-leaving   ⇒ 可见值 1 → 不可见值 0（过渡 --page-fade-out）
+       · 预渲染静默：body.page-prerender ⇒ 0，且 transition:none（新 DOM 就位不参与动画）
+       · 显示：先摘 page-prerender → 强制一次样式重算 → 再摘 swup-leaving
+               ⇒ 过渡从快照里的 0 走到基线的 1（过渡 --page-fade-in）
+     ⚠ 不要用 @keyframes 做渐显，也不要让 body.page-entering 声明 opacity：
+       带动画的属性会被任何带 !important 的 transition 抢走，动画 fill 与基线衔接还会闪。
+       这正是上一版「渐变显示完全失效」的根因 ⇒ 本文件里渐显只有 transition 一条路径。
+     ⚠ 基线规则刻意不带 opacity/!important（1 是属性的自然初始值），避免把不可见态
+       的优先级一起抬高导致状态互相压制。
+
+   状态类（均由控制器挂/摘，本文件只负责表现）：
+     body.swup-leaving   —— 渐变消失（不可见）
+     body.page-prerender —— 预渲染静默帧：不可见、无过渡
+     body.page-entering  —— 渐变显示进行中（只压制子元素动画；可见性靠「无类」表达）
+
+   ⚠ 时长不写死：读 --page-fade-out / --page-fade-in（MainGridLayout.astro 按
+     siteConfig.pageTransition 经 <style define:vars> 写到 :root）。
+   ⚠ "渐变区域"选择器清单在下面每条规则里逐条列出（CSS 变量承载不了选择器），改动时同步：
+        #main-grid                      = 主网格（含左右磁贴、主内容）
+        #main-grid .footer              = 页脚（#main-grid 的后代，随主网格一起渐变）
+        #banner-wrapper                 = 顶部横幅（与 #main-grid 是兄弟节点）
+        #toc-inner-wrapper                  = 侧栏目录卡片本体（含毛玻璃背景的那一层，不在 #main-grid 内）
+     ⚠ 不要给 #banner-wrapper 加 .page-transition-region 类：那是 swup 容器语义，会造成混淆。
+     ⚠ 目录这里必须取 #toc-inner-wrapper（背景/圆角/内边距都画在它身上），
+        而不是它里面的 #toc-container：只淡内容会让卡片背景留在原地（用户报告：
+        「点击 toc 渐变跳转时 toc 卡片背景应当同步渐变消失、显示」）。
+   ==================================================================== */
+
+:root {
+  /* 兜底值：正常路径由 MainGridLayout 的 define:vars 覆盖（同源 config）；
+     这里只为样式表单独加载 / 控制器尚未执行时仍能工作。 */
+  --page-fade-out: 200ms;
+  --page-fade-in: 250ms;
+}
+
+/* 基线（可见静止态）。
+   过渡清单里只有 opacity：swup 的 awaitAnimations 会去读 transitionDuration，
+   把 transform 混进来会让它算出「永不触发的 transitionend」而空等约 700ms 兜底。
+   本控制器已显式 skip 两侧 await，这里仍保持清单干净，避免被别处的 awaitAnimations 误伤。
+
+   ⚠ 这里刻意**不用 !important**：可见态就是属性的自然初始值（opacity 默认 1），
+     没有别的东西会把它改掉。用 !important 反而会把「不可见态」的优先级一起抬上来，
+     导致状态之间互相压制（上一版渐显失效的原因之一）。
+   ⚠ 时长用 !important：本文件末尾的通用 prefers-reduced-motion 规则（1 个类选择器）
+     压不过这里的 body+id 组合，故由本块的 reduced-motion 规则自行兜底。 */
+body #main-grid,
+body #banner-wrapper,
+body #toc-inner-wrapper,
+body #main-grid .footer {
+  transition-property: opacity !important;
+  transition-duration: var(--page-fade-in) !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* #banner-wrapper 在 is-home 切换时有 translate-y 位移，单独给它一条过渡清单。
+   ⚠ 必须压在基线之后：transition-property/duration 成对覆盖，否则 opacity 会拿到 0.7s。
+   ⚠ !important 必须保留：要压过它自带的 Tailwind duration-700。 */
+body #banner-wrapper {
+  transition-property: opacity, transform !important;
+  transition-duration: var(--page-fade-in), 0.7s !important;
+}
+
+/* ── ① 渐变消失：点击瞬间（或程序化导航的 visit:start）加类即开始 ───────── */
+body.swup-leaving #main-grid,
+body.swup-leaving #banner-wrapper,
+body.swup-leaving #toc-inner-wrapper,
+body.swup-leaving #main-grid .footer {
+  opacity: 0 !important;
+  will-change: opacity;
+  transition: opacity var(--page-fade-out) cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ── ② 预渲染静默帧：新 DOM 已就位但整体不可见，量测/排版都在这一帧内完成 ──
+   transition:none 是关键：它保证「摘掉本类」的瞬间不会自己开始过渡，
+   真正起跑的是随后摘掉 swup-leaving 的那一次（时长 --page-fade-in）。 */
+body.page-prerender #main-grid,
+body.page-prerender #banner-wrapper,
+body.page-prerender #toc-inner-wrapper,
+body.page-prerender #main-grid .footer {
+  opacity: 0 !important;
+  transition: none !important;
+}
+
+/* ── ③ 渐变显示进行中：可见性已由「无状态类」表达（opacity 自然值 1 +
+      基线 --page-fade-in 时长），本类只做两件事：
+        · 压制子元素自身的入场动画（保证整体是一拍渐变而不是两拍）；
+        · 过渡期间不接收点击。
+      ⚠ 绝不在此声明 opacity / animation —— 见文件头「机制说明」。 ── */
+body.page-entering #main-grid,
+body.page-entering #banner-wrapper,
+body.page-entering #toc-inner-wrapper,
+body.page-entering #main-grid .footer {
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* ── 子元素：切页期间不再播各自的入场动画 ──────────────────────────────
+   #content-wrapper / #swup-container / .onload-animation 都是渐变区域的子孙，
+   若同时做 opacity 变化会与父级相乘成二次淡入（非线性、且会让「统一渐变」变成两拍）。
+   ⚠ 只靠状态类压制是**不够**的：状态类摘掉的那一帧，.onload-animation 的
+     fade-in-up（500ms + 150ms 延迟 + fill both）会重新起跑 ⇒ 整页渐显完后再淡入一次。
+     所以真正的解决办法是控制器在解析后与每个预渲染帧里把类摘掉
+     （src/utils/page-transition.ts 的 clearRegionEnterAnimations；MainGridLayout 的
+     content:replace/page:view 也会摘一次），本段规则只是同一语义的兜底。 */
+body.swup-leaving #main-grid #swup-container,
+body.page-prerender #main-grid #swup-container,
+body.page-entering #main-grid #swup-container,
+body.swup-leaving #main-grid #content-wrapper,
+body.page-prerender #main-grid #content-wrapper,
+body.page-entering #main-grid #content-wrapper,
+body.swup-leaving #main-grid .onload-animation,
+body.page-prerender #main-grid .onload-animation,
+body.page-entering #main-grid .onload-animation {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* #toc-rail-wrapper 是 #toc-inner-wrapper 的祖先：它自带 onload-animation，
+   这里必须置 1 且禁掉 animation，否则会与 #toc-inner-wrapper 的渐变相乘。 */
+body.swup-leaving #toc-rail-wrapper,
+body.page-prerender #toc-rail-wrapper,
+body.page-entering #toc-rail-wrapper {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* ── 导航栏常驻：顶部工具栏不参与渐变（对应任务书「仅保留上方工具栏卡片」），
+      所以它在任何状态下都必须可见，且不许自己播入场动画 ─────────────────────
+   ⚠ Navbar（#navbar）自带 .onload-animation（fade-in-up 500ms/延迟 150ms）：
+     上一版把它的 animation-play-state 钉在起点、等渐显那一刻放开，结果是工具栏
+     要等动画自己的 150ms 延迟 + 500ms 时长走完才出现（实测首载 ~820ms 才可见）
+     ⇒ 观感为「页面都渐显完了，工具栏才姗姗来迟」。
+     现在改为：控制器在解析后与每个预渲染帧里直接摘掉 .onload-animation
+     （src/utils/page-transition.ts 的 clearRegionEnterAnimations），
+     工具栏立刻停在可见终态，本规则只是同一语义的兜底。 */
+body.swup-leaving #top-row,
+body.page-prerender #top-row,
+body.page-entering #top-row {
+  opacity: 1 !important;
+  pointer-events: none;
+}
+
+body.swup-leaving #navbar,
+body.page-prerender #navbar,
+body.page-entering #navbar {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 渐变退化为即时切换，但「先预渲染、后显示」的时序与状态类保持不变 */
+  body #main-grid,
+  body #banner-wrapper,
+  body #toc-inner-wrapper,
+  body #main-grid .footer,
+  body.swup-leaving #main-grid,
+  body.swup-leaving #banner-wrapper,
+  body.swup-leaving #toc-inner-wrapper,
+  body.swup-leaving #main-grid .footer {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ====================================================================
+   以下为 swup 通用动画类（与上面的页面渐变机制无关，保留既有定义）
+   ==================================================================== */
 
 /* 主要内容区域的过渡动画 - 参考yukina的侧滑效果 */
 .transition-main {

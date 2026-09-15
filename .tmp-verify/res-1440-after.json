@@ -1,0 +1,1945 @@
+{
+ "count": 226,
+ "resources": [
+  {
+   "url": "/@vite/client",
+   "initiatorType": "script",
+   "transferKB": 291.3,
+   "decodedKB": 291,
+   "start": 3969,
+   "dur": 26
+  },
+  {
+   "url": "/@fs/D:/make/Project/FGmagi.github.io/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/entrypoint.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 54,
+   "decodedKB": 53.7,
+   "start": 3969,
+   "dur": 28
+  },
+  {
+   "url": "/@id/astro:scripts/page.js",
+   "initiatorType": "script",
+   "transferKB": 9.4,
+   "decodedKB": 9.1,
+   "start": 3969,
+   "dur": 29
+  },
+  {
+   "url": "/node_modules/.pnpm/@astrojs+tailwind@6.0.2_ast_91a10b432ac2580c545181aa2c7d64ae/node_modules/@astrojs/tailwind/base.css",
+   "initiatorType": "script",
+   "transferKB": 102.6,
+   "decodedKB": 102.3,
+   "start": 3969,
+   "dur": 114
+  },
+  {
+   "url": "/src/components/PostSearchBar.svelte?svelte&type=style&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 0.9,
+   "start": 3970,
+   "dur": 30
+  },
+  {
+   "url": "/src/components/CustomScrollbar.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 2.5,
+   "decodedKB": 2.2,
+   "start": 3970,
+   "dur": 30
+  },
+  {
+   "url": "/src/components/PasswordProtection.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 5.2,
+   "decodedKB": 4.9,
+   "start": 3970,
+   "dur": 115
+  },
+  {
+   "url": "/src/styles/markdown.css",
+   "initiatorType": "script",
+   "transferKB": 8,
+   "decodedKB": 7.7,
+   "start": 3970,
+   "dur": 116
+  },
+  {
+   "url": "/src/styles/expressive-code.css",
+   "initiatorType": "script",
+   "transferKB": 8.2,
+   "decodedKB": 7.9,
+   "start": 3970,
+   "dur": 117
+  },
+  {
+   "url": "/src/styles/encrypted-content.css",
+   "initiatorType": "script",
+   "transferKB": 14.7,
+   "decodedKB": 14.4,
+   "start": 3970,
+   "dur": 118
+  },
+  {
+   "url": "/src/styles/markdown-extend.styl",
+   "initiatorType": "script",
+   "transferKB": 24.1,
+   "decodedKB": 23.8,
+   "start": 3970,
+   "dur": 118
+  },
+  {
+   "url": "/src/components/MobileTOC.svelte?svelte&type=style&lang.css",
+   "initiatorType": "script",
+   "transferKB": 7.3,
+   "decodedKB": 7.1,
+   "start": 3970,
+   "dur": 120
+  },
+  {
+   "url": "/src/components/widget/DropdownMenu.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 3.5,
+   "decodedKB": 3.2,
+   "start": 3970,
+   "dur": 121
+  },
+  {
+   "url": "/src/components/widget/NavMenuPanel.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.5,
+   "decodedKB": 1.2,
+   "start": 3970,
+   "dur": 121
+  },
+  {
+   "url": "/src/components/TypewriterText.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1,
+   "decodedKB": 0.8,
+   "start": 3970,
+   "dur": 122
+  },
+  {
+   "url": "/src/components/WallpaperSwitch.svelte?svelte&type=style&lang.css",
+   "initiatorType": "script",
+   "transferKB": 2.9,
+   "decodedKB": 2.7,
+   "start": 3970,
+   "dur": 122
+  },
+  {
+   "url": "/src/components/control/BackToTop.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.7,
+   "decodedKB": 1.4,
+   "start": 3970,
+   "dur": 122
+  },
+  {
+   "url": "/src/components/control/FloatingTOC.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 4.3,
+   "decodedKB": 4,
+   "start": 3970,
+   "dur": 125
+  },
+  {
+   "url": "/src/components/widget/WidgetLayout.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 0.9,
+   "decodedKB": 0.6,
+   "start": 3970,
+   "dur": 125
+  },
+  {
+   "url": "/src/components/widget/Calendar.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 1,
+   "start": 3970,
+   "dur": 126
+  },
+  {
+   "url": "/src/components/widget/TOC.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.3,
+   "decodedKB": 1,
+   "start": 3970,
+   "dur": 126
+  },
+  {
+   "url": "/src/components/widget/TOC.astro?astro&type=style&index=1&lang.css",
+   "initiatorType": "script",
+   "transferKB": 2,
+   "decodedKB": 1.7,
+   "start": 3970,
+   "dur": 127
+  },
+  {
+   "url": "/src/components/layout/RightSideBar.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 0.9,
+   "start": 3970,
+   "dur": 127
+  },
+  {
+   "url": "/src/components/misc/AnimationTest.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.6,
+   "decodedKB": 1.3,
+   "start": 3970,
+   "dur": 129
+  },
+  {
+   "url": "/src/components/misc/Icon.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.4,
+   "decodedKB": 1.1,
+   "start": 3970,
+   "dur": 130
+  },
+  {
+   "url": "/node_modules/.pnpm/@fontsource-variable+jetbrains-mono@5.2.8/node_modules/@fontsource-variable/jetbrains-mono/index.css",
+   "initiatorType": "script",
+   "transferKB": 3.9,
+   "decodedKB": 3.6,
+   "start": 3970,
+   "dur": 130
+  },
+  {
+   "url": "/src/components/widget/DisplaySettings.svelte?svelte&type=style&lang.css",
+   "initiatorType": "script",
+   "transferKB": 2.7,
+   "decodedKB": 2.4,
+   "start": 3970,
+   "dur": 131
+  },
+  {
+   "url": "/src/components/widget/Pio.svelte?svelte&type=style&lang.css",
+   "initiatorType": "script",
+   "transferKB": 0.9,
+   "decodedKB": 0.6,
+   "start": 3970,
+   "dur": 131
+  },
+  {
+   "url": "/src/components/widget/ProjectCard.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 0.9,
+   "start": 3970,
+   "dur": 132
+  },
+  {
+   "url": "/src/components/widget/RightSideBar.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.6,
+   "decodedKB": 1.3,
+   "start": 3970,
+   "dur": 134
+  },
+  {
+   "url": "/src/components/widget/TagFilter.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.5,
+   "decodedKB": 1.2,
+   "start": 3970,
+   "dur": 134
+  },
+  {
+   "url": "/src/components/widget/SideBar.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 0.9,
+   "start": 3970,
+   "dur": 135
+  },
+  {
+   "url": "/src/components/widget/SkillCard.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.1,
+   "decodedKB": 0.8,
+   "start": 3970,
+   "dur": 135
+  },
+  {
+   "url": "/src/components/widget/StatCard.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 0.9,
+   "decodedKB": 0.6,
+   "start": 3970,
+   "dur": 135
+  },
+  {
+   "url": "/src/styles/mobile-navbar.css",
+   "initiatorType": "script",
+   "transferKB": 10.3,
+   "decodedKB": 10,
+   "start": 3970,
+   "dur": 136
+  },
+  {
+   "url": "/src/styles/wallpaper-navbar-transparent.css",
+   "initiatorType": "script",
+   "transferKB": 5.8,
+   "decodedKB": 5.5,
+   "start": 3970,
+   "dur": 138
+  },
+  {
+   "url": "/src/styles/fancybox-custom.css",
+   "initiatorType": "script",
+   "transferKB": 3.3,
+   "decodedKB": 3,
+   "start": 3970,
+   "dur": 139
+  },
+  {
+   "url": "/src/styles/main.css",
+   "initiatorType": "script",
+   "transferKB": 183.4,
+   "decodedKB": 183.1,
+   "start": 3970,
+   "dur": 1140
+  },
+  {
+   "url": "/src/styles/panel-animations.css",
+   "initiatorType": "script",
+   "transferKB": 2.6,
+   "decodedKB": 2.3,
+   "start": 3970,
+   "dur": 139
+  },
+  {
+   "url": "/src/layouts/Layout.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 32.1,
+   "decodedKB": 31.8,
+   "start": 3970,
+   "dur": 149
+  },
+  {
+   "url": "/src/layouts/Layout.astro?astro&type=style&index=1&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.3,
+   "decodedKB": 1,
+   "start": 3970,
+   "dur": 149
+  },
+  {
+   "url": "/node_modules/.pnpm/katex@0.16.25/node_modules/katex/dist/katex.css",
+   "initiatorType": "script",
+   "transferKB": 36.6,
+   "decodedKB": 36.3,
+   "start": 3971,
+   "dur": 151
+  },
+  {
+   "url": "/node_modules/.pnpm/@fancyapps+ui@6.1.6/node_modules/@fancyapps/ui/dist/fancybox/fancybox.css",
+   "initiatorType": "script",
+   "transferKB": 33,
+   "decodedKB": 32.7,
+   "start": 3971,
+   "dur": 151
+  },
+  {
+   "url": "/src/layouts/MainGridLayout.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 19.6,
+   "decodedKB": 19.3,
+   "start": 3971,
+   "dur": 151
+  },
+  {
+   "url": "/src/pages/404.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.1,
+   "decodedKB": 0.8,
+   "start": 3971,
+   "dur": 165
+  },
+  {
+   "url": "/src/pages/albums.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 0.9,
+   "start": 3971,
+   "dur": 166
+  },
+  {
+   "url": "/src/pages/albums/[id]/index.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1,
+   "decodedKB": 0.7,
+   "start": 3971,
+   "dur": 167
+  },
+  {
+   "url": "/src/pages/albums/[id]/index.astro?astro&type=style&index=1&lang.css",
+   "initiatorType": "script",
+   "transferKB": 3.8,
+   "decodedKB": 3.5,
+   "start": 3971,
+   "dur": 167
+  },
+  {
+   "url": "/src/styles/anime.css",
+   "initiatorType": "script",
+   "transferKB": 7.9,
+   "decodedKB": 7.6,
+   "start": 3971,
+   "dur": 168
+  },
+  {
+   "url": "/src/pages/devices.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 3.1,
+   "decodedKB": 2.8,
+   "start": 3971,
+   "dur": 170
+  },
+  {
+   "url": "/src/pages/diary.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 3.2,
+   "decodedKB": 2.9,
+   "start": 3971,
+   "dur": 170
+  },
+  {
+   "url": "/src/pages/friends.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 2.2,
+   "decodedKB": 1.9,
+   "start": 3971,
+   "dur": 170
+  },
+  {
+   "url": "/src/pages/posts/[...slug].astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1,
+   "decodedKB": 0.7,
+   "start": 3971,
+   "dur": 171
+  },
+  {
+   "url": "/src/pages/projects.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.1,
+   "decodedKB": 0.8,
+   "start": 3971,
+   "dur": 171
+  },
+  {
+   "url": "/src/pages/skills.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 0.9,
+   "start": 3972,
+   "dur": 173
+  },
+  {
+   "url": "/src/pages/timeline.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.5,
+   "decodedKB": 1.3,
+   "start": 3972,
+   "dur": 173
+  },
+  {
+   "url": "/src/styles/albums.css",
+   "initiatorType": "script",
+   "transferKB": 5.4,
+   "decodedKB": 5.1,
+   "start": 3972,
+   "dur": 174
+  },
+  {
+   "url": "/src/styles/animation-enhancements.css",
+   "initiatorType": "script",
+   "transferKB": 6.8,
+   "decodedKB": 6.5,
+   "start": 3972,
+   "dur": 175
+  },
+  {
+   "url": "/src/styles/gradient-buttons.css",
+   "initiatorType": "script",
+   "transferKB": 4.5,
+   "decodedKB": 4.2,
+   "start": 3972,
+   "dur": 176
+  },
+  {
+   "url": "/src/styles/mobile-post-list-fix.css",
+   "initiatorType": "script",
+   "transferKB": 10.4,
+   "decodedKB": 10.1,
+   "start": 3972,
+   "dur": 301
+  },
+  {
+   "url": "/src/styles/mobile-transition-fix.css",
+   "initiatorType": "script",
+   "transferKB": 4.1,
+   "decodedKB": 3.8,
+   "start": 3972,
+   "dur": 301
+  },
+  {
+   "url": "/src/styles/photoswipe.css",
+   "initiatorType": "script",
+   "transferKB": 2.1,
+   "decodedKB": 1.8,
+   "start": 3972,
+   "dur": 302
+  },
+  {
+   "url": "/src/styles/scrollbar.css",
+   "initiatorType": "script",
+   "transferKB": 2.5,
+   "decodedKB": 2.3,
+   "start": 3972,
+   "dur": 302
+  },
+  {
+   "url": "/src/styles/transition.css",
+   "initiatorType": "script",
+   "transferKB": 16.2,
+   "decodedKB": 15.9,
+   "start": 3972,
+   "dur": 303
+  },
+  {
+   "url": "/src/styles/twikoo.css",
+   "initiatorType": "script",
+   "transferKB": 6.7,
+   "decodedKB": 6.4,
+   "start": 3972,
+   "dur": 310
+  },
+  {
+   "url": "/src/styles/variables.styl",
+   "initiatorType": "script",
+   "transferKB": 9.8,
+   "decodedKB": 9.5,
+   "start": 3972,
+   "dur": 310
+  },
+  {
+   "url": "/src/styles/widget-responsive.css",
+   "initiatorType": "script",
+   "transferKB": 8.7,
+   "decodedKB": 8.4,
+   "start": 3972,
+   "dur": 310
+  },
+  {
+   "url": "/src/components/PostCard.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.7,
+   "decodedKB": 1.4,
+   "start": 3972,
+   "dur": 311
+  },
+  {
+   "url": "/src/components/PostPage.astro?astro&type=style&index=0&lang.css",
+   "initiatorType": "script",
+   "transferKB": 1.8,
+   "decodedKB": 1.5,
+   "start": 3973,
+   "dur": 311
+  },
+  {
+   "url": "/src/layouts/MainGridLayout.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 127.5,
+   "decodedKB": 127.2,
+   "start": 3973,
+   "dur": 1139
+  },
+  {
+   "url": "/js/umami-share.js",
+   "initiatorType": "script",
+   "transferKB": 3.6,
+   "decodedKB": 3.3,
+   "start": 3973,
+   "dur": 1143
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E5%85%89.webp",
+   "initiatorType": "img",
+   "transferKB": 102,
+   "decodedKB": 101.7,
+   "start": 3973,
+   "dur": 1163
+  },
+  {
+   "url": "/images/%E9%98%BF%E7%BD%97%E5%A8%9C-%E6%99%AE%E6%8B%89%E5%A8%9C.webp",
+   "initiatorType": "img",
+   "transferKB": 34.4,
+   "decodedKB": 34.1,
+   "start": 3973,
+   "dur": 1164
+  },
+  {
+   "url": "/images/%E4%BC%8A%E5%B0%94%E8%8E%8E.webp",
+   "initiatorType": "img",
+   "transferKB": 177.7,
+   "decodedKB": 177.4,
+   "start": 3973,
+   "dur": 1165
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E9%BB%91.webp",
+   "initiatorType": "img",
+   "transferKB": 137.8,
+   "decodedKB": 137.5,
+   "start": 3973,
+   "dur": 1165
+  },
+  {
+   "url": "/images/C-SK-0.webp",
+   "initiatorType": "img",
+   "transferKB": 98.1,
+   "decodedKB": 97.8,
+   "start": 3973,
+   "dur": 1166
+  },
+  {
+   "url": "/images/C-SK-1.webp",
+   "initiatorType": "img",
+   "transferKB": 121.7,
+   "decodedKB": 121.4,
+   "start": 3973,
+   "dur": 1167
+  },
+  {
+   "url": "/images/C-SK-2.webp",
+   "initiatorType": "img",
+   "transferKB": 87.9,
+   "decodedKB": 87.7,
+   "start": 3973,
+   "dur": 1169
+  },
+  {
+   "url": "/assets/home/default-logo.png",
+   "initiatorType": "img",
+   "transferKB": 267,
+   "decodedKB": 266.7,
+   "start": 3973,
+   "dur": 1173
+  },
+  {
+   "url": "/src/components/widget/DropdownMenu.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 15.1,
+   "decodedKB": 14.8,
+   "start": 3973,
+   "dur": 1140
+  },
+  {
+   "url": "/src/components/widget/NavMenuPanel.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 12.5,
+   "decodedKB": 12.2,
+   "start": 3973,
+   "dur": 1140
+  },
+  {
+   "url": "/src/components/Navbar.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 24.2,
+   "decodedKB": 23.9,
+   "start": 3973,
+   "dur": 1141
+  },
+  {
+   "url": "/src/components/TypewriterText.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 13,
+   "decodedKB": 12.7,
+   "start": 3973,
+   "dur": 1143
+  },
+  {
+   "url": "/images/head-image.webp",
+   "initiatorType": "img",
+   "transferKB": 27.8,
+   "decodedKB": 27.5,
+   "start": 3974,
+   "dur": 1169
+  },
+  {
+   "url": "/src/components/widget/WidgetLayout.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 4.5,
+   "decodedKB": 4.2,
+   "start": 3974,
+   "dur": 1144
+  },
+  {
+   "url": "/src/components/layout/RightSideBar.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 9.2,
+   "decodedKB": 8.9,
+   "start": 3974,
+   "dur": 1146
+  },
+  {
+   "url": "/data/posts/image/%E8%8B%A5%E5%8F%B6%E7%9D%A6.webp",
+   "initiatorType": "img",
+   "transferKB": 89.5,
+   "decodedKB": 89.2,
+   "start": 3974,
+   "dur": 1170
+  },
+  {
+   "url": "/data/posts/image/%E5%B8%8C%E7%BB%AE%E8%8F%88.webp",
+   "initiatorType": "img",
+   "transferKB": 215.7,
+   "decodedKB": 215.4,
+   "start": 3974,
+   "dur": 1172
+  },
+  {
+   "url": "/src/components/PostPage.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 27.2,
+   "decodedKB": 26.9,
+   "start": 3974,
+   "dur": 1146
+  },
+  {
+   "url": "/src/layouts/Layout.astro?astro&type=script&index=0&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 84.5,
+   "decodedKB": 84.2,
+   "start": 3974,
+   "dur": 1147
+  },
+  {
+   "url": "/src/layouts/Layout.astro?astro&type=script&index=1&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 84.4,
+   "decodedKB": 84.1,
+   "start": 3974,
+   "dur": 1148
+  },
+  {
+   "url": "/src/layouts/Layout.astro?astro&type=script&index=2&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 84.4,
+   "decodedKB": 84.1,
+   "start": 3974,
+   "dur": 1149
+  },
+  {
+   "url": "/src/layouts/Layout.astro?astro&type=script&index=3&lang.ts",
+   "initiatorType": "script",
+   "transferKB": 122.2,
+   "decodedKB": 121.9,
+   "start": 3974,
+   "dur": 1152
+  },
+  {
+   "url": "/@id/__x00__astro:toolbar:internal",
+   "initiatorType": "script",
+   "transferKB": 9,
+   "decodedKB": 8.7,
+   "start": 4006,
+   "dur": 1122
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/helpers.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 14.5,
+   "decodedKB": 14.2,
+   "start": 4006,
+   "dur": 1122
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/settings.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 6.8,
+   "decodedKB": 6.5,
+   "start": 4006,
+   "dur": 1123
+  },
+  {
+   "url": "/node_modules/.vite/deps/@swup_astro_serialise.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 1.9,
+   "decodedKB": 1.6,
+   "start": 4006,
+   "dur": 1123
+  },
+  {
+   "url": "/node_modules/.vite/deps/@swup_astro_idle.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 1.2,
+   "decodedKB": 0.9,
+   "start": 4006,
+   "dur": 1124
+  },
+  {
+   "url": "/node_modules/.pnpm/vite@6.4.1_@types+node@24.1_1c405d19228c53908ebc68ce944650ba/node_modules/vite/dist/client/env.mjs",
+   "initiatorType": "script",
+   "transferKB": 4.8,
+   "decodedKB": 4.5,
+   "start": 4006,
+   "dur": 1127
+  },
+  {
+   "url": "https://www.googletagmanager.com/gtm.js?id=GTM-KRX3XGVH",
+   "initiatorType": "script",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 4013,
+   "dur": 13238
+  },
+  {
+   "url": "https://www.clarity.ms/tag/tjr3vkhj8i",
+   "initiatorType": "script",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 4013,
+   "dur": 13241
+  },
+  {
+   "url": "https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js",
+   "initiatorType": "script",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 5119,
+   "dur": 12189
+  },
+  {
+   "url": "/@id/astro:scripts/before-hydration.js",
+   "initiatorType": "script",
+   "transferKB": 0.5,
+   "decodedKB": 0.2,
+   "start": 5120,
+   "dur": 13
+  },
+  {
+   "url": "/api/calendar-data.json",
+   "initiatorType": "fetch",
+   "transferKB": 0.6,
+   "decodedKB": 0.3,
+   "start": 5123,
+   "dur": 10
+  },
+  {
+   "url": "/src/utils/page-transition.ts",
+   "initiatorType": "script",
+   "transferKB": 75.3,
+   "decodedKB": 75,
+   "start": 5175,
+   "dur": 5
+  },
+  {
+   "url": "/src/utils/widget-manager.ts",
+   "initiatorType": "script",
+   "transferKB": 23.3,
+   "decodedKB": 23,
+   "start": 5183,
+   "dur": 5
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-XSCQBFM2.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 8.2,
+   "decodedKB": 7.9,
+   "start": 5183,
+   "dur": 5
+  },
+  {
+   "url": "/src/components/WallpaperSwitch.svelte",
+   "initiatorType": "script",
+   "transferKB": 65.5,
+   "decodedKB": 65.2,
+   "start": 5183,
+   "dur": 6
+  },
+  {
+   "url": "/node_modules/.vite/deps/@astrojs_svelte_client__js.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 3.1,
+   "decodedKB": 2.8,
+   "start": 5184,
+   "dur": 6
+  },
+  {
+   "url": "/src/components/MobileTOC.svelte",
+   "initiatorType": "script",
+   "transferKB": 49.2,
+   "decodedKB": 48.9,
+   "start": 5184,
+   "dur": 8
+  },
+  {
+   "url": "/src/components/widget/DisplaySettings.svelte",
+   "initiatorType": "script",
+   "transferKB": 11.5,
+   "decodedKB": 11.2,
+   "start": 5184,
+   "dur": 9
+  },
+  {
+   "url": "/src/components/PostSearchBar.svelte",
+   "initiatorType": "script",
+   "transferKB": 8.1,
+   "decodedKB": 7.8,
+   "start": 5184,
+   "dur": 12
+  },
+  {
+   "url": "/src/utils/album-gallery.ts",
+   "initiatorType": "script",
+   "transferKB": 54.1,
+   "decodedKB": 53.8,
+   "start": 5185,
+   "dur": 12
+  },
+  {
+   "url": "/src/scripts/album-prefetch.js",
+   "initiatorType": "script",
+   "transferKB": 50.9,
+   "decodedKB": 50.6,
+   "start": 5185,
+   "dur": 14
+  },
+  {
+   "url": "/src/scripts/toc-layout.js",
+   "initiatorType": "script",
+   "transferKB": 76.8,
+   "decodedKB": 76.5,
+   "start": 5185,
+   "dur": 15
+  },
+  {
+   "url": "/src/scripts/navbar-card-separator.js",
+   "initiatorType": "script",
+   "transferKB": 35.1,
+   "decodedKB": 34.8,
+   "start": 5185,
+   "dur": 98
+  },
+  {
+   "url": "/src/scripts/theme-optimizer.js",
+   "initiatorType": "script",
+   "transferKB": 83.2,
+   "decodedKB": 82.9,
+   "start": 5185,
+   "dur": 99
+  },
+  {
+   "url": "/src/scripts/code-collapse.js",
+   "initiatorType": "script",
+   "transferKB": 58.5,
+   "decodedKB": 58.2,
+   "start": 5185,
+   "dur": 100
+  },
+  {
+   "url": "/src/utils/url-utils.ts",
+   "initiatorType": "script",
+   "transferKB": 9.3,
+   "decodedKB": 9,
+   "start": 5185,
+   "dur": 101
+  },
+  {
+   "url": "/src/constants/constants.ts",
+   "initiatorType": "script",
+   "transferKB": 2.2,
+   "decodedKB": 1.9,
+   "start": 5185,
+   "dur": 101
+  },
+  {
+   "url": "/src/config.ts",
+   "initiatorType": "script",
+   "transferKB": 67.3,
+   "decodedKB": 67,
+   "start": 5185,
+   "dur": 102
+  },
+  {
+   "url": "/src/utils/sakura-manager.ts",
+   "initiatorType": "script",
+   "transferKB": 29.2,
+   "decodedKB": 28.9,
+   "start": 5185,
+   "dur": 104
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-DEX2RCYB.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 0.9,
+   "decodedKB": 0.6,
+   "start": 5202,
+   "dur": 89
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-P66MYUYP.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 126.6,
+   "decodedKB": 126.3,
+   "start": 5202,
+   "dur": 88
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-LIRGYK6V.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 24.8,
+   "decodedKB": 24.5,
+   "start": 5202,
+   "dur": 90
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-AOLOHDQC.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 9,
+   "decodedKB": 8.7,
+   "start": 5202,
+   "dur": 92
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-Y77TZ3IZ.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 0.8,
+   "decodedKB": 0.6,
+   "start": 5202,
+   "dur": 93
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-YJ32ZKIU.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 136.3,
+   "decodedKB": 136,
+   "start": 5202,
+   "dur": 92
+  },
+  {
+   "url": "/node_modules/.vite/deps/svelte_internal_disclose-version.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 1.1,
+   "decodedKB": 0.8,
+   "start": 5202,
+   "dur": 94
+  },
+  {
+   "url": "/node_modules/.vite/deps/svelte_internal_client.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 27.9,
+   "decodedKB": 27.6,
+   "start": 5202,
+   "dur": 95
+  },
+  {
+   "url": "/src/i18n/i18nKey.ts",
+   "initiatorType": "script",
+   "transferKB": 39.1,
+   "decodedKB": 38.8,
+   "start": 5202,
+   "dur": 96
+  },
+  {
+   "url": "/src/i18n/translation.ts",
+   "initiatorType": "script",
+   "transferKB": 2.6,
+   "decodedKB": 2.3,
+   "start": 5202,
+   "dur": 97
+  },
+  {
+   "url": "/src/utils/setting-utils.ts",
+   "initiatorType": "script",
+   "transferKB": 13.8,
+   "decodedKB": 13.5,
+   "start": 5202,
+   "dur": 99
+  },
+  {
+   "url": "/node_modules/.vite/deps/@iconify_svelte.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 49.4,
+   "decodedKB": 49.1,
+   "start": 5202,
+   "dur": 98
+  },
+  {
+   "url": "/src/utils/panel-manager.ts",
+   "initiatorType": "script",
+   "transferKB": 13.9,
+   "decodedKB": 13.6,
+   "start": 5202,
+   "dur": 100
+  },
+  {
+   "url": "/node_modules/.vite/deps/svelte.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 5.2,
+   "decodedKB": 4.9,
+   "start": 5202,
+   "dur": 102
+  },
+  {
+   "url": "/node_modules/.vite/deps/svelte_internal_flags_legacy.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 1.4,
+   "decodedKB": 1.1,
+   "start": 5203,
+   "dur": 102
+  },
+  {
+   "url": "/src/utils/anchor-nav.ts",
+   "initiatorType": "script",
+   "transferKB": 11.4,
+   "decodedKB": 11.1,
+   "start": 5203,
+   "dur": 103
+  },
+  {
+   "url": "/src/utils/navigation-utils.ts",
+   "initiatorType": "script",
+   "transferKB": 11,
+   "decodedKB": 10.7,
+   "start": 5203,
+   "dur": 103
+  },
+  {
+   "url": "/src/utils/photo-cache.ts",
+   "initiatorType": "script",
+   "transferKB": 27.1,
+   "decodedKB": 26.8,
+   "start": 5203,
+   "dur": 104
+  },
+  {
+   "url": "/src/utils/photo-bitmap.ts",
+   "initiatorType": "script",
+   "transferKB": 14.8,
+   "decodedKB": 14.5,
+   "start": 5203,
+   "dur": 105
+  },
+  {
+   "url": "/src/utils/photo-probe-client.ts",
+   "initiatorType": "script",
+   "transferKB": 18.8,
+   "decodedKB": 18.5,
+   "start": 5203,
+   "dur": 106
+  },
+  {
+   "url": "/src/utils/permalink-utils.ts",
+   "initiatorType": "script",
+   "transferKB": 10.6,
+   "decodedKB": 10.4,
+   "start": 5286,
+   "dur": 22
+  },
+  {
+   "url": "/src/types/config.ts",
+   "initiatorType": "script",
+   "transferKB": 27.5,
+   "decodedKB": 27.2,
+   "start": 5288,
+   "dur": 21
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-3IZYL4VP.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 0.7,
+   "decodedKB": 0.4,
+   "start": 5297,
+   "dur": 13
+  },
+  {
+   "url": "/src/i18n/languages/en.ts",
+   "initiatorType": "script",
+   "transferKB": 44.4,
+   "decodedKB": 44.1,
+   "start": 5300,
+   "dur": 11
+  },
+  {
+   "url": "/src/i18n/languages/ja.ts",
+   "initiatorType": "script",
+   "transferKB": 50.1,
+   "decodedKB": 49.8,
+   "start": 5300,
+   "dur": 12
+  },
+  {
+   "url": "/src/i18n/languages/zh_CN.ts",
+   "initiatorType": "script",
+   "transferKB": 44.1,
+   "decodedKB": 43.8,
+   "start": 5300,
+   "dur": 13
+  },
+  {
+   "url": "/src/i18n/languages/zh_TW.ts",
+   "initiatorType": "script",
+   "transferKB": 43.9,
+   "decodedKB": 43.6,
+   "start": 5300,
+   "dur": 13
+  },
+  {
+   "url": "/node_modules/.vite/deps/chunk-AO43XQGY.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 0.5,
+   "decodedKB": 0.2,
+   "start": 5302,
+   "dur": 12
+  },
+  {
+   "url": "/src/utils/photo-size.ts",
+   "initiatorType": "script",
+   "transferKB": 36.3,
+   "decodedKB": 36,
+   "start": 5309,
+   "dur": 5
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/astro.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 107.7,
+   "decodedKB": 107.4,
+   "start": 5373,
+   "dur": 6
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/index.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 39.6,
+   "decodedKB": 39.3,
+   "start": 5373,
+   "dur": 7
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/xray.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 31.4,
+   "decodedKB": 31.1,
+   "start": 5373,
+   "dur": 10
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/settings.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 35.4,
+   "decodedKB": 35.1,
+   "start": 5373,
+   "dur": 10
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/index.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 9.8,
+   "decodedKB": 9.5,
+   "start": 5373,
+   "dur": 13
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/toolbar.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 85.8,
+   "decodedKB": 85.5,
+   "start": 5373,
+   "dur": 13
+  },
+  {
+   "url": "https://api.iconify.design/material-symbols.json?icons=close%2Cformat-list-bulleted%2Cshuffle%2Cview-quilt%2Cwallpaper%2Cwb-sunny-outline-rounded",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 5391,
+   "dur": 11919
+  },
+  {
+   "url": "https://api.iconify.design/fa6-solid.json?icons=arrow-rotate-left",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 5391,
+   "dur": 11919
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/icons.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 5.8,
+   "decodedKB": 5.5,
+   "start": 5391,
+   "dur": 11
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/window.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 8,
+   "decodedKB": 7.7,
+   "start": 5391,
+   "dur": 11
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icons.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 271.4,
+   "decodedKB": 271.1,
+   "start": 5391,
+   "dur": 10
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/annotations.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 4.1,
+   "decodedKB": 3.8,
+   "start": 5391,
+   "dur": 12
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/utils/highlight.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 11.8,
+   "decodedKB": 11.5,
+   "start": 5391,
+   "dur": 12
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/index.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 8.1,
+   "decodedKB": 7.8,
+   "start": 5391,
+   "dur": 12
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-item.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 16.6,
+   "decodedKB": 16.3,
+   "start": 5391,
+   "dur": 14
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-list-window.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 51.4,
+   "decodedKB": 51.1,
+   "start": 5391,
+   "dur": 15
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/ui/audit-ui.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 28.8,
+   "decodedKB": 28.5,
+   "start": 5391,
+   "dur": 15
+  },
+  {
+   "url": "/node_modules/.pnpm/html-escaper@3.0.3/node_modules/html-escaper/esm/index.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 12.9,
+   "decodedKB": 12.6,
+   "start": 5391,
+   "dur": 16
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/window.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 19.4,
+   "decodedKB": 19.1,
+   "start": 5392,
+   "dur": 17
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/badge.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 16.7,
+   "decodedKB": 16.4,
+   "start": 5392,
+   "dur": 17
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/button.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 25.2,
+   "decodedKB": 24.9,
+   "start": 5392,
+   "dur": 22
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/card.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 20,
+   "decodedKB": 19.7,
+   "start": 5392,
+   "dur": 22
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/highlight.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 22.1,
+   "decodedKB": 21.8,
+   "start": 5392,
+   "dur": 23
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/icon.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 6.1,
+   "decodedKB": 5.8,
+   "start": 5392,
+   "dur": 23
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/radio-checkbox.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 16.2,
+   "decodedKB": 15.9,
+   "start": 5392,
+   "dur": 24
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/select.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 18.3,
+   "decodedKB": 18,
+   "start": 5392,
+   "dur": 25
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/toggle.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 19.2,
+   "decodedKB": 18.9,
+   "start": 5392,
+   "dur": 26
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/ui-library/tooltip.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 23.1,
+   "decodedKB": 22.8,
+   "start": 5392,
+   "dur": 27
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/a11y.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 119.6,
+   "decodedKB": 119.3,
+   "start": 5404,
+   "dur": 16
+  },
+  {
+   "url": "/node_modules/.pnpm/astro@5.16.14_@types+node@2_982b53eaa33b1fd5e9b94d57d35bc870/node_modules/astro/dist/runtime/client/dev-toolbar/apps/audit/rules/perf.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 23.3,
+   "decodedKB": 23,
+   "start": 5404,
+   "dur": 16
+  },
+  {
+   "url": "/node_modules/.vite/deps/astro___aria-query.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 211.4,
+   "decodedKB": 211.1,
+   "start": 5421,
+   "dur": 4
+  },
+  {
+   "url": "/node_modules/.vite/deps/astro___axobject-query.js?v=44612fc9",
+   "initiatorType": "script",
+   "transferKB": 120.4,
+   "decodedKB": 120.1,
+   "start": 5421,
+   "dur": 5
+  },
+  {
+   "url": "https://api.iconify.design/material-symbols.json?icons=article-outline",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 5457,
+   "dur": 11853
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E5%85%89.webp",
+   "initiatorType": "fetch",
+   "transferKB": 102,
+   "decodedKB": 101.7,
+   "start": 5477,
+   "dur": 3
+  },
+  {
+   "url": "/images/%E9%98%BF%E7%BD%97%E5%A8%9C-%E6%99%AE%E6%8B%89%E5%A8%9C.webp",
+   "initiatorType": "fetch",
+   "transferKB": 34.4,
+   "decodedKB": 34.1,
+   "start": 5485,
+   "dur": 3
+  },
+  {
+   "url": "/images/%E4%BC%8A%E5%B0%94%E8%8E%8E.webp",
+   "initiatorType": "fetch",
+   "transferKB": 177.7,
+   "decodedKB": 177.4,
+   "start": 5487,
+   "dur": 3
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E9%BB%91.webp",
+   "initiatorType": "fetch",
+   "transferKB": 137.8,
+   "decodedKB": 137.5,
+   "start": 5491,
+   "dur": 3
+  },
+  {
+   "url": "/images/C-SK-0.webp",
+   "initiatorType": "fetch",
+   "transferKB": 98.1,
+   "decodedKB": 97.8,
+   "start": 5494,
+   "dur": 2
+  },
+  {
+   "url": "/images/C-SK-1.webp",
+   "initiatorType": "fetch",
+   "transferKB": 121.7,
+   "decodedKB": 121.4,
+   "start": 5497,
+   "dur": 2
+  },
+  {
+   "url": "/images/C-SK-2.webp",
+   "initiatorType": "fetch",
+   "transferKB": 87.9,
+   "decodedKB": 87.7,
+   "start": 5500,
+   "dur": 3
+  },
+  {
+   "url": "/assets/home/default-logo.png",
+   "initiatorType": "fetch",
+   "transferKB": 267,
+   "decodedKB": 266.7,
+   "start": 5503,
+   "dur": 4
+  },
+  {
+   "url": "/images/C-SK-0.webp",
+   "initiatorType": "fetch",
+   "transferKB": 98.1,
+   "decodedKB": 97.8,
+   "start": 5508,
+   "dur": 3
+  },
+  {
+   "url": "/images/head-image.webp",
+   "initiatorType": "fetch",
+   "transferKB": 27.8,
+   "decodedKB": 27.5,
+   "start": 5511,
+   "dur": 2
+  },
+  {
+   "url": "/images/head-image.webp",
+   "initiatorType": "fetch",
+   "transferKB": 27.8,
+   "decodedKB": 27.5,
+   "start": 5513,
+   "dur": 2
+  },
+  {
+   "url": "/data/posts/image/%E8%8B%A5%E5%8F%B6%E7%9D%A6.webp",
+   "initiatorType": "fetch",
+   "transferKB": 89.5,
+   "decodedKB": 89.2,
+   "start": 5515,
+   "dur": 2
+  },
+  {
+   "url": "/data/posts/image/%E5%B8%8C%E7%BB%AE%E8%8F%88.webp",
+   "initiatorType": "fetch",
+   "transferKB": 215.7,
+   "decodedKB": 215.4,
+   "start": 5517,
+   "dur": 2
+  },
+  {
+   "url": "https://api.unisvg.com/material-symbols.json?icons=close%2Cformat-list-bulleted%2Cshuffle%2Cview-quilt%2Cwallpaper%2Cwb-sunny-outline-rounded",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 6142,
+   "dur": 11168
+  },
+  {
+   "url": "https://api.unisvg.com/fa6-solid.json?icons=arrow-rotate-left",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 6142,
+   "dur": 11168
+  },
+  {
+   "url": "https://api.unisvg.com/material-symbols.json?icons=article-outline",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 6208,
+   "dur": 11102
+  },
+  {
+   "url": "https://api.simplesvg.com/material-symbols.json?icons=close%2Cformat-list-bulleted%2Cshuffle%2Cview-quilt%2Cwallpaper%2Cwb-sunny-outline-rounded",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 6896,
+   "dur": 10414
+  },
+  {
+   "url": "https://api.simplesvg.com/fa6-solid.json?icons=arrow-rotate-left",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 6896,
+   "dur": 10414
+  },
+  {
+   "url": "https://api.simplesvg.com/material-symbols.json?icons=article-outline",
+   "initiatorType": "fetch",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 6968,
+   "dur": 10342
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E5%85%89.webp",
+   "initiatorType": "fetch",
+   "transferKB": 102,
+   "decodedKB": 101.7,
+   "start": 7370,
+   "dur": 3
+  },
+  {
+   "url": "/images/%E9%98%BF%E7%BD%97%E5%A8%9C-%E6%99%AE%E6%8B%89%E5%A8%9C.webp",
+   "initiatorType": "fetch",
+   "transferKB": 34.4,
+   "decodedKB": 34.1,
+   "start": 7374,
+   "dur": 2
+  },
+  {
+   "url": "/images/%E4%BC%8A%E5%B0%94%E8%8E%8E.webp",
+   "initiatorType": "fetch",
+   "transferKB": 177.7,
+   "decodedKB": 177.4,
+   "start": 7377,
+   "dur": 3
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E9%BB%91.webp",
+   "initiatorType": "fetch",
+   "transferKB": 137.8,
+   "decodedKB": 137.5,
+   "start": 7380,
+   "dur": 3
+  },
+  {
+   "url": "/images/C-SK-0.webp",
+   "initiatorType": "fetch",
+   "transferKB": 98.1,
+   "decodedKB": 97.8,
+   "start": 7384,
+   "dur": 2
+  },
+  {
+   "url": "/images/C-SK-1.webp",
+   "initiatorType": "fetch",
+   "transferKB": 121.7,
+   "decodedKB": 121.4,
+   "start": 7386,
+   "dur": 2
+  },
+  {
+   "url": "/images/C-SK-2.webp",
+   "initiatorType": "fetch",
+   "transferKB": 87.9,
+   "decodedKB": 87.7,
+   "start": 7388,
+   "dur": 2
+  },
+  {
+   "url": "/assets/home/default-logo.png",
+   "initiatorType": "fetch",
+   "transferKB": 267,
+   "decodedKB": 266.7,
+   "start": 7391,
+   "dur": 3
+  },
+  {
+   "url": "/images/C-SK-0.webp",
+   "initiatorType": "fetch",
+   "transferKB": 98.1,
+   "decodedKB": 97.8,
+   "start": 7394,
+   "dur": 2
+  },
+  {
+   "url": "/images/head-image.webp",
+   "initiatorType": "fetch",
+   "transferKB": 27.8,
+   "decodedKB": 27.5,
+   "start": 7397,
+   "dur": 2
+  },
+  {
+   "url": "/images/head-image.webp",
+   "initiatorType": "fetch",
+   "transferKB": 27.8,
+   "decodedKB": 27.5,
+   "start": 7399,
+   "dur": 2
+  },
+  {
+   "url": "/data/posts/image/%E8%8B%A5%E5%8F%B6%E7%9D%A6.webp",
+   "initiatorType": "fetch",
+   "transferKB": 89.5,
+   "decodedKB": 89.2,
+   "start": 7401,
+   "dur": 2
+  },
+  {
+   "url": "/data/posts/image/%E5%B8%8C%E7%BB%AE%E8%8F%88.webp",
+   "initiatorType": "fetch",
+   "transferKB": 215.7,
+   "decodedKB": 215.4,
+   "start": 7403,
+   "dur": 2
+  },
+  {
+   "url": "/favicon/favicon.ico",
+   "initiatorType": "other",
+   "transferKB": 21,
+   "decodedKB": 20.7,
+   "start": 17310,
+   "dur": 0
+  },
+  {
+   "url": "https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js",
+   "initiatorType": "script",
+   "transferKB": 0,
+   "decodedKB": 0,
+   "start": 18308,
+   "dur": 0
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E5%85%89.webp",
+   "initiatorType": "fetch",
+   "transferKB": 102,
+   "decodedKB": 101.7,
+   "start": 20239,
+   "dur": -1137
+  },
+  {
+   "url": "/images/%E9%98%BF%E7%BD%97%E5%A8%9C-%E6%99%AE%E6%8B%89%E5%A8%9C.webp",
+   "initiatorType": "fetch",
+   "transferKB": 34.4,
+   "decodedKB": 34.1,
+   "start": 20249,
+   "dur": -1144
+  },
+  {
+   "url": "/images/%E4%BC%8A%E5%B0%94%E8%8E%8E.webp",
+   "initiatorType": "fetch",
+   "transferKB": 177.7,
+   "decodedKB": 177.4,
+   "start": 20259,
+   "dur": -1150
+  },
+  {
+   "url": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E9%BB%91.webp",
+   "initiatorType": "fetch",
+   "transferKB": 137.8,
+   "decodedKB": 137.5,
+   "start": 20269,
+   "dur": -1156
+  },
+  {
+   "url": "/images/C-SK-0.webp",
+   "initiatorType": "fetch",
+   "transferKB": 98.1,
+   "decodedKB": 97.8,
+   "start": 20279,
+   "dur": -1163
+  },
+  {
+   "url": "/images/C-SK-1.webp",
+   "initiatorType": "fetch",
+   "transferKB": 121.7,
+   "decodedKB": 121.4,
+   "start": 20289,
+   "dur": -1170
+  },
+  {
+   "url": "/images/C-SK-2.webp",
+   "initiatorType": "fetch",
+   "transferKB": 87.9,
+   "decodedKB": 87.7,
+   "start": 20299,
+   "dur": -1176
+  },
+  {
+   "url": "/assets/home/default-logo.png",
+   "initiatorType": "fetch",
+   "transferKB": 267,
+   "decodedKB": 266.7,
+   "start": 20309,
+   "dur": -1182
+  }
+ ],
+ "images": [
+  {
+   "src": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E5%85%89.webp",
+   "loading": "eager",
+   "decoding": "async",
+   "fetchpriority": null,
+   "visible": true,
+   "size": "1412x804",
+   "nat": "2046x1447",
+   "complete": true
+  },
+  {
+   "src": "/images/%E9%98%BF%E7%BD%97%E5%A8%9C-%E6%99%AE%E6%8B%89%E5%A8%9C.webp",
+   "loading": "lazy",
+   "decoding": "async",
+   "fetchpriority": null,
+   "visible": true,
+   "size": "1412x804",
+   "nat": "942x662",
+   "complete": true
+  },
+  {
+   "src": "/images/%E4%BC%8A%E5%B0%94%E8%8E%8E.webp",
+   "loading": "lazy",
+   "decoding": "async",
+   "fetchpriority": null,
+   "visible": true,
+   "size": "1412x804",
+   "nat": "1920x1106",
+   "complete": true
+  },
+  {
+   "src": "/images/%E8%8A%99%E5%85%B0%E6%9C%B5%E9%9C%B2-%E9%BB%91.webp",
+   "loading": "lazy",
+   "decoding": "async",
+   "fetchpriority": null,
+   "visible": true,
+   "size": "1412x804",
+   "nat": "1280x800",
+   "complete": true
+  },
+  {
+   "src": "/images/C-SK-0.webp",
+   "loading": "lazy",
+   "decoding": "async",
+   "fetchpriority": null,
+   "visible": false,
+   "size": "0x0",
+   "nat": "1273x1801",
+   "complete": true
+  },
+  {
+   "src": "/images/C-SK-1.webp",
+   "loading": "lazy",
+   "decoding": "async",
+   "fetchpriority": null,
+   "visible": false,
+   "size": "0x0",
+   "nat": "912x1416",
+   "complete": true
+  },
+  {
+   "src": "/images/C-SK-2.webp",
+   "loading": "lazy",
+   "decoding": "async",
+   "fetchpriority": null,
+   "visible": false,
+   "size": "0x0",
+   "nat": "1801x1784",
+   "complete": true
+  },
+  {
+   "src": "/assets/home/default-logo.png",
+   "loading": "lazy",
+   "decoding": null,
+   "fetchpriority": null,
+   "visible": true,
+   "size": "93x31",
+   "nat": "772x254",
+   "complete": true
+  },
+  {
+   "src": "/images/C-SK-0.webp",
+   "loading": "eager",
+   "decoding": null,
+   "fetchpriority": null,
+   "visible": false,
+   "size": "0x0",
+   "nat": "1273x1801",
+   "complete": true
+  },
+  {
+   "src": "/images/head-image.webp",
+   "loading": "lazy",
+   "decoding": null,
+   "fetchpriority": null,
+   "visible": false,
+   "size": "0x0",
+   "nat": "459x477",
+   "complete": true
+  },
+  {
+   "src": "/images/head-image.webp",
+   "loading": "lazy",
+   "decoding": null,
+   "fetchpriority": null,
+   "visible": true,
+   "size": "218x226",
+   "nat": "459x477",
+   "complete": true
+  },
+  {
+   "src": "/data/posts/image/%E8%8B%A5%E5%8F%B6%E7%9D%A6.webp",
+   "loading": "lazy",
+   "decoding": null,
+   "fetchpriority": null,
+   "visible": true,
+   "size": "159x90",
+   "nat": "1600x900",
+   "complete": true
+  },
+  {
+   "src": "/data/posts/image/%E5%B8%8C%E7%BB%AE%E8%8F%88.webp",
+   "loading": "lazy",
+   "decoding": null,
+   "fetchpriority": null,
+   "visible": true,
+   "size": "159x90",
+   "nat": "3500x1470",
+   "complete": true
+  }
+ ]
+}

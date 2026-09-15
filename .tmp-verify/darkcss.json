@@ -1,0 +1,43 @@
+{
+ "htmlClass": "bg-[var(--page-bg)] text-[14px] md:text-[16px] swup-enabled dark",
+ "title": {
+  "class": "transition min-w-0 flex-1 block font-bold text-3xl text-90\n\t\t\t\tbefore:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]\n\t\t\t\tbefore:absolute\n\t\t\t\tbefore:top-[2.1875rem] before:left-[1.125rem] before:hidden md:before:block",
+  "color": "rgba(0, 0, 0, 0.9)",
+  "matchesDark": true,
+  "matchesIsDark": true
+ },
+ "desc": {
+  "class": "transition text-75 mt-[0.3rem] mb-[0.575rem] pr-4 line-clamp-1 max-w-[75%]",
+  "color": "rgba(0, 0, 0, 0.75)"
+ },
+ "stats": {
+  "class": "text-base font-bold text-neutral-900 dark:text-neutral-100",
+  "color": "rgb(23, 23, 23)"
+ },
+ "rules": [
+  {
+   "href": "inline",
+   "media": "",
+   "selector": "a",
+   "color": "inherit"
+  },
+  {
+   "href": "inline",
+   "media": "",
+   "selector": "a",
+   "color": "inherit"
+  },
+  {
+   "href": "inline",
+   "media": "",
+   "selector": ".text-90",
+   "color": "rgba(0, 0, 0, 0.9)"
+  },
+  {
+   "href": "inline",
+   "media": "",
+   "selector": ".text-90:is(.dark *)",
+   "color": "rgba(255, 255, 255, 0.9)"
+  }
+ ]
+}

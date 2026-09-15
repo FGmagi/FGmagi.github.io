@@ -26,6 +26,12 @@ export interface ManifestPhoto {
 	src: string;
 	w?: number;
 	h?: number;
+	/**
+	 * 26.09.14：尺寸来源标记。
+	 * true = 该 w/h 来自构建期 sharp 探测（而非作者声明），因此允许运行期校验/校正；
+	 * 缺省（undefined）= 声明式已知或构建期未知，运行期无需为此做 Range 校验。
+	 */
+	known?: boolean;
 }
 
 export interface ManifestAlbum {
@@ -50,6 +56,14 @@ const memoByKey = new Map<string, PhotoDim>();
 
 /** 本地原档路径 → sharp 尺寸缓存（跨相册同文件去重）。 */
 const dimByRawPath = new Map<string, PhotoDim>();
+
+/**
+ * 26.09.14：本 build 「由 sharp 探测所得尺寸」的 photoKey 集合（③级来源台账）。
+ * 只被 ③ 级（本地原档 sharp.metadata）写入 —— ①声明值、②memo 命中都不会新增条目；
+ * 而 memo 的条目本身只可能由 ③ 写入，故 ② 命中时该 key 必已在台账中（manifest 的 known 标记因此不会漏）。
+ * buildManifestJson 读取它来落 `known: true`，供运行期做「探测值校验」。
+ */
+const probedKeys = new Set<string>();
 
 /** 规范化相对路径段（逐段解码、拒绝空/./.. 与反斜杠）。 */
 function cleanSegments(parts: string[]): string[] {
@@ -162,6 +176,7 @@ export async function resolveKnownSize(
 			photo.width = dim.w;
 			photo.height = dim.h;
 			memoMap.set(key, dim);
+			probedKeys.add(key); // 26.09.14：登记「探测所得」，供 manifest 落 known: true
 			return dim;
 		}
 	}
@@ -188,6 +203,7 @@ export async function enrichAlbums(
 /**
  * 全局尺寸 manifest（schema 2，无冗余 flat map；w/h 缺失 = 构建期未知）。
  * 会先做一次 enrich（与相册页同一套四级决策）。
+ * 26.09.14：尺寸来自 sharp 探测的照片额外落 `known: true`，运行期据此做「校验式」预取。
  */
 export async function buildManifestJson(
 	albums: AlbumGroup[],
@@ -210,6 +226,8 @@ export async function buildManifestJson(
 				) {
 					rec.w = photo.width;
 					rec.h = photo.height;
+					// 26.09.14：只加标记，不改任何尺寸数值
+					if (probedKeys.has(rec.key)) rec.known = true;
 				}
 				return rec;
 			}),

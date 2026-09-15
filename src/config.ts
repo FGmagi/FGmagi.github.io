@@ -229,7 +229,37 @@ export const siteConfig: SiteConfig = {
 		enable: true, // 启用目录
 		mode: "sidebar", // 显示模式：float=悬浮按钮 | sidebar=侧边栏
 		depth: 2, // 目录深度（1-6；2=显示 h1/h2）
-		useJapaneseBadge: true, // 使用日语假名序号（あいうえお...）代替数字
+		useJapaneseBadge: false, // 使用日语假名序号（あいうえお...）代替数字
+		// 26.09.06：目录轨道最小宽度与文章最小内容宽度。策略：非主页（文章页）宽度优先与主页一致
+		// （取 min(page-width, 允许的最大宽度)），仅在空间不足时按需收窄；不足文章最小宽度则退化移动端目录。
+		sidebarRailWidth: "15rem", // 保留桌面侧栏目录所需的最小单侧空间（CSS 长度；不再是“首选轨道宽度”）
+		sidebarMinContentWidth: 60, // 文章最小内容宽度（rem）；不足则退化移动端目录
+		// 26.09.14：目录（锚点）跳转行为，宽屏侧栏目录与窄屏浮层目录共用（src/utils/anchor-nav.ts）
+		navigation: {
+			offset: 12, // 目标标题与导航栏底边的额外间距（px）：防止标题被吸顶导航栏挡住
+			smoothDuration: 700, // 平滑滚动时长（ms）：越大越慢越平滑
+			longJumpViewports: 1.5, // 跳转距离超过「多少个视口高度」时改用渐变消失→瞬移→预渲染→渐变显示
+			longJumpFadeOut: 200, // 长距离跳转：渐变消失时长（ms）
+			longJumpFadeIn: 250, // 长距离跳转：渐变显示时长（ms）
+		},
+	},
+
+	// 26.09.15：导航栏「悬挂」（吸顶）开关
+	navbar: {
+		pinned: true, // true=固定在视口顶部悬挂（下拉时始终可见，原行为）| false=随页面滚动、不再悬挂
+	},
+
+	// 26.09.14：页面切换渐变时长（唯一时间来源）。
+	// 链路：src/config.ts（本处）→ MainGridLayout.astro 的 <style define:vars> 写入
+	// :root 的 --page-fade-out / --page-fade-in → src/styles/transition.css 只读这两个变量；
+	// src/utils/page-transition.ts 用同一份值做状态机计时，并把它注入 window.siteConfig.pageTransition。
+	// 时序：点击 → 当前整页渐变消失(fadeOut) → 目标页加载与预渲染 → 预渲染完成后统一渐变显示(fadeIn)
+	pageTransition: {
+		fadeOut: 200, // 渐变消失时长（毫秒）
+		fadeIn: 250, // 渐变显示时长（毫秒）
+		// 预渲染最长等待（毫秒）：长文页要等正文字体就绪 + 排版收敛后再统一渐显，
+		// 否则会出现「先出现空白卡片、文字随后才补上」。超时即放行，不会一直等。
+		prerenderMaxWait: 1500,
 	},
 	showCoverInContent: true, // 在文章内容页显示封面
 	generateOgImages: false, // 生成 OpenGraph 图片（开启后构建很慢，不建议本地调试开启）
@@ -585,4 +615,3 @@ export const umamiConfig = {
 <script defer src="XXXX.XXX" data-website-id="ABCD1234"></script>
   `.trim(), // 要插入的统计脚本（无需再去 Layout 中插入）
 } as const;
-

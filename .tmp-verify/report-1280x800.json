@@ -1,0 +1,304 @@
+{
+ "url": "/",
+ "viewport": {
+  "w": 1262,
+  "h": 704,
+  "dpr": 1
+ },
+ "bodyClass": "min-h-screen lg:is-home wallpaper-transparent no-banner-mode",
+ "doc": {
+  "scrollW": 1252,
+  "clientW": 1252,
+  "scrollH": 807,
+  "rootFontSize": "16px"
+ },
+ "fonts": {
+  "status": "loaded",
+  "size": 29
+ },
+ "errors": [
+  {
+   "msg": "warn: Iconify load attempt 1 failed: Error: Script load timeout"
+  },
+  {
+   "msg": "warn: Iconify load attempt 2 failed: Error: Script load error"
+  },
+  {
+   "msg": "warn: Iconify load attempt 3 failed: Error: Script load error"
+  }
+ ],
+ "resources": {
+  "total": 239,
+  "byType": {
+   "1:4399/@vite/client": 1,
+   "js": 68,
+   "astro": 48,
+   "css": 23,
+   "styl": 2,
+   "svelte": 9,
+   "webp": 46,
+   "png": 4,
+   "1:4399/@id/__x00__astro:toolbar:internal": 1,
+   "mjs": 1,
+   "ms/tag/tjr3vkhj8i": 1,
+   "json": 10,
+   "ts": 23,
+   "ico": 1,
+   "1:4399/": 1
+  },
+  "failed": [],
+  "transferKB": 11179.12
+ },
+ "images": {
+  "count": 13,
+  "loadingAttr": {
+   "eager": 3,
+   "lazy": 10
+  },
+  "broken": []
+ },
+ "overflowing": [],
+ "clippedText": [],
+ "cards": [
+  {
+   "el": "div.card-base.p-3",
+   "x": 16,
+   "y": 88,
+   "w": 280,
+   "h": 317.52,
+   "r": 296,
+   "b": 405.52
+  },
+  {
+   "el": "widget-layout.pb-4.card-base",
+   "x": 16,
+   "y": 421.52,
+   "w": 280,
+   "h": 138,
+   "r": 296,
+   "b": 559.52
+  },
+  {
+   "el": "widget-layout.pb-4.card-base",
+   "x": 16,
+   "y": 575.52,
+   "w": 280,
+   "h": 92,
+   "r": 296,
+   "b": 667.52
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 312,
+   "y": 145.11,
+   "w": 924,
+   "h": 141.19,
+   "r": 1236,
+   "b": 286.3
+  },
+  {
+   "el": "div.card-base.group.flex",
+   "x": 312,
+   "y": 286.3,
+   "w": 924,
+   "h": 141.19,
+   "r": 1236,
+   "b": 427.48
+  }
+ ],
+ "key": {
+  "topRow": {
+   "x": 0,
+   "y": 0,
+   "w": 1252,
+   "h": 57.59,
+   "r": 1252,
+   "b": 57.59
+  },
+  "navbar": {
+   "x": 16,
+   "y": 0,
+   "w": 1220,
+   "h": 57.59,
+   "r": 1236,
+   "b": 57.59
+  },
+  "navbarCard": {
+   "x": 16,
+   "y": 0,
+   "w": 1220,
+   "h": 57.59,
+   "r": 1236,
+   "b": 57.59
+  },
+  "mainGrid": {
+   "x": 0,
+   "y": 88,
+   "w": 1252,
+   "h": 719.02,
+   "r": 1252,
+   "b": 807.02
+  },
+  "leftSidebar": {
+   "x": 16,
+   "y": 88,
+   "w": 280,
+   "h": 687.02,
+   "r": 296,
+   "b": 775.02
+  },
+  "mainContent": {
+   "x": 0,
+   "y": 88,
+   "w": 1252,
+   "h": 719.02,
+   "r": 1252,
+   "b": 807.02
+  },
+  "postList": {
+   "x": 312,
+   "y": 145.11,
+   "w": 924,
+   "h": 585.91,
+   "r": 1236,
+   "b": 731.02
+  },
+  "searchBar": {
+   "x": 312,
+   "y": 88,
+   "w": 924,
+   "h": 41.11,
+   "r": 1236,
+   "b": 129.11
+  }
+ },
+ "posts": [],
+ "sideWidgets": [
+  {
+   "el": "div.flex.flex-col.w-full",
+   "x": 16,
+   "y": 88,
+   "w": 280,
+   "h": 471.52,
+   "r": 296,
+   "b": 559.52
+  },
+  {
+   "el": "div#sidebar-sticky.transition-all.duration-700.flex",
+   "x": 16,
+   "y": 575.52,
+   "w": 280,
+   "h": 92,
+   "r": 296,
+   "b": 667.52
+  }
+ ],
+ "pairs": [
+  {
+   "name": "navbar-vs-main",
+   "overlap": false,
+   "gapX": -1236,
+   "a": {
+    "x": 16,
+    "y": 0,
+    "w": 1220,
+    "h": 57.59,
+    "r": 1236,
+    "b": 57.59
+   },
+   "b": {
+    "x": 0,
+    "y": 88,
+    "w": 1252,
+    "h": 719.02,
+    "r": 1252,
+    "b": 807.02
+   }
+  },
+  {
+   "name": "navbar-vs-postList",
+   "overlap": false,
+   "gapX": -924,
+   "a": {
+    "x": 16,
+    "y": 0,
+    "w": 1220,
+    "h": 57.59,
+    "r": 1236,
+    "b": 57.59
+   },
+   "b": {
+    "x": 312,
+    "y": 145.11,
+    "w": 924,
+    "h": 585.91,
+    "r": 1236,
+    "b": 731.02
+   }
+  },
+  {
+   "name": "left-vs-postList",
+   "overlap": false,
+   "gapX": 16,
+   "a": {
+    "x": 16,
+    "y": 88,
+    "w": 280,
+    "h": 687.02,
+    "r": 296,
+    "b": 775.02
+   },
+   "b": {
+    "x": 312,
+    "y": 145.11,
+    "w": 924,
+    "h": 585.91,
+    "r": 1236,
+    "b": 731.02
+   }
+  },
+  {
+   "name": "searchBar-vs-postList",
+   "overlap": false,
+   "gapX": -924,
+   "a": {
+    "x": 312,
+    "y": 88,
+    "w": 924,
+    "h": 41.11,
+    "r": 1236,
+    "b": 129.11
+   },
+   "b": {
+    "x": 312,
+    "y": 145.11,
+    "w": 924,
+    "h": 585.91,
+    "r": 1236,
+    "b": 731.02
+   }
+  }
+ ],
+ "edges": {
+  "#navbar": {
+   "left": 16,
+   "right": 26,
+   "width": 1220
+  },
+  "#post-list-container": {
+   "left": 312,
+   "right": 26,
+   "width": 924
+  },
+  ".home-sidebar": {
+   "left": 16,
+   "right": 966,
+   "width": 280
+  },
+  ".home-search-bar": {
+   "left": 312,
+   "right": 26,
+   "width": 924
+  }
+ }
+}

@@ -95,9 +95,52 @@ define({
   --toc-badge-bg: oklch(0.9 0.045 var(--hue)) var(--btn-regular-bg)
   --toc-btn-hover: oklch(0.92 0.015 var(--hue)) oklch(0.22 0.02 var(--hue))
   --toc-btn-active: oklch(0.90 0.015 var(--hue)) oklch(0.25 0.02 var(--hue))
-  --toc-width: calc((100vw - var(--page-width)) / 2 - 1rem)
   --toc-item-active: oklch(0.70 0.13 var(--hue)) oklch(0.35 0.07 var(--hue))
 })
+
+/* 26.09.14：宽度体系（多段平滑过渡 + 两条硬约束：文章 ≤ 导航栏、文章不压目录）
+   硬约束（用户要求）：
+     ① 文章卡片宽度 ≤ 导航栏宽度。导航栏宽度只跟视口走（--page-width 上限 + 视口上限），
+        恒不因文章宽度变化；文章宽度公式自带 min(视口, --page-width) ⇒ 由公式保证。
+     ② 文章卡片永不与侧栏目录卡重叠（见下面 --toc-card-width 的夹取，以及 toc-layout.js
+        的「能否显示侧栏目录」判定）。
+   文章宽度的四段（视口从宽到窄，窄屏模式不受影响）：
+     ① 空间充足：文章 = min(视口, --page-width) = 导航栏宽度，同时显示目录（目录吃右侧余量）；
+     ② 收窄：保留目录，文章 = 视口 − --toc-reserve（此时文章 < 导航栏，但仍 ≥ 文章最小宽度）；
+     ③ 目录放不下：退化为导航栏里的目录按钮（toc-layout.js 判 narrow），
+        文章锁在「文章最小宽度」，**宽度不跳变**（旧版此处会跳回 --page-width）；
+     ④ 继续收窄：导航栏随视口变窄，到与文章同宽（= 文章最小宽度）即临界点，
+        此后文章 = 导航栏宽度，直至窄屏模式。
+   变量：
+   - --viewport-w 由 toc-layout.js 写入 clientWidth（排除滚动条）；未写入时回退 100vw。
+   - --toc-rail-width / --article-min-width 由 Layout.astro 的 define:vars 注入（config.toc）。
+   - --toc-card-base：目录卡基准宽 = (--toc-rail-width − --article-gutter) × 0.66（常量）。
+   - --toc-side：单侧占位 = 卡片 + 两侧各 1rem 硬性间距；--toc-reserve：右侧总预留 = 2 × 单侧。
+   - --toc-width：文章右边缘 → 视口右边缘的右侧余量 R（由 --content-width 反推，至少 0）。
+   - --toc-card-width：max(基准, R × 0.66)，再夹到「R + 间距 − 边缘下限」以内 ⇒ 绝不压到文章。
+   - --toc-edge-gap：目录卡右边缘距视口右边界的硬性下限（1rem）。
+   ⚠ 循环引用红线：--article-width ← --toc-reserve ← --toc-side ← --toc-card-base
+     ← (--toc-rail-width, --article-gutter)，**绝不允许反向引用 --toc-card-width /
+     --toc-width / --content-width**，否则自定义属性成环、环内全部失效。 */
+:root
+  --article-gutter: 1rem
+  --toc-edge-gap: 1rem
+  --toc-card-base: unquote('calc((var(--toc-rail-width, 13rem) - var(--article-gutter)) * 0.66)')
+  --toc-side: unquote('calc(var(--toc-card-base) + 2 * var(--article-gutter))')
+  --toc-reserve: unquote('calc(2 * var(--toc-side))')
+  --article-width: unquote('min(var(--viewport-w, 100vw), var(--page-width), max(var(--article-min-width, 60rem), calc(var(--viewport-w, 100vw) - var(--toc-reserve))))')
+  --content-width: var(--page-width)
+  --toc-width: unquote('max(0px, calc((var(--viewport-w, 100vw) - var(--content-width)) / 2 - var(--article-gutter)))')
+  --toc-card-width: unquote('min(max(var(--toc-card-base), calc(var(--toc-width) * 0.66)), max(0px, calc(var(--toc-width) + var(--article-gutter) - var(--toc-edge-gap))))')
+
+/* 只有「本页真的渲染了侧栏目录轨道」的文章页才走「文章宽度 + 目录预留」；
+   ⚠ 判据必须是轨道是否存在（SSR 的 #toc-rail-wrapper[data-toc-present]），
+   不能再用 html[data-toc-layout="desktop"]：
+   目录一旦因空间不足退化成导航栏按钮（narrow），上面那条规则就会失效、
+   文章宽度瞬间跳回 --page-width（实测 1281→1280 跳 +290px）。
+   非文章页 / 无目录 / float 模式没有轨道 ⇒ 保持 --page-width 满宽（原行为不变）。 */
+html:has(#toc-rail-wrapper[data-toc-present="true"])
+  --content-width: var(--article-width)
 
 /* 非全屏壁纸模式下，--card-bg-transparent 应该和 --card-bg 一致（不透明） */
 body:not(.wallpaper-transparent)

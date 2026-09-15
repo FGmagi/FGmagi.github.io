@@ -14,6 +14,26 @@ export async function GET() {
 	try {
 		const albums = await scanAlbums();
 		const manifest = await buildManifestJson(albums);
+
+		// 26.09.14：构建期可见性 —— 直接告知「album-prefetch 还有没有可预取的未知项」，
+		// 免得运行期「无候选即无日志」被误判为功能失效。
+		const allPhotos = manifest.albums.flatMap((album) => album.photos);
+		const total = allPhotos.length;
+		const unknown = allPhotos.filter(
+			(photo) =>
+				!(typeof photo.w === "number" && photo.w > 0) ||
+				!(typeof photo.h === "number" && photo.h > 0),
+		).length;
+		if (unknown === 0) {
+			console.warn(
+				`[photo-meta] ${total} 张照片尺寸在构建期已全部解析（unknown=0）：album-prefetch 将没有任何"未知项"可预取（当前设计下属正常，不是故障）。`,
+			);
+		} else {
+			console.warn(
+				`[photo-meta] 构建期尺寸未知 ${unknown}/${total} 张：album-prefetch 将在非相册页空闲时预取这 ${unknown} 张。`,
+			);
+		}
+
 		return new Response(JSON.stringify(manifest), {
 			headers: {
 				"Content-Type": "application/json; charset=utf-8",

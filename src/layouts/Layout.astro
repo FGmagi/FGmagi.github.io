@@ -24,6 +24,7 @@ import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import { pathsEqual, url } from "../utils/url-utils";
 import "../styles/mobile-navbar.css";
+import "../styles/main.css";
 import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
 import "../styles/expressive-code.css";
@@ -245,6 +246,28 @@ if (fontFaces.length > 0) {
 			}
 		</script>
 
+		<!-- 26.09.14：首帧预渲染门 —— 首次打开网页或刷新时必须「先完成预渲染，再渐变显示」。
+		     ⚠ 类的挂载必须发生在「模块脚本开始执行、@swup/astro 可能已派发 swup:enable」之前，
+		     所以挂载动作放在 MainGridLayout 里 body 顶部的那段解析期脚本（见该文件 <body> 开头）。
+		     本样式块位于 <head>，早于所有页面内容 ⇒ 类名先于元素生效，不存在「未样式化首帧」。
+		     ⚠ 这里保留一份与 src/styles/transition.css 同义的「不可见」规则，属于**刻意冗余**：
+		     该样式表由 Vite 作为 bundle 注入，dev 下注入位置可能晚于首帧；本内联块保证无论
+		     样式表何时到位，「首载不可见」都成立。两处必须保持同义（都是 opacity:0 + 无过渡），
+		     改一处请同步另一处。 -->
+		<style is:global>
+			body.page-prerender #main-grid,
+			body.page-prerender #banner-wrapper,
+			/* 目录取 #toc-inner-wrapper（背景/圆角画在它身上），与 transition.css 同源 */
+			body.page-prerender #toc-inner-wrapper,
+			body.page-prerender #main-grid .footer,
+			body.page-prerender .page-transition-region {
+				opacity: 0 !important;
+				animation: none !important;
+				transition: none !important;
+				pointer-events: none;
+			}
+		</style>
+
 		<title>{pageTitle}</title>
 		<meta charset="UTF-8" />
 		<meta name="description" content={description || pageTitle} />
@@ -387,6 +410,12 @@ if (fontFaces.length > 0) {
 			define:vars={{
 				configHue,
 				"page-width": `${PAGE_WIDTH}rem`,
+				// 26.09.06：目录侧栏轨道宽度 / 文章最小内容宽度（供 variables.styl 的
+				// --article-width / --toc-width / --content-width 计算，以及 toc-layout.js 判定桌面/退化）
+				"toc-rail-width":
+					siteConfig.toc.sidebarRailWidth ||
+					"clamp(13rem, 16vw, 18rem)",
+				"article-min-width": `${siteConfig.toc.sidebarMinContentWidth ?? 60}rem`,
 			}}
 		></style>
 
@@ -468,8 +497,33 @@ if (fontFaces.length > 0) {
 		.enable-banner.is-home #main-grid {
 			@apply translate-y-[var(--banner-height-extend)];
 		}
-		.enable-banner #top-row {
-			@apply h-[calc(var(--banner-height-home)_-_4.5rem)] transition-all duration-300;
+		/* 26.09.14修改，内容为：导航栏「始终位于顶部、下拉不消失」——
+		   移除 .enable-banner #top-row 的高度撑开（原 h-[calc(--banner-height-home_-_4.5rem)]）。
+		   该规则曾把吸顶条自身撑到 ≈30vh 高，粘性元素的吸附位置因此在视口上方，
+		   滚动后导航栏整条滚出屏幕（表现为「下拉时导航栏消失」），各页面表现还不一致。
+		   现在 #top-row 恒为「导航栏自然高度 + 上下对称内边距」，并按模式跟随 banner 高度：
+		   顶部（未滚动）时导航栏仍落在既定视觉位置，滚动后固定在视口顶部不消失。 */
+		:root {
+			--top-row-h: 3.6rem;
+		}
+		.enable-banner {
+			--top-row-h: calc(var(--banner-height-home) - 4.5rem);
+		}
+		#top-row {
+			height: var(--top-row-h, 3.6rem);
+			/* 26.09.14 回溯修复（用户要求「通过回溯该部分代码恢复」）：
+			   基线（6cc9fba:471-473）中 #top-row 只有 .enable-banner 下的高度声明，
+			   从不是 flex 容器 ⇒ 它是 block，其子元素按「块级 width:auto 撑满包含块」
+			   自动获得宽度，内层 Navbar.astro:42 的 ml-auto 才有空间把右组推到最右。
+			   本轮新增的无层级 display:flex 压过 @layer，使唯一 flex 子项主尺寸
+			   退化为 fit-content ⇒ 导航栏塌成内容宽、贴左、中间空白消失。
+			   故改用 grid：justify-items 缺省 stretch 让子项横向撑满（等价基线 block
+			   行为），align-items:center 保留 banner 模式下的垂直居中，
+			   无需任何 width:100% / justify-content 补丁。
+			   ⚠ 禁止改成 place-items:center 或 justify-items:center —— 那会把子项
+			   内联尺寸变回 fit-content，塌陷立刻复发。 */
+			display: grid;
+			align-items: center;
 		}
 		.enable-banner.is-home #sidebar-sticky {
 			@apply top-[calc(1rem_-_var(--banner-height-extend))];
@@ -515,7 +569,7 @@ if (fontFaces.length > 0) {
 
 	const BANNER_HEIGHT = 35;
 	const BANNER_HEIGHT_EXTEND = 30;
-	const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
+	// 26.09.06：BANNER_HEIGHT_HOME 曾用于已移除的滚动隐藏阈值；banner 高度由 CSS 变量承担
 
 	// const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
 	import { siteConfig } from "../config";
@@ -1063,18 +1117,7 @@ function disableAnimation() {
 				"--content-delay",
 				"0ms",
 			);
-
-			// 简化navbar处理逻辑
-			if (bannerEnabled) {
-				const navbar = document.getElementById("navbar-wrapper");
-				if (navbar && document.body.classList.contains("lg:is-home")) {
-					const threshold =
-						window.innerHeight * (BANNER_HEIGHT / 100) - 88;
-					if (document.documentElement.scrollTop >= threshold) {
-						navbar.classList.add("navbar-hidden");
-					}
-				}
-			}
+			// 26.09.06：移除滚动隐藏导航栏（navbar-hidden）逻辑——导航栏永远吸顶可见（banner 模式同样）
 		});
 
 		// 26.09.06修改，内容为：统一跳转控制器（替换旧的文档级 click 拦截 + 2000ms 竞态恢复定时器）。
@@ -1088,7 +1131,12 @@ function disableAnimation() {
 			href: string,
 			event: MouseEvent,
 		): boolean => {
-			if (event.defaultPrevented) return true;
+			// 26.09.14：删除 `if (event.defaultPrevented) return true;`。
+			// swup 的委托监听器注册在 documentElement、本监听器在 document（冒泡先内后外），
+			// swup 必然先跑并调用 preventDefault（Swup.ts:297，与是否同 URL 无关），
+			// 导致本守卫恒真、下面全部逻辑（含"点击瞬间加 swup-leaving"）从未执行。
+			// 下面已有完整的语义过滤（修饰键/target/download/data-no-swup/
+			// data-fancybox/data-src/# 锚点/javascript:/外链），足以替代该守卫。
 			if (event.button !== 0) return true; // 非左键
 			if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
 				return true;
@@ -1159,15 +1207,9 @@ function disableAnimation() {
 				if (targetUrl.hash && targetUrl.hash !== window.location.hash) {
 					return; // 同页锚点滚动：浏览器默认行为
 				}
-				e.preventDefault();
-				if ((window as any).__samePageFading) return;
-				(window as any).__samePageFading = true;
-				document.body.classList.add("swup-leaving");
-				clearTimeout((window as any).__swupLeavingTimer);
-				setTimeout(() => {
-					document.body.classList.remove("swup-leaving");
-					(window as any).__samePageFading = false;
-				}, 320);
+				// 26.09.14：同 URL 的「渐变消失 → 强制重新加载 → 重新预渲染 → 渐变显示」
+				// 统一交给 src/utils/page-transition.ts 的 link:self 分支处理
+				// （swup 的 link:self 不产生 visit，也就走不到本监听器后面的流程）。
 				return;
 			}
 
@@ -1175,27 +1217,28 @@ function disableAnimation() {
 				!!(window as any).swup &&
 				typeof (window as any).swup.navigate === "function";
 			if (!swupReady) {
-				// swup 未就绪：先 blank 化（仅留顶部工具栏骨架），再 location 兜底真跳转
+				// swup 未就绪（loadOnIdle 尚未跑完）：先按渐变量淡出，再 location 兜底真跳转。
+				// ⚠ 时长读 CSS 变量（同源 siteConfig.pageTransition），不写死毫秒。
 				e.preventDefault();
-				document.body.classList.add("swup-leaving");
+				const body = document.body;
+				body.classList.add("swup-leaving");
+				const fadeOutMs =
+					parseFloat(
+						getComputedStyle(document.documentElement).getPropertyValue(
+							"--page-fade-out",
+						),
+					) || 200;
 				setTimeout(() => {
 					window.location.assign(targetUrl.href);
-				}, 150);
+				}, fadeOutMs + 40);
 				return;
 			}
 
-			// swup 就绪：立即标记 leaving 开始淡出（不留旧页迟滞）；导航由 swup 自身 click 拦截完成。
-			// leaving/entering 由 content:replace / page:view 等真实事件驱动清除（见 MainGridLayout 与下方
-			// swup:page:view 监听）；此处仅保留极短兜底，防止 visit 异常中断后页面卡在空白。
-			document.body.classList.add("swup-leaving");
-			clearTimeout((window as any).__swupLeavingTimer);
-			(window as any).__swupLeavingTimer = setTimeout(() => {
-				document.body.classList.remove("swup-leaving");
-			}, 1000);
-		});
-		document.addEventListener("swup:page:view", () => {
-			document.body.classList.remove("swup-leaving");
-			clearTimeout((window as any).__swupLeavingTimer);
+			// 26.09.14：跨页导航的「渐变消失」由 src/utils/page-transition.ts 的
+			// link:click / visit:start 钩子负责（钩子执行序 = before → 默认 handler → on()，
+			// 本监听器在 document 冒泡末段、必然晚于它）。此处不再插手任何渐变类，
+			// 避免两套时序叠加把幕布提前摘掉。swup 未接管（未 preventDefault）时，
+			// 浏览器会自行完成跳转，同样落到上面的 swupReady 分支之外。
 		});
 
 		window.swup.hooks.on("content:replace", () => {
@@ -1220,29 +1263,13 @@ function disableAnimation() {
 			checkKatex();
 			initCustomScrollbar();
 
-			// 检查当前页面是否为文章页面（有TOC元素）
-			const tocWrapper = document.getElementById("toc-wrapper");
-			const isArticlePage = tocWrapper !== null;
-
-			// 只在文章页面重新初始化 TOC 组件
-			if (isArticlePage) {
-				const tocElement = document.querySelector("table-of-contents");
-				if (
-					tocElement &&
-					typeof (tocElement as any).init === "function"
-				) {
-					setTimeout(() => {
-						(tocElement as any).init();
-					}, 100);
-				}
-
-				// 重新初始化移动端 TOC 组件
-				if (typeof (window as any).mobileTOCInit === "function") {
-					setTimeout(() => {
-						(window as any).mobileTOCInit();
-					}, 100);
-				}
-			}
+			// 26.09.14：删除原「content:replace +100ms 再 init 目录」的延迟初始化——
+			// 目录区 (#toc-swup-region) 现为 swup 容器，换页时随内容整体替换，
+			// 新 <table-of-contents> 的 connectedCallback 立即重建条目；
+			// 几何与兜底条目由页面切换控制器的预渲染帧同步处理（见 src/utils/page-transition.ts
+			// 的 prepareRegions()）。
+			// 此处若再延迟重建一次，#toc 的 innerHTML 会被二次替换（目录内部滚动位置被重置），
+			// 且必然落在渐变动画中间，正是「目录没进入预渲染」的观感来源。
 
 			// 重新初始化semifull模式的滚动检测
 			const navbar = document.getElementById("navbar");
@@ -1465,7 +1492,7 @@ function disableAnimation() {
 
 	let backToTopBtn = document.getElementById("back-to-top-btn");
 	let toc = document.getElementById("toc-wrapper");
-	let navbar = document.getElementById("navbar-wrapper");
+	// 26.09.06：原 navbar 变量仅服务于已移除的滚动隐藏逻辑；导航栏现由 #top-row fixed 常驻吸顶
 
 	// 节流函数
 	function throttle(func: Function, limit: number) {
@@ -1526,22 +1553,7 @@ function disableAnimation() {
 				}
 			}
 
-			if (bannerEnabled && navbar) {
-				const isHome =
-					document.body.classList.contains("lg:is-home") &&
-					window.innerWidth >= 1024;
-				const currentBannerHeight = isHome
-					? BANNER_HEIGHT_HOME
-					: BANNER_HEIGHT;
-
-				const threshold =
-					window.innerHeight * (currentBannerHeight / 100) - 88;
-				if (scrollTop >= threshold) {
-					navbar.classList.add("navbar-hidden");
-				} else {
-					navbar.classList.remove("navbar-hidden");
-				}
-			}
+			// 26.09.06：移除滚动隐藏导航栏（navbar-hidden）逻辑——导航栏永远吸顶可见
 		});
 	}
 
@@ -1605,4 +1617,7 @@ function disableAnimation() {
 <script>
 	import "../utils/album-gallery.js";
 	import "../scripts/album-prefetch.js";
+	import "../scripts/toc-layout.js";
+	// 26.09.14：导航栏与主卡片重合时的下边界描边（下拉后区分导航栏/主卡片边界）
+	import "../scripts/navbar-card-separator.js";
 </script>

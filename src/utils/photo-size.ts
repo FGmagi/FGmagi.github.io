@@ -5,9 +5,9 @@
  *   WebP VP8/VP8L/VP8X / AVIF ispe）。绝不依赖完整文件，仅需头部一段字节。
  * - `fetchHeaderSize`：对远程图片用 HTTP Range「字节范围读文件头」的方式拿头部字节，
  *   按需放大探测窗口、设封顶；服务器无视 Range 时只读首块即 cancel 流，绝不全量下载；
- *   失败返回 null（调用方默认宽高比占位）。
+ *   失败返回 null（调用方默认宽高比占位）。26.09.14：网络失败不再放大窗口重试。
  *
- * 不含任何 node / DOM 专属依赖，可被客户端与 Node 同时 import。
+ * 不含任何 node / DOM 专属依赖，可被客户端、Node 与 Web Worker 同时 import。
  */
 
 export interface PhotoDim {
@@ -273,9 +273,19 @@ export interface FetchHeaderOptions {
 /** 依次尝试的探测窗口（字节）。起点 64 KiB，AVIF ispe 可能更深则按需放大。 */
 const PROBE_WINDOWS = [65536, 262144, 1048576];
 
+/** 单次 Range 请求的结果：拿到字节 / 服务器不按需返回 / 请求本身失败。 */
+type RangeResult =
+	| { kind: "bytes"; bytes: Uint8Array }
+	| { kind: "unsupported" }
+	| { kind: "error" };
+
 /**
  * 远程图片尺寸探测：Range 读文件头，绝不全量下载。
  * 返回 null 表示探测失败（网络 / 服务器不支持 / 格式不支持 / 头不完整）。
+ *
+ * 26.09.14：只在「真的拿到头部字节但没解析出尺寸」时才放大窗口重试；
+ * 网络错误/超时/HTTP 失败立即收工（此前会把一次失败放大成 3 次请求 × 超时，
+ * 大量外链不可达时相册页尺寸期因此长达数分钟，表现为整页卡死）。
  */
 export async function fetchHeaderSize(
 	url: string,
@@ -289,27 +299,25 @@ export async function fetchHeaderSize(
 
 	for (const size of windows) {
 		const got = await probeRange(url, size, opts);
-		if (got === "unsupported") return null; // 服务器无法按需返回
-		if (got) {
-			const dim = parseImageSizeFromBytes(got);
-			if (dim) return dim;
-		}
+		if (got.kind !== "bytes") return null; // 网络失败 / 服务器不按需返回：不再放大重试
+		const dim = parseImageSizeFromBytes(got.bytes);
+		if (dim) return dim;
 	}
 	return null;
 }
 
 /**
  * 对单个 url 发 Range 请求读取前 `size` 字节。
- * 返回值：
- * - null          —— 网络错误 / 超时 / 中止 / 空体（可换更大窗口重试）
+ * 返回值 kind：
+ * - "bytes"       —— 读到的头部字节（可能短于 size，如文件更小）
  * - "unsupported" —— 服务器忽略 Range 返回了 200 全量但无法提供首块（不再重试）
- * - Uint8Array    —— 读到的头部字节（可能短于 size，如文件更小）
+ * - "error"       —— 网络错误 / 超时 / 中止 / 空体 / HTTP 非 2xx（不再重试）
  */
 async function probeRange(
 	url: string,
 	size: number,
 	opts: FetchHeaderOptions,
-): Promise<Uint8Array | "unsupported" | null> {
+): Promise<RangeResult> {
 	const controller = new AbortController();
 	const timeoutMs = opts.timeoutMs ?? 15000;
 	const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -318,7 +326,7 @@ async function probeRange(
 	if (external) {
 		if (external.aborted) {
 			clearTimeout(timer);
-			return null;
+			return { kind: "error" };
 		}
 		external.addEventListener("abort", onAbort, { once: true });
 	}
@@ -327,10 +335,12 @@ async function probeRange(
 			headers: { Range: `bytes=0-${size - 1}` },
 			signal: controller.signal,
 		});
-		if (!res) return null;
+		if (!res) return { kind: "error" };
 		// 200 = 服务器无视 Range（全量响应）；206 = 按需。两者都只读首块即 cancel。
-		if (res.status !== 200 && res.status !== 206) return null;
-		if (!res.body || typeof res.body.getReader !== "function") return null;
+		if (res.status !== 200 && res.status !== 206) return { kind: "error" };
+		if (!res.body || typeof res.body.getReader !== "function") {
+			return { kind: "unsupported" };
+		}
 
 		const reader = res.body.getReader();
 		const chunks: Uint8Array[] = [];
@@ -347,7 +357,7 @@ async function probeRange(
 				if (total >= size) break;
 			}
 		} catch (e) {
-			if ((e as Error)?.name === "AbortError") return null;
+			if ((e as Error)?.name === "AbortError") return { kind: "error" };
 			throw e;
 		} finally {
 			// 绝不继续下载剩余内容
@@ -355,7 +365,7 @@ async function probeRange(
 				/* 忽略 cancel 失败 */
 			});
 		}
-		if (total === 0) return null;
+		if (total === 0) return { kind: "error" };
 		const out = new Uint8Array(Math.min(total, size));
 		let written = 0;
 		for (const c of chunks) {
@@ -365,14 +375,12 @@ async function probeRange(
 			written += need;
 			if (written >= out.length) break;
 		}
-		return out.subarray(0, written);
+		return { kind: "bytes", bytes: out.subarray(0, written) };
 	} catch (e) {
+		// 外部 signal 中止与内部超时都算“失败”
 		const err = e as Error | null;
-		if (err && err.name === "AbortError") {
-			// 外部 signal 中止与内部超时都算“失败”
-			return null;
-		}
-		return null;
+		if (err && err.name === "AbortError") return { kind: "error" };
+		return { kind: "error" };
 	} finally {
 		clearTimeout(timer);
 		if (external) external.removeEventListener("abort", onAbort);

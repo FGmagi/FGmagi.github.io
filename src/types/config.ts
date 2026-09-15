@@ -192,6 +192,27 @@ export type SiteConfig = {
 		mode: "float" | "sidebar"; // 目录显示模式："float" 悬浮按钮模式，"sidebar" 侧边栏模式
 		depth: 1 | 2 | 3;
 		useJapaneseBadge?: boolean; // 使用日语假名标记（あいうえお...）代替数字
+		sidebarRailWidth?: string; // 保留桌面侧栏目录所需的最小单侧空间（CSS 长度，如 "13rem"）
+		sidebarMinContentWidth?: number; // 文章最小内容宽度（rem）；低于该值退化为移动端目录
+		/** 26.09.14：目录（锚点）跳转行为（宽/窄屏目录共用） */
+		navigation?: {
+			offset?: number; // 目标标题与导航栏底边的额外间距（px）
+			smoothDuration?: number; // 平滑滚动时长（ms）
+			longJumpViewports?: number; // 超过多少个视口高度改用渐变方案
+			longJumpFadeOut?: number; // 渐变消失时长（ms）
+			longJumpFadeIn?: number; // 渐变显示时长（ms）
+		};
+	};
+
+	// 26.09.14：页面切换渐变时长（由 src/utils/page-transition.ts 读取并驱动）
+	pageTransition: {
+		fadeOut: number; // 渐变消失时长（毫秒）：点击后当前整页淡出
+		fadeIn: number; // 渐变显示时长（毫秒）：预渲染完成后新页统一淡入
+		prerenderMaxWait?: number; // 预渲染最长等待（毫秒）：等正文字体就绪 + 排版收敛，超时放行
+	};
+	/** 26.09.15：导航栏「悬挂」（吸顶）开关 */
+	navbar?: {
+		pinned?: boolean; // true=固定悬挂在视口顶部（下拉始终可见）| false=随页面滚动
 	};
 	showCoverInContent: boolean; // 控制文章封面在文章内容页显示的开关
 	generateOgImages: boolean;

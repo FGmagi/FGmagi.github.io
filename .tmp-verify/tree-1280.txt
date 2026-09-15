@@ -1,0 +1,224 @@
+### NAVBAR ###
+div#top-row.z-50.pointer-events-none.fixed.top-0.left-0  @0,0 1252x58
+  div#navbar-wrapper.pointer-events-auto.relative.transition-all.h-full  @16,0 1220x58
+    div#navbar.z-50  @16,0 1220x58
+      div.absolute.h-8.left-0.right-0.-top-8  @16,-32 1220x32 » 
+      div.!overflow-visible.max-w-[var(--page-width)].h-[3.6rem].mx-auto.flex  @16,0 1220x58
+        div.flex.items-center.shrink-0.space-x-1  @32,7 243x44
+          a.btn-plain.scale-animation.rounded-lg.h-[2.5rem].px-4  @32,9 141x40
+            div.flex.flex-row.items-center.text-md  @48,11 109x36
+              img.h-[2.25rem].max-w-full.object-contain  @48,11 109x36 [overflow:clip] » 
+          div.dropdown-container.group  @177,7 98x44
+            a.btn-plain.scale-animation.rounded-lg.h-11.font-bold  @177,7 98x44
+              span.truncate.hidden.md:inline  @223,17 32x24 [overflow:hidden] » 主页
+          script  [display:none]
+        div.flex.items-center.gap-1.ml-auto.shrink-0  @741,7 479x44
+          div.hidden.md:flex.items-center.space-x-1.text-sm  @745,7 191x44
+            div.dropdown-container.group  @745,7 94x44
+              a.btn-plain.scale-animation.rounded-lg.h-11.font-bold  @745,7 94x44
+                span.truncate.hidden.md:inline  @790,19 28x20 [overflow:hidden] » 全部
+            div.dropdown-container.group  @842,7 94x44
+              button.btn-plain.scale-animation.rounded-lg.h-11.font-bold  @842,7 94x44
+                span.truncate.hidden.md:inline  @888,19 28x20 [overflow:hidden] » 目录
+              div.dropdown-menu  @842,43 192x224 [hidden] [opacity:0]
+                div.dropdown-content  @842,51 192x216 [hidden]
+                  a.dropdown-item  @850,59 176x40 [hidden]
+                    div.flex.items-center  @866,69 54x20 [hidden]
+                      span  @890,69 30x20 [hidden] » 追番
+                  a.dropdown-item  @850,99 176x40 [hidden]
+                    div.flex.items-center  @866,109 54x20 [hidden]
+                      span  @890,109 30x20 [hidden] » 友链
+                  a.dropdown-item  @850,139 176x40 [hidden]
+                    div.flex.items-center  @866,149 54x20 [hidden]
+                      span  @890,149 30x20 [hidden] » 图片
+                  a.dropdown-item  @850,179 176x40 [hidden]
+                    div.flex.items-center  @866,189 54x20 [hidden]
+                      span  @890,189 30x20 [hidden] » 我的
+                  a.dropdown-item  @850,219 176x40 [hidden]
+                    div.flex.items-center  @866,229 54x20 [hidden]
+                      span  @890,229 30x20 [hidden] » 关于
+          button#display-settings-switch.btn-plain.scale-animation.rounded-lg.h-11.px-3  @940,7 92x44
+            span.hidden.md:inline.text-sm.font-bold  @978,19 42x20 » 主题色
+          style  [display:none]
+          script  [display:none]
+          script  [display:none]
+          astro-island  @0,0 0x0
+            div.wallpaper-actions.relative.z-50.s-_t9CdkZhBN3Z  @1036,7 136x44
+              div.relative.z-50.s-_t9CdkZhBN3Z  @1036,7 52x44
+                button#wallpaper-mode-switch.relative.btn-plain.scale-animation.rounded-lg.h-11  @1036,7 52x44
+                  span.hidden.md:inline.text-sm.font-bold.s-_t9CdkZhBN3Z  @1048,19 28x20 » 模式
+                div#wallpaper-mode-panel.absolute.transition.float-panel-closed.top-11.-right-2  @1044,51 52x0 [opacity:0]
+                  div.card-base.float-panel.p-2.s-_t9CdkZhBN3Z  @1044,51 52x0
+                    button.flex.transition.whitespace-nowrap.items-center.!justify-start  @1048,51 44x0 » 全屏模式
+                    div.my-1.border-t.border-black/10.dark:border-white/10.s-_t9CdkZhBN3Z  @1048,51 44x0 » 
+                    button.flex.transition.whitespace-nowrap.items-center.!justify-start  @1048,51 44x0 » 简洁模式
+                    div.my-1.border-t.border-black/10.dark:border-white/10.s-_t9CdkZhBN3Z  @1048,51 44x0 » 
+                    button.flex.transition.whitespace-nowrap.items-center.!justify-start  @1048,51 44x0 » 夜晚模式
+              div.wallpaper-cycle-host.s-_t9CdkZhBN3Z.cycle-shown  @1092,7 80x44 [overflow:hidden]
+                div.wallpaper-cycle-inner.s-_t9CdkZhBN3Z  @1092,7 80x44
+                  button#wallpaper-cycle-btn.btn-plain.scale-animation.rounded-lg.h-11.px-3  @1092,7 80x44
+                    span.hidden.md:inline.text-sm.font-bold.s-_t9CdkZhBN3Z  @1104,19 56x20 » 切换壁纸
+          astro-island  @0,0 0x0
+            button#mobile-toc-switch.btn-plain.scale-animation.rounded-lg.h-11.w-11  @1176,7 44x44 » 
+            div#mobile-toc-panel.float-panel.float-panel-closed.mobile-toc-panel.absolute.md:w-[20rem]  @996,80 224x0 [opacity:0] [overflow:hidden auto]
+              div.flex.items-center.justify-between.mb-4.s-qRtBQjN9b-V6  @1007,80 202x0
+                h3.text-lg.font-bold.text-[var(--primary)].s-qRtBQjN9b-V6  @1007,80 50x0 » 文章列表
+                button.btn-plain.rounded-lg.h-8.w-8.active:scale-90  @1186,80 22x0 » 
+              div.text-center.py-8.text-black/50.dark:text-white/50.s-qRtBQjN9b-V6  @1007,80 202x0
+                p.s-qRtBQjN9b-V6  @1007,80 202x0 » 暂无文章
+          button#nav-menu-switch.btn-plain.scale-animation.rounded-lg.w-11.h-11  [display:none]
+          div#nav-menu-panel.float-panel.float-panel-closed.absolute.transition-all.fixed  @1138,84 82x0 [opacity:0] [overflow:hidden auto]
+            div.mobile-menu-item  @1144,84 71x0
+              a.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                div.flex.items-center.transition.text-black/75.dark:text-white/75  @1151,84 37x0
+            div.mobile-menu-item  @1144,84 71x0
+              a.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                div.flex.items-center.transition.text-black/75.dark:text-white/75  @1151,84 37x0
+            div.mobile-menu-item  @1144,84 71x0
+              div.mobile-dropdown  @1144,84 71x0
+                button.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                  div.flex.items-center.transition.text-black/75.dark:text-white/75  @1151,84 37x0
+                div.mobile-submenu  @1144,84 71x0 [overflow:hidden]
+                  a.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1159,84 37x0
+                  a.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1159,84 37x0
+                  a.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1159,84 37x0
+                  a.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1159,84 37x0
+                  a.group.flex.justify-between.items-center.py-2  @1144,84 71x0
+                    div.flex.items-center.transition.text-black/60.dark:text-white/60  @1159,84 37x0
+          script  [display:none]
+          astro-island  @0,0 0x0
+            div#display-setting.float-panel.float-panel-closed.absolute.transition-all.w-80  @1028,84 192x0 [opacity:0] [overflow:hidden]
+              div.flex.flex-row.gap-2.mb-3.items-center  @1038,84 173x0
+                div.flex.gap-2.font-bold.text-lg.text-neutral-900  @1045,84 43x0
+                  button.btn-regular.w-7.h-7.rounded-md.active:scale-90  @1071,84 17x0 [opacity:0]
+                    div.text-[var(--btn-content)].s-bnFe51qDpoe9  @1080,84 0x0 » 
+                div.flex.gap-1.s-bnFe51qDpoe9  @1186,84 24x0
+                  div#hueValue.transition.bg-[var(--btn-regular-bg)].w-10.h-7.rounded-md  @1186,84 24x0 » 185
+              div.w-full.h-6.px-1.bg-[oklch(0.80_0.10_0)].dark:bg-[oklch(0.70_0.10_0)]  @1038,84 173x0
+                input#colorSlider.slider.s-bnFe51qDpoe9  @1040,84 168x0 » 
+    script  [display:none]
+
+### PAGE CONTENT (from #main-grid) ###
+div.relative.max-w-[var(--content-width)].mx-auto.pointer-events-auto  @0,88 1252x719
+  div#main-grid.page-transition-region.w-full.left-0.right-0.grid  @0,88 1252x719
+    div#sidebar-swup-container.contents  @0,0 0x0
+      div#sidebar.block.md:block.md:mb-4.md:max-w-[17.5rem].lg:block  @16,88 280x687
+        div.flex.flex-col.w-full.gap-4.mb-4  @16,88 280x472
+          div.flex.flex-col.w-full.gap-4.md:hidden  [display:none]
+          div.hidden.md:flex.flex-col.w-full.gap-4  @16,88 280x472
+            div.card-base.p-3  @16,88 280x318
+              div.group.block.relative.mx-auto.mt-1  @60,104 192x200 [overflow:hidden]
+                div.mx-auto.lg:w-full.h-full.lg:mt-0.overflow-hidden  @60,104 192x200 [overflow:hidden]
+                  div.transition.absolute.inset-0.dark:bg-black/10.bg-opacity-50  @60,104 192x200 » 
+                  img.w-full.h-full.object-cover  @60,104 192x200 [overflow:clip] » 
+              div.px-2  @28,316 256x68
+                div.font-bold.text-xl.text-center.mb-1.dark:text-neutral-50  @36,316 240x28 » FGmagi
+                div.h-1.w-5.bg-[var(--primary)].mx-auto.rounded-full  @146,348 20x4 » 
+                div.text-center.text-neutral-400.mb-2.5.transition  @36,360 240x24
+                  span.typewriter.inline-block  @84,360 144x24 » 弱水三千，只取一瓢
+            widget-layout.pb-4.card-base  @16,422 280x138
+              div.font-bold.transition.text-lg.text-neutral-900.dark:text-neutral-100  @48,438 248x28 » 公告
+              div#announcement.collapse-wrapper.px-4.overflow-hidden  @16,474 280x70 [overflow:hidden]
+                div  @32,474 248x70
+                  div.text-neutral-600.dark:text-neutral-300.leading-relaxed.mb-3  @32,474 248x26 » 施工中，暂无告示
+                  div.flex.items-center.justify-between.gap-3  @32,512 248x32
+                    div  @32,512 101x32
+                      a.btn-regular.rounded-lg.px-3.py-1.5.text-sm  @32,512 101x32 » Learn More
+        div#sidebar-sticky.transition-all.duration-700.flex.flex-col.w-full  @16,576 280x92
+          div.hidden.md:flex.flex-col.w-full.gap-4  @16,576 280x92
+            widget-layout.pb-4.card-base  @16,576 280x92
+              div.font-bold.transition.text-lg.text-neutral-900.dark:text-neutral-100  @48,592 248x28 » 标签筛选
+              div#tag-filter.collapse-wrapper.px-4.overflow-hidden  @16,628 280x24 [overflow:hidden]
+                div.tag-filter-list  @32,628 248x24
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @32,628 49x24
+                    span.tag-filter-label.max-w-full.truncate  @40,632 33x16 [overflow:hidden] » “技术”
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @89,628 40x24
+                    span.tag-filter-label.max-w-full.truncate  @97,632 24x16 [overflow:hidden] » 笔记
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @137,628 64x24
+                    span.tag-filter-label.max-w-full.truncate  @145,632 48x16 [overflow:hidden] » 环境配置
+                  button.tag-filter-chip.btn-regular.h-6.text-xs.px-2  @209,628 40x24
+                    span.tag-filter-label.max-w-full.truncate  @217,632 24x16 [overflow:hidden] » 技术
+                  span.tag-filter-filler  @257,640 23x0 [hidden] » 
+            script  [display:none]
+      script  [display:none]
+      div.right-sidebar-container.home-right-sidebar.hidden.md:hidden.lg:block  [display:none]
+    main#swup-container.transition-swup-fade.overflow-hidden.w-full.col-span-1.row-start-1  @312,88 924x703 [overflow:hidden]
+      div#content-wrapper.transition-leaving.home-content-fill  @312,88 924x703
+        script  [display:none]
+        astro-island  @0,0 0x0
+          div.home-search-bar.mb-4.s-uAOWrccsW9eS  @312,88 924x41
+            div.relative.s-uAOWrccsW9eS  @312,88 924x41
+              input.post-search-input.w-full.px-4.py-2.pl-10  @312,88 924x41 [overflow:clip] » 
+              span.absolute.right-4.top-1/2.-translate-y-1/2.pointer-events-none  @1186,98 34x21 » Enter
+        div#post-list-container.transition-opacity.duration-500.ease-in-out.rounded-[var(--radius-large)].bg-[var(--card-bg)]  @312,145 924x586 [overflow:hidden]
+          div.card-base.group.flex.flex-col-reverse.md:flex-col  @312,145 924x141
+            div.post-card-hover-dim.absolute.inset-0.z-30.pointer-events-none  @312,145 924x141 [opacity:0] » 
+            a.absolute.inset-0.z-10.rounded-[var(--radius-large)]  @312,145 924x141 » 
+            div.post-card-content.pl-6.md:pl-9.pr-6.md:pr-[0.667rem]  @312,145 724x141
+              div.flex.flex-wrap.items-end.justify-between.gap-x-4  @348,165 677x36
+                a.transition.min-w-0.flex-1.block.font-bold  @348,165 645x36 » nvm+node环境配置笔记
+                div.flex.flex-wrap.text-neutral-500.dark:text-neutral-400.items-center  @1009,201 0x0
+                  div.flex.items-center.meta-date  [display:none]
+                  div.flex.items-center.meta-words  [display:none]
+              div.transition.text-75.mt-[0.3rem].mb-[0.575rem].pr-4  @348,213 508x24 [overflow:hidden] » windows系统 node 18.20.8 配置笔记
+              div.post-card-bottom-row.flex.flex-wrap.items-center.justify-between  @348,246 677x24
+                div.flex.flex-wrap.gap-2  @348,246 134x24
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @348,246 75x24 » # 环境配置
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @431,246 51x24 » # 技术
+                span.post-card-bottom-date.btn-regular.h-6.px-2.rounded-lg  @943,246 83x24 » 2026-09-01
+            a.post-cover-link.max-h-[20vh].md:max-h-none.mx-4.mt-4  @1036,163 188x106 [overflow:hidden]
+              div.w-full.h-full.overflow-hidden.relative  @1036,163 188x106 [overflow:hidden]
+                img.w-full.h-full.object-cover.cover-landscape  @1036,163 188x106 [overflow:clip] » 
+          div.post-card-divider.transition.border-t-[1px].border-dashed.mx-6  [display:none]
+          style  [display:none]
+          div.card-base.group.flex.flex-col-reverse.md:flex-col  @312,286 924x141
+            div.post-card-hover-dim.absolute.inset-0.z-30.pointer-events-none  @312,286 924x141 [opacity:0] » 
+            a.absolute.inset-0.z-10.rounded-[var(--radius-large)]  @312,286 924x141 » 
+            div.post-card-content.pl-6.md:pl-9.pr-6.md:pr-[0.667rem]  @312,286 724x141
+              div.flex.flex-wrap.items-end.justify-between.gap-x-4  @348,306 677x36
+                a.transition.min-w-0.flex-1.block.font-bold  @348,306 645x36 » 刷题笔记
+                div.flex.flex-wrap.text-neutral-500.dark:text-neutral-400.items-center  @1009,342 0x0
+                  div.flex.items-center.meta-date  [display:none]
+                  div.flex.items-center.meta-words  [display:none]
+              div.transition.text-75.mt-[0.3rem].mb-[0.575rem].pr-4  @348,354 677x24 [overflow:hidden] » 暴力出奇迹，打表出AC
+              div.post-card-bottom-row.flex.flex-wrap.items-center.justify-between  @348,387 677x24
+                div.flex.flex-wrap.gap-2  @348,387 119x24
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @348,387 60x24 » # “技术”
+                  span.btn-regular.h-6.text-xs.px-2.rounded-lg  @416,387 51x24 » # 笔记
+                span.post-card-bottom-date.btn-regular.h-6.px-2.rounded-lg  @943,387 83x24 » 2026-07-08
+            a.post-cover-link.max-h-[20vh].md:max-h-none.mx-4.mt-4  @1036,304 188x106 [overflow:hidden]
+              div.w-full.h-full.overflow-hidden.relative  @1036,304 188x106 [overflow:hidden]
+                img.w-full.h-full.object-cover.cover-landscape  @1036,304 188x106 [overflow:clip] » 
+          div.post-card-divider.transition.border-t-[1px].border-dashed.mx-6  [display:none]
+          style  [display:none]
+          div.blank-post-card  @312,427 924x101 [opacity:0] » 
+          div.blank-post-card  @312,529 924x101 [opacity:0] » 
+          div.blank-post-card  @312,630 924x101 [opacity:0] » 
+        script  [display:none]
+        script  [display:none]
+        div.mx-auto.mt-auto.flex.flex-row.gap-3  @696,747 156x44
+          a.btn-card.overflow-hidden.rounded-lg.text-[var(--primary)].w-11  @696,747 44x44 [overflow:hidden]
+          div.bg-[var(--card-bg)].flex.flex-row.rounded-lg.items-center  @752,747 44x44
+            div.h-11.w-11.rounded-lg.bg-[var(--primary)].flex  @752,747 44x44 » 1
+          a.btn-card.overflow-hidden.rounded-lg.text-[var(--primary)].w-11  @808,747 44x44 [overflow:hidden]
+        div.footer.col-span-full.hidden.lg:block  [display:none]
+    div.footer.col-span-full.block.lg:hidden  @16,807 1220x0 » 
+  div.back-to-top-wrapper.block  @1192,88 60x60
+    div#back-to-top-btn.back-to-top-btn.hide.flex.items-center.rounded-2xl  @1179,567 54x54 [opacity:0] [overflow:hidden]
+      button.btn-card.h-[3.75rem].w-[3.75rem]  @1179,567 54x54
+  script  [display:none]
+
+### FULLSCREEN WALLPAPER ###
+div.fixed.inset-0.w-full.h-full.overflow-hidden  @0,0 1252x704 [opacity:0.28] [overflow:hidden]
+  script  [display:none]
+  div.hidden.md:block.w-full.h-full.relative  @0,0 1252x704
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1252x704 [overflow:clip] » 
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1252x704 [opacity:0] [overflow:clip] » 
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1252x704 [opacity:0] [overflow:clip] » 
+    img.absolute.inset-0.w-full.h-full.object-cover  @0,0 1252x704 [opacity:0] [overflow:clip] » 
+  div.block.md:hidden.w-full.h-full.relative  [display:none]
+  script  [display:none]

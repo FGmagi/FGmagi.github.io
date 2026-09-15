@@ -1,0 +1,34 @@
+{
+ "inlineStyle": "--coverWidth: 28%;",
+ "computed": "rgba(0, 0, 0, 0.9)",
+ "decls": [
+  {
+   "order": 0,
+   "ctx": "inline",
+   "selector": "a",
+   "color": "inherit",
+   "important": ""
+  },
+  {
+   "order": 1,
+   "ctx": "inline",
+   "selector": "a",
+   "color": "inherit",
+   "important": ""
+  },
+  {
+   "order": 2,
+   "ctx": "inline",
+   "selector": ".text-90",
+   "color": "rgba(0, 0, 0, 0.9)",
+   "important": ""
+  },
+  {
+   "order": 3,
+   "ctx": "inline",
+   "selector": ".text-90:is(.dark *)",
+   "color": "rgba(255, 255, 255, 0.9)",
+   "important": ""
+  }
+ ]
+}

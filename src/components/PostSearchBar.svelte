@@ -30,8 +30,12 @@
 
 <div class={className}>
 	<div class="relative">
+		<!-- 26.09.15 [/root]：搜索图标是纯装饰（点击与键盘均以输入框为主入口），
+		     标记 aria-hidden 后不再作为无名可聚焦元素被读屏器读到 -->
 		<svg
 			onclick={doSearch}
+			aria-hidden="true"
+			focusable="false"
 			class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black/40 dark:text-white/40 cursor-pointer"
 			fill="none"
 			stroke="currentColor"
@@ -48,6 +52,7 @@
 			type="text"
 			bind:value={value}
 			{placeholder}
+			aria-label={placeholder}
 			onkeydown={handleKeydown}
 			oncontextmenu={handleContextMenu}
 			class="post-search-input w-full px-4 py-2 pl-10 pr-16 rounded-lg bg-[var(--btn-regular-bg)] text-[0.9625rem] text-75 border border-black/10 dark:border-white/10 focus:outline-none transition-colors duration-200 placeholder:text-black/40 dark:placeholder:text-white/40"

@@ -418,7 +418,7 @@ export const shareConfig: ShareConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题（留空使用 i18n 默认）
-	content: "施工中，暂无告示", // 公告内容
+	content: "FGmagi 个人博客，主要分享计算机笔记与游戏话题，由于买不起服务器\n加载不出来纯粹是外链太慢了，我也没招哇——", // 公告内容
 	closable: true, // [死代码]：右侧 X 关闭按钮已取消（26.09.02），字段保留兼容
 	link: {
 		enable: true, // 启用链接

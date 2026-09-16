@@ -63,7 +63,19 @@ const hoverDimCss = `
 }
 </style>`;
 
-const { remarkPluginFrontmatter } = await render(entry);
+// 26.09.16：文档解析加「懒加载 + 容错」。
+// 背景：超长文档（如 超次元恋人.md，几十张 AVIF/视频）解析很慢，一旦解析异常，
+// 整张卡片会一起失败——表现就是首页连封面都渲染不出来。
+// 这里解析失败只损失「摘要/字数」，标题、封面、链接照常渲染，不再连坐。
+let remarkPluginFrontmatter: { excerpt?: string; words?: number; minutes?: number } = {};
+try {
+	remarkPluginFrontmatter = (await render(entry)).remarkPluginFrontmatter ?? {};
+} catch (err) {
+	console.warn(
+		`[PostCard] 文章解析失败，已降级为只渲染标题/封面：${entry.id}`,
+		err,
+	);
+}
 ---
 
 <div

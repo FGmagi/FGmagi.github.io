@@ -65,6 +65,16 @@ const style = Astro.props.style;
 )}
 
 <style>
+	/* 26.09.14：标签筛选切换时只让「中间内容卡片」渐变消失/显示（左右磁贴不参与）。
+	   时长读 :root 的 --page-fade-out / --page-fade-in（与页面切换同一份 config）。 */
+	:global(#post-list-container) {
+		transition: opacity var(--page-fade-in, 250ms) cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	:global(#post-list-container.tag-filter-switching) {
+		opacity: 0 !important;
+		transition: opacity var(--page-fade-out, 200ms) cubic-bezier(0.4, 0, 0.2, 1) !important;
+	}
+
 	/* 26.09.02 [13]：行内拉伸（space-between 占满行宽）+ 末行占位（filler）实现最后一行靠左；字母序由 getTagList 保证 */
 	.tag-filter-list {
 		display: flex;
@@ -143,6 +153,33 @@ const style = Astro.props.style;
 			}
 		}
 
+		// 26.09.14：标签筛选改走「中间内容卡片渐变消失 → 改显隐 → 渐变显示」。
+		// ⚠ 只动 #post-list-container（中间列表），左右磁贴（.home-sidebar/.home-right-sidebar）不参与，避免跟着闪。
+		var tagSwitchTimer = 0;
+		function applyTagFilterWithFade() {
+			var container = document.getElementById('post-list-container');
+			var reduceMotion =
+				window.matchMedia &&
+				window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			if (!container || reduceMotion) {
+				applyTagFilter();
+				return;
+			}
+			window.clearTimeout(tagSwitchTimer);
+			container.classList.add('tag-filter-switching');
+			var outMs =
+				parseFloat(
+					getComputedStyle(document.documentElement).getPropertyValue(
+						'--page-fade-out',
+					),
+				) || 200;
+			tagSwitchTimer = window.setTimeout(function () {
+				applyTagFilter();
+				void container.offsetHeight; // 让「已消失」这个起点真正落进样式快照
+				container.classList.remove('tag-filter-switching');
+			}, outMs);
+		}
+
 		// 26.09.02 [13]：清空激活态并恢复全量（切页/原地跳回主页/翻页时调用）
 		function clearTagFilter() {
 			getActiveTags().clear();
@@ -173,7 +210,8 @@ const style = Astro.props.style;
 							chip.setAttribute('aria-pressed', 'true');
 							active.add(tag);
 						}
-						applyTagFilter();
+						// 26.09.14：增删标签都走渐变（中间卡片淡出→改显隐→淡入）
+						applyTagFilterWithFade();
 					});
 				});
 		}

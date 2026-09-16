@@ -26,6 +26,15 @@ function isRelative(url) {
 
 function rewriteTag(tag, base) {
 	let out = tag;
+	// 26.09.16：顺带给原始 HTML 媒体补懒加载——长文档（如 超次元恋人.md，几十张 AVIF + 视频）
+	// 全量 eager 会让文章页加载很久、首页封面也抢不到带宽。
+	if (/^<img\b/i.test(out)) {
+		if (!/\sloading\s*=/i.test(out)) out = out.replace(/^<img/i, '<img loading="lazy"');
+		if (!/\sdecoding\s*=/i.test(out)) out = out.replace(/^<img/i, '<img decoding="async"');
+	}
+	if (/^<(video|audio)\b/i.test(out) && !/\spreload\s*=/i.test(out)) {
+		out = out.replace(/^<(video|audio)/i, '<$1 preload="none"');
+	}
 	for (const attr of ATTRS) {
 		const re = new RegExp(`(\\s${attr}\\s*=\\s*)(["'])([^"']*)(\\2)`, "gi");
 		out = out.replace(re, (whole, prefix, quote, value, closing) => {

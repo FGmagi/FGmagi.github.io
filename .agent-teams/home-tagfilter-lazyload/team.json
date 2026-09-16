@@ -1,0 +1,143 @@
+{
+  "name": "home-tagfilter-lazyload",
+  "id": "home-tagfilter-lazyload",
+  "description": "首页标签筛选卡片渐隐渐现动画；文档图片懒加载与首页卡片封面渲染性能修复；本地构建并解决「超次元恋人.md」在首页封面与文章页加载过久的问题",
+  "captainSessionId": "session-6ee25db7-75f9-4810-97b6-4d5a1d9413c7",
+  "createdAt": 1789535862815,
+  "phase": "running",
+  "members": [
+    {
+      "id": "",
+      "name": "spec-anim",
+      "role": "需求/验收契约梳理 + 首页标签筛选渐隐动画实现",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "high",
+      "joinedAt": 1789535862815,
+      "status": "idle"
+    },
+    {
+      "id": "",
+      "name": "perf-docs",
+      "role": "文档图片懒加载与首页卡片/文章页渲染性能实现",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "high",
+      "joinedAt": 1789535862815,
+      "status": "idle"
+    },
+    {
+      "id": "",
+      "name": "build-verify",
+      "role": "本地构建与冒烟校验（构建通过 + 测点数值复核）",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "high",
+      "joinedAt": 1789535877686,
+      "status": "idle"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "profileSeedId": "req",
+      "subject": "梳理本轮验收契约：标签筛选渐隐动画 + 文档懒加载/渲染性能（不做事后复核）",
+      "description": "目标：把用户本轮两项需求固化成可执行的实现契约，供两个实现任务直接落地。用户明确表示本轮「无需验证」，因此本任务只产出契约与验收口径，不做代码审查、不建复核轮次。\n\n已完成的现场勘察结论（可直接引用，不必重复调查，但需自行确认行号）：\n1) 标签筛选：src/components/widget/TagFilter.astro 内含 <style> 与 <script is:inline>。当前 applyTagFilter() 调 setCardVisible()，直接 card.style.display = visible ? '' : 'none'，无任何动画；卡片同时命中 .post-card-divider（移动端分隔线，是卡片的下一个兄弟节点）需要同步。\n2) DOM 边界：文章卡片在 src/components/PostPage.astro 的 #post-list-container 内，而 #post-list-container 位于 src/layouts/MainGridLayout.astro 的 <main id=\"swup-container\">（约 1001 行）；左右磁贴分别在 #sidebar-swup-container（约 993 行，class=\"contents\"）与 #toc-swup-region（约 1052 行），二者是 swup 的独立容器。\n3) 关键既有动画：src/styles/transition.css 的 .onload-animation { opacity:0; animation: fade-in-up 500ms ease-out 150ms both; }（约 257 行），PostPage 给每张卡加了 class:list=\"onload-animation\" 与 --i/--interval 变量；#post-list-container > * 另有 transition: opacity 0.3s cubic-bezier(0.4,0,0.2,1)（PostPage.astro 约 306 行）。动画实现必须与这些既有规则共存不打架。\n4) 性能实测（dist/ 现状，请自行复核）：public/data/posts/超时空恋人/超次元恋人.md 仅 42KB，但同目录 image/ 下有 90 张 AVIF（合计约 11MB），封面 黑樱.avif 为 666KB。构建产物 dist/posts/超时空恋人/超次元恋人/index.html 为 187,537 字节，其中 <img> 共 99 个，带 loading 属性的只有 11 个，即 88 个正文图片在首次加载时全部立即发起请求。首页 dist/index.html 为 155,732 字节，13 个 img 均有 loading 属性。\n5) 首页卡片：src/components/PostCard.astro 第 66 行 `const { remarkPluginFrontmatter } = await render(entry);`，仅为取 words 与 excerpt 就为每张卡跑一遍完整 markdown 渲染；words/excerpt 实际由 src/plugins/remark-content.mjs 在 markdown 阶段注入 frontmatter。\n\n需要产出的契约内容（写入交付物）：\nA. 动画契约：写出卡片「渐变消失 + 渐变出现」的精确行为定义——退出/进入的时长与 easing（与项目既有 0.3s cubic-bezier(0.4,0,0.2,1) 口径保持一致）、位移方向与幅度、透明度取值、是否加 will-change、动画结束后内联样式如何清理、移动端 .post-card-divider 如何与卡片同步、快速连点标签 chip 时如何避免卡片卡在 opacity:0、prefers-reduced-motion: reduce 与 body.simple-mode 下的降级行为、swup 切页/翻页/原地跳回主页复位时是否立即复位不做动画。明确「左右磁贴不跟随变化」的可检验判据（除 #post-list-container 内元素与其分隔线外，不得修改任何元素的内联样式/类名，尤其不得触碰 #main-grid、#sidebar-swup-container、#toc-swup-region 及其后代）。\nB. 性能契约：明确三个测点与通过口径——①文章页 dist HTML 中正文 <img> 的 loading/decoding 覆盖率（目标：除首屏必要图外全部带 loading=\"lazy\" 与 decoding=\"async\"）；②首页不再出现为取 words/excerpt 而跑的完整 render 路径，words/excerpt 仍必须与现在一致地显示在卡片上；③封面 黑樱.avif 在首页卡片上的首帧行为（是否 eager/fetchpriority=high）。同时写明不得引入的行为回退：首页封面必须仍能正常渲染、文章正文排版与既有 rehype 插件（rehype-image-width 的 w-N% 包装、expressive-code、mermaid、katex）结果不变、.post-card-hover-dim 悬停变暗时序不变、body.simple-mode 分支不变。\nC. 项目约定：pnpm 为唯一包管理器（package.json 有 preinstall only-allow pnpm）；源码注释风格为「中文 + 26.09.02 [13]修改，内容为：…」式行内说明，实现任务需沿用；构建命令为 pnpm build（= node scripts/update-anime.mjs && astro build && pagefind --site dist && node scripts/compress-fonts.js），仅需构建通过即可，不要跑额外校验流程。\n\n交付物：契约文件 .agent-teams/artifacts/acceptance-contract.md（若该目录不可写则写 .tmp-verify/acceptance-contract.md），并在任务完成输出中给出关键数值与文件行号。\n\n非目标：不修改任何 src/ 下代码；不启动浏览器/Playwright/E2E 测试；不做代码审查轮次。",
+      "status": "cancelled",
+      "assignee": "spec-anim",
+      "dependencies": [],
+      "attempt": 3,
+      "createdAt": 1789535862815,
+      "updatedAt": 1789536820653,
+      "reassigning": false,
+      "output": "Stopped from the captain chat."
+    },
+    {
+      "id": "t2",
+      "profileSeedId": "impl-anim",
+      "subject": "实现首页标签筛选卡片的卡片渐隐渐现动画（左右磁贴不跟随变化）",
+      "description": "按 req 任务产出的「A. 动画契约」实现。\n\n范围：只改 src/components/widget/TagFilter.astro（允许在其中新增 <style> 规则与改写 <script is:inline>）；如需把时长/easing 暴露为配置，可在 src/config.ts 的 tagFilterConfig 内新增字段，但不得改动其它配置语义。\n\n实现要点：\n1. 标签 chip 点击后，被过滤掉的卡片与新增显示的卡片都要「渐变消失 / 渐变出现」，而不是当前的一帧 display 切换。\n2. 卡片动画必须建立在卡片根节点自身的 opacity/transform 过渡上（class=\"card-base ...\"），结束时清理内联样式以还原 SSR 状态；不要用 window 级全局动画，也不要把 #post-list-container 整体淡出（用户要求的是卡片渐变，且整体淡出会连带翻页按钮视觉）。\n3. 移动端 .post-card-divider 必须与其卡片动画同步，且最终 display 状态保持一致。\n4. 由于 .onload-animation 带 animation: fade-in-up 500ms both（src/styles/transition.css），入场动画前需确保不与之互相覆盖；如冲突，以摘除/压制该 class 的方式解决，不要修改 transition.css 全局规则。\n5. 处理快速连点：维护一个「当前动画代次」并在 applyTagFilter 入口取消/收敛上一轮未完成动画，保证任何点击序列结束后 DOM 显隐与激活集合一致，卡片不会残留 opacity:0 或 display:none。\n6. 既有行为必须保留：OR 语义过滤（data-tags 空格分隔、trim+小写）、窗口级 __tagFilterActive 集合、chip 的 active/aria-pressed 高亮、clearTagFilter 在 swup content:replace / page:view / popstate / 原地跳回主页时复位、filler 末行占位同步（syncTagFilterFiller）。\n7. prefers-reduced-motion: reduce 下退化为即时切换。\n\n硬约束：除 #post-list-container 内的卡片与紧邻的 .post-card-divider 外，不得写入任何其它元素的内联样式或类名——特别是 #main-grid（src/layouts/MainGridLayout.astro 约 972 行）、#sidebar-swup-container（约 993 行）、#toc-swup-region（约 1052 行）及其后代；左右磁贴必须完全不变。\n\n自测（不需要额外校验流程，但要自己确认不破坏构建）：pnpm astro check 通过；pnpm build 通过（构建失败即为本任务失败）。完成后在输出中给出改动文件、关键行号，以及构建产物 dist/index.html 中确认动画 CSS 已内联存在的证据（例如 grep 关键类名）。",
+      "status": "cancelled",
+      "assignee": "spec-anim",
+      "dependencies": [
+        "t1"
+      ],
+      "attempt": 0,
+      "createdAt": 1789535862815,
+      "updatedAt": 1789536820653,
+      "reassigning": false,
+      "output": "Stopped from the captain chat."
+    },
+    {
+      "id": "t3",
+      "subject": "文档图片懒加载 + 首页卡片与文章页渲染性能修复（解决 超次元恋人.md 加载过久）",
+      "description": "按 req 任务产出的「B. 性能契约」实现。用户明确本轮「无需验证」，因此本任务以构建通过 + 测点数值为准，不进入复核轮次。\n\n现场实测（dist/ 现状，请自行复核后再动手）：\n- public/data/posts/超时空恋人/超次元恋人.md 仅 42KB，但 image/ 目录有 90 张 AVIF（合计约 11MB），封面 黑樱.avif 为 666KB。\n- dist/posts/超时空恋人/超次元恋人/index.html = 187,537 字节；<img> 共 99 个，带 loading 属性的仅 11 个 ⇒ 88 个正文图在首访时全部立即发请求。这就是文章页「加载过久」的主因，而不是 markdown 解析慢。\n- 首页 dist/index.html = 155,732 字节。\n- src/components/PostCard.astro 第 66 行 `const { remarkPluginFrontmatter } = await render(entry);` 仅为取 words 与 excerpt，却为每张卡跑完整 markdown 渲染；这两个值实际由 src/plugins/remark-content.mjs 写入 frontmatter（data.astro.frontmatter）。\n\n实现方向（可自行选择更优方案，但必须满足 acceptance）：\n1. 正文图懒加载：新增/改造 rehype 插件（建议 src/plugins/rehype-lazy-images.mjs，与 src/plugins/rehype-image-width.mjs 同风格，使用 unist-util-visit），对所有 element img 节点在未显式设置时补 loading=\"lazy\" 与 decoding=\"async\"；注意必须在 rehypeImageWidth 改写为 <figure> 的场景下也生效。首屏首图如需保持 eager，用明确、可解释的判据（例如文档内第一张正文图）并写进注释，不要靠随机顺序。\n2. 首页卡片：移除 PostCard.astro 中的 `await render(entry)`，改为不触发完整 markdown 渲染的轻量来源拿到 words 与 excerpt（例如在 content 层预计算/缓存，或用已有的 remark-content 注入值）。硬约束：卡片上的字数与摘要的文字结果必须与修复前一致，不得出现空摘要或字数跳变；tags/description/cover 逻辑保持原样。\n3. 封面首帧：确认 黑樱.avif 在首页卡片上首帧可见；如确有必要可对卡片封面加 fetchpriority=\"high\"，但不要全局把所有封面/正文图改成 eager。src/components/misc/ImageWrapper.astro 已支持 loading 属性，可按需传入。\n4. 不得改动 public/data/posts 下任何文章或图片；不得改动 src/components/widget/TagFilter.astro 与 src/styles/transition.css（另一个任务独占）；不得触碰 #main-grid / #sidebar-swup-container / #toc-swup-region。\n\n自测与证据（完成后写入任务输出）：\n- pnpm astro check 与 pnpm build 均通过（pnpm build = node scripts/update-anime.mjs && astro build && pagefind --site dist && node scripts/compress-fonts.js）。\n- 用 PowerShell 复核文章页 dist HTML 的 <img> 计数与 loading/decoding 覆盖率（给出修复前后数字）。\n- 确认首页 index.html 仍含 5–10 张卡片的封面且封面 URL 正确。\n源码注释沿用项目风格：「26.09.xx修改，内容为：…」中文行内说明。",
+      "status": "cancelled",
+      "assignee": "perf-docs",
+      "dependencies": [
+        "t1"
+      ],
+      "attempt": 0,
+      "createdAt": 1789535875060,
+      "updatedAt": 1789536820653,
+      "kind": "implementation",
+      "objective": "消除「超次元恋人.md」在首页封面与文章页的加载/渲染过久问题：为正文文档图片加懒加载、去掉首页卡片为取 words/excerpt 而跑的完整 markdown 渲染路径，并在本地构建通过。",
+      "inScope": [
+        "src/components/PostCard.astro",
+        "src/components/misc/ImageWrapper.astro",
+        "src/plugins/",
+        "astro.config.mjs",
+        "src/utils/content-utils.ts"
+      ],
+      "outOfScope": [
+        "src/components/widget/TagFilter.astro（anim 任务独占）",
+        "src/styles/transition.css",
+        "src/layouts/MainGridLayout.astro",
+        "public/data/posts/**（文章内容与图片资源，不得改写）",
+        "dist/",
+        "node_modules/"
+      ],
+      "acceptance": [
+        "构建产物中文章页正文 <img> 除首屏必要图外均带 loading=\"lazy\" 与 decoding=\"async\"：dist/posts/超时空恋人/超次元恋人/index.html 中不带宽高/懒加载属性的正文图片数量从当前 88 降到 0 或仅剩刻意保留的首图",
+        "首页不再为每张卡片执行完整 markdown 渲染：PostCard.astro 中移除 await render(entry) 后 words 字数与 excerpt 摘要仍与修复前逐卡一致地渲染",
+        "首页卡片封面（超时空恋人 的 黑樱.avif，666KB）在首帧可见并正常渲染，不出现空白封面",
+        "pnpm build 全流程成功（astro build + pagefind + compress-fonts），无新增构建错误",
+        "未改动 public/data/posts 下任何文章或图片，正文排版与既有 rehype 插件（rehype-image-width w-N% 包装、expressive-code、mermaid、katex）结果不变"
+      ],
+      "verify": [
+        "pnpm astro check",
+        "pnpm build"
+      ],
+      "deliverables": [
+        "src/components/PostCard.astro（去掉每卡 await render(entry)，改用轻量 words/excerpt 来源，保持显示结果不变）",
+        "新增或修改 rehype 插件，为正文 <img> 补齐 loading=\"lazy\" 与 decoding=\"async\"",
+        "首页卡片封面 黑樱.avif 的首帧加载策略调整（eager/fetchpriority，仅在必要处）",
+        "本地构建成功并给出测点数值证据"
+      ],
+      "sourceTaskId": "t1",
+      "reassigning": false,
+      "output": "Stopped from the captain chat."
+    },
+    {
+      "id": "t4",
+      "subject": "本地构建与冒烟复核：构建通过 + 懒加载/封面/动画落地测点数值",
+      "description": "用户明确本轮「无需验证」：本任务不做深度复核、不建修复轮次，只做一次本地构建 + 客观冒烟复核，确认两路改动合起来能构建、且关键测点达标。发现问题只需如实报告，不要为了通过而改代码。\n\n必须执行：\n1. pnpm build 全流程（= node scripts/update-anime.mjs && astro build && pagefind --site dist && node scripts/compress-fonts.js）。记录退出码与耗时。构建失败即记为不通过。\n2. 文章页懒加载覆盖：统计 dist/posts/超时空恋人/超次元恋人/index.html 中 <img> 总数、带 loading 属性数、带 decoding 属性数，与修复前基线（总 99 / 带 loading 11 / 88 个无 loading）对比。\n3. 首页：确认 dist/index.html 存在文章卡片、封面 <img> 的 src 指向 /data/posts/超时空恋人/image/黑樱.avif（或 astro 处理后的等价产物），且首屏封面为可立即加载（非 lazy 或被显式标记高优先级）。\n4. 动画落地：确认 dist/index.html 中存在标签筛选卡的标记（data-tag-filter-root）以及动画相关 CSS/类名已进入构建产物（给出 grep 到的关键类名或规则片段），确认改动未破坏 #post-list-container 的 SSR 结构（卡片仍带 data-tags）。\n5. 交叉检查约束：确认 src/components/widget/TagFilter.astro 之外没有对 #main-grid / #sidebar-swup-container / #toc-swup-region 的样式写入（左右磁贴不跟随变化）；确认 public/data/posts 下文章与图片未被改写（可用 git status 判断）。\n6. 明确写出本轮未覆盖的项：渐隐动画的实际观感/时序、文章页真实浏览器首屏请求数，这两项需要用户在本机浏览器确认，不要尝试用 Playwright/E2E 补测。\n\n交付：在任务输出中给出「通过/不通过 + 每项测点的实际数值 + 未覆盖项清单」。若某项不通过，指出最小可复现证据（文件、行号、命令、输出片段）并交回船长决定，不要自行扩大改动范围。",
+      "status": "cancelled",
+      "assignee": "build-verify",
+      "dependencies": [
+        "t2",
+        "t3"
+      ],
+      "attempt": 0,
+      "createdAt": 1789535881381,
+      "updatedAt": 1789536820653,
+      "kind": "work",
+      "reassigning": false,
+      "output": "Stopped from the captain chat."
+    }
+  ],
+  "taskSeq": 4,
+  "approvedAt": 1789535977097,
+  "halted": true,
+  "haltedAt": 1789536820653
+}

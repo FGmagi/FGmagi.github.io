@@ -119,6 +119,21 @@
   max-width: none;
 }
 
+/* 26.09.20：文章内图片的响应式尺寸 —— 窄屏整宽、宽屏半宽（居中）。
+   文章里给图片加 class="img-half" 即可（融化的风花与白兔.md 已全部套用）。 */
+img.img-half {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+@media (min-width: 768px) {
+  img.img-half {
+    width: 50%;
+  }
+}
+
 /* 分页生效时：正文不再由外层卡片撑高，页与页之间也没有额外外边距 */
 .paper-paginated .markdown-content > .paper-pages + * {
   margin-top: 0;

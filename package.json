@@ -13,7 +13,7 @@
 		"update-anime": "node scripts/update-anime.mjs",
 		"update-bangumi": "node scripts/update-bangumi.mjs",
 		"update-bilibili": "node scripts/update-bilibili.mjs",
-		"build": "node -e \"try{require('child_process').execSync('node scripts/update-anime.mjs',{stdio:'inherit'})}catch(e){console.warn('[build] update-anime 失败（通常是网络/API 不可达），已跳过，用上一次的番剧数据继续构建')}\" && astro build && pagefind --site dist && node scripts/compress-fonts.js",
+		"build": "node -e \"try{require('child_process').execSync('node scripts/update-anime.mjs',{stdio:'inherit'})}catch(e){console.warn('[build] update-anime 失败（通常是网络/API 不可达），已跳过，用上一次的番剧数据继续构建')}\" && astro build && pagefind --site dist && node -e \"try{require('child_process').execSync('node scripts/compress-fonts.js',{stdio:'inherit'})}catch(e){console.warn('[build] 字体压缩失败（通常是 public/assets/font 里缺少源字体文件），已跳过：它只影响字体子集化，不影响 dist 输出')}\"",
 		"submit": "node scripts/indexnow-submit.js",
 		"preview": "astro preview",
 		"astro": "astro",

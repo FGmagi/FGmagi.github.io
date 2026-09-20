@@ -1,5 +1,21 @@
 [
   {
+    "title": "喜羊羊与灰太狼",
+    "status": "watching",
+    "rating": 9.8,
+    "cover": "https://i0.hdslb.com/bfs/bangumi/image/4cd5d75b3ac57d30a114bbe21a9dacd4f7c2fa81.png@220w_280h.webp",
+    "description": "羊历3131年，青青草原上，羊羊族群十分兴旺发达，羊羊们在这里幸福地生活着。直到灰太狼带着妻子红太狼搬到对岸的森林，羊羊们才真正在现实中见到书上记载的狼。 灰太狼每天想尽办法要跨越铁栅栏抓羊，但他没想...",
+    "year": "2005",
+    "studio": "中国大陆",
+    "genre": [
+      "国创"
+    ],
+    "link": "https://www.bilibili.com/bangumi/play/ss47853",
+    "progress": 0,
+    "totalEpisodes": 530,
+    "progressPercent": 0
+  },
+  {
     "title": "莉可丽丝",
     "status": "watching",
     "rating": 9.2,
@@ -15,22 +31,6 @@
     "link": "https://www.bilibili.com/bangumi/play/ss42176",
     "progress": 0,
     "totalEpisodes": 13,
-    "progressPercent": 0
-  },
-  {
-    "title": "风灵玉秀",
-    "status": "watching",
-    "rating": 9.8,
-    "cover": "https://i0.hdslb.com/bfs/bangumi/image/c1cb16bbd7d13aa3a68c1b7a8178a4f541fab3f6.png@220w_280h.webp",
-    "description": "随着白发少女白钰袖身世的逐渐展开，越来越多的江湖异事向她而来。事件的指向总是绕不开那个叫做红阳血精的武林禁物，不单单是白钰袖，就连风铃儿、南笙、崔玉都开始与之牵连起来。一切的一切，似巧合又不是巧合……...",
-    "year": "2017",
-    "studio": "中国大陆",
-    "genre": [
-      "国创"
-    ],
-    "link": "https://www.bilibili.com/bangumi/play/ss6038",
-    "progress": 0,
-    "totalEpisodes": 26,
     "progressPercent": 0
   },
   {
@@ -252,6 +252,22 @@
     "progressPercent": 0
   },
   {
+    "title": "风灵玉秀",
+    "status": "watching",
+    "rating": 9.8,
+    "cover": "https://i0.hdslb.com/bfs/bangumi/image/c1cb16bbd7d13aa3a68c1b7a8178a4f541fab3f6.png@220w_280h.webp",
+    "description": "随着白发少女白钰袖身世的逐渐展开，越来越多的江湖异事向她而来。事件的指向总是绕不开那个叫做红阳血精的武林禁物，不单单是白钰袖，就连风铃儿、南笙、崔玉都开始与之牵连起来。一切的一切，似巧合又不是巧合……...",
+    "year": "2017",
+    "studio": "中国大陆",
+    "genre": [
+      "国创"
+    ],
+    "link": "https://www.bilibili.com/bangumi/play/ss6038",
+    "progress": 0,
+    "totalEpisodes": 26,
+    "progressPercent": 0
+  },
+  {
     "title": "格林笔记 The Animation",
     "status": "watching",
     "rating": 8.9,
@@ -301,22 +317,6 @@
     "link": "https://www.bilibili.com/bangumi/play/ss3756",
     "progress": 0,
     "totalEpisodes": 70,
-    "progressPercent": 0
-  },
-  {
-    "title": "喜羊羊与灰太狼",
-    "status": "watching",
-    "rating": 9.8,
-    "cover": "https://i0.hdslb.com/bfs/bangumi/image/4cd5d75b3ac57d30a114bbe21a9dacd4f7c2fa81.png@220w_280h.webp",
-    "description": "羊历3131年，青青草原上，羊羊族群十分兴旺发达，羊羊们在这里幸福地生活着。直到灰太狼带着妻子红太狼搬到对岸的森林，羊羊们才真正在现实中见到书上记载的狼。 灰太狼每天想尽办法要跨越铁栅栏抓羊，但他没想...",
-    "year": "2005",
-    "studio": "中国大陆",
-    "genre": [
-      "国创"
-    ],
-    "link": "https://www.bilibili.com/bangumi/play/ss47853",
-    "progress": 0,
-    "totalEpisodes": 530,
     "progressPercent": 0
   },
   {

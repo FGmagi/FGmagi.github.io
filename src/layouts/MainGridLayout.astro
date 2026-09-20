@@ -620,7 +620,7 @@ const mainContentClass = `
 			// ⚠ 本钩子用 on() 注册 ⇒ 位于 swup 默认 handler（content:replace 的默认 handler 才是真正换 DOM）
 			// **之后**（Hooks.getHandlers/call 的执行序 = before → 默认 handler → on()）⇒ 这里拿到的已经是【新 DOM】。
 			// @ts-ignore
-			window.swup.hooks.on('content:replace', function(visit) {
+			window.swup.hooks.on('content:replace', function() {
 				// 新页节点就位后先清除其入场动画，再让 #main-grid 统一渐变（避免中间卡片各自延迟）
 				clearPageRegionAnimations();
 				const mainGrid = document.getElementById('main-grid');

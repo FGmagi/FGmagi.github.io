@@ -182,3 +182,8 @@ self.addEventListener("message", (event: Event) => {
 		});
 	}
 });
+
+// 本文件是 `new Worker(..., { type: "module" })` 加载的 ES 模块；
+// 显式导出一个空对象让 TS 也按模块解析 —— 否则它被当成全局脚本，
+// 顶层 `running` 会与其它脚本里的同名全局变量冲突（astro check 报 6 处类型错误）。
+export {};

@@ -565,3 +565,8 @@ function bind() {
 }
 
 bind();
+
+// 本文件由页面里的 `import('...paper-pagination.js')` 动态加载，运行时本来就是 ES 模块；
+// 显式导出一个空对象让 TS 也按模块解析（否则它被当成全局脚本：astro check 会报
+// ts(2306)「is not a module」，文件里的顶层变量还会与别的全局脚本重名冲突）。
+export {};

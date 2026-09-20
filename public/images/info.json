@@ -7,7 +7,7 @@
 		"photo_dir_urls": [
 			"https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io/images/Acg"
 		],
-		"cover": "cover.avif",
+		"cover": "cover.webp",
 		"date": "2026-09-01",
 		"location": "World",
 		"tags": [],
@@ -22,7 +22,7 @@
 		"photo_dir_urls": [
 			"https://cdn.jsdelivr.net/gh/FGmagi/FGmagi.github.io/images/Acg2"
 		],
-		"cover": "cover.avif",
+		"cover": "cover.webp",
 		"date": "2026-09-06",
 		"location": "World",
 		"tags": [],

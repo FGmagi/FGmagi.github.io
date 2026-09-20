@@ -19,6 +19,8 @@ import { getSortedPosts } from "@utils/content-utils";
 import { getFileDirFromPath, getPostUrlBySlug } from "@utils/url-utils";
 import { initPostIdMap, hasCustomPermalink, generatePermalinkSlug } from "@utils/permalink-utils";
 import { permalinkConfig } from "@/config";
+// 26.09.18：纸质分页（display_mode: single/double）样式
+import "../styles/paper.css";
 import { Icon } from "astro-icon/components";
 import CryptoJS from "crypto-js";
 import dayjs from "dayjs";
@@ -118,12 +120,17 @@ const jsonLd = {
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script>
     import('../scripts/right-sidebar-layout.js');
+    // 26.09.18：纸质分页（display_mode: single/double；正文里 <!-- model:xxx --> 指令可临时切换）
+    import('../scripts/paper-pagination.js');
     </script>
     <div
         class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4"
     >
         <div
             id="post-container"
+           data-display-model={entry.data.display_mode}
+           data-title-position={entry.data.title_position}
+           data-text-position={entry.data.text_position}
             class:list={[
                 "card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ",
                 {},

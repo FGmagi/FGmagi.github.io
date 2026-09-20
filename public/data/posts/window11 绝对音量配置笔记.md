@@ -26,7 +26,7 @@ sourceLink: "[fgmagi.pages.dev](https://fgmagi.pages.dev/)"
 
 image: ''
 
-image_model: 'up'
+image_mode: 'up'
 
 ---
 

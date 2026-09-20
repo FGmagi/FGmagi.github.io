@@ -23,6 +23,8 @@
  */
 
 const NAV_GAP = 16; // 导航栏底部与 TOC 顶部间距（px）
+const DEFAULT_ANCHOR_OFFSET = 12; // 锚点落点与导航栏底边的间距兜底值（同 config.toc.navigation.offset）
+const NAVBAR_FALLBACK_BOTTOM = 96; // 读不到真实导航栏底边时的兜底（≈ 顶栏 + 间距）
 const BTN_GAP = 16; // 回顶按钮与 TOC 预留区间距（px）
 const BASE_TOC_TOP = 88; // 基准顶部（≈5.5rem @16px，无导航栏/未布局时的兜底）
 const MIN_TOC_H = 200; // TOC 可视高度下限
@@ -321,8 +323,30 @@ function recompute() {
 	if (typeof document === "undefined") return;
 	applyLayoutMode();
 	applyTocGeometry();
+	applyAnchorOffset();
 	// 通知 TOC 组件重新居中当前高亮项（尺寸/位置变化后）
 	document.dispatchEvent(new CustomEvent("toc:relayout"));
+}
+
+/**
+ * 锚点落点补偿（26.09.20）：
+ * 把「导航栏底边 + config.toc.navigation.offset」写进 CSS 变量 --anchor-offset，
+ * 正文标题用 scroll-margin-top 读它。
+ *
+ * 这样**浏览器原生**的锚点滚动（重复点击同一条目录、直接改 URL 的 hash、
+ * 手机目录按钮等）也会落在与自定义跳转完全相同的位置 ——
+ * 否则原生滚动会把标题正好顶到导航栏下面（高亮还停在标题上，看起来就是
+ * 「再点一次标题反而被导航栏挡住」）。
+ */
+function applyAnchorOffset() {
+	const root = document.documentElement;
+	const navbar = document.getElementById("navbar");
+	const navBottom = navbar ? navbar.getBoundingClientRect().bottom : 0;
+	const navCfg = window.siteConfig && window.siteConfig.toc && window.siteConfig.toc.navigation;
+	const cfgOffset = Number(navCfg && navCfg.offset);
+	const extra = Number.isFinite(cfgOffset) && cfgOffset >= 0 ? cfgOffset : DEFAULT_ANCHOR_OFFSET;
+	const offset = Math.round((navBottom > 0 ? navBottom : NAVBAR_FALLBACK_BOTTOM) + extra);
+	root.style.setProperty("--anchor-offset", `${offset}px`);
 }
 
 /** rAF 合并多次触发（resize / 事件风暴只算一次） */

@@ -205,3 +205,57 @@
 :root:not(.dark) .custom-md spoiler {
   --_spoiler-mask: color-mix(in oklch, var(--primary) 55%, white 45%);
 }
+
+/* 26.09.20：锚点落点补偿 —— 吸顶导航栏会遮住标题，
+   给标题留出「导航栏底边 + config.toc.navigation.offset」的滚动余量。
+   变量由 src/scripts/toc-layout.js 按真实导航栏高度写入，
+   这样浏览器原生锚点滚动（重复点击同一条目录、直接改 URL 的 hash）与
+   自定义跳转（src/utils/anchor-nav.ts）落点完全一致。 */
+.custom-md :is(h1, h2, h3, h4, h5, h6),
+.markdown-content :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: var(--anchor-offset, 61px);
+}
+
+/* ====================================================================
+   26.09.20：text_position（正文 / 图片 / 音频的对齐）
+   ─────────────────────────────────────────────────────────────────────
+   frontmatter `text_position: left | middle | right`（默认 left）写在文章卡片上，
+   由 JS 同步到正文容器、纸质分页的每一页；正文里还能用指令
+   `<!-- text_position:middle -->` 从该处往后临时切换（JS 给后续内容套一层
+   带 data-text-position 的容器）。
+
+   实现口径：
+     · 文字 —— 容器上的 text-align（会自然继承给段落）；
+     · 图片 / 音频 —— 块级元素靠内外边距对齐，这里用两个变量统一控制
+       （--text-align-start / --text-align-end 就是 margin-inline 的两个值）；
+     · 节点自带的行内 style（HTML 格式设置）优先级更高：
+       本文件所有规则都不加 !important，行内样式天然覆盖标签设置。
+   ==================================================================== */
+.markdown-content[data-text-position="left"],
+.markdown-content [data-text-position="left"] {
+  text-align: left;
+  --text-align-start: 0;
+  --text-align-end: auto;
+}
+
+.markdown-content[data-text-position="middle"],
+.markdown-content [data-text-position="middle"] {
+  text-align: center;
+  --text-align-start: auto;
+  --text-align-end: auto;
+}
+
+.markdown-content[data-text-position="right"],
+.markdown-content [data-text-position="right"] {
+  text-align: right;
+  --text-align-start: auto;
+  --text-align-end: 0;
+}
+
+/* 流式排版下的独立图片 / 音频（纸质分页模式见 paper.css） */
+.markdown-content > img,
+.markdown-content > p > img,
+.markdown-content > audio,
+.markdown-content > p > audio {
+  margin-inline: var(--text-align-start, 0) var(--text-align-end, auto);
+}

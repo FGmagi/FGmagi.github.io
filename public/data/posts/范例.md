@@ -26,7 +26,7 @@ sourceLink: "[fgmagi.pages.dev](https://fgmagi.pages.dev/)"
 
 image: './image/若叶睦.webp'
 
-image_model: 'up'
+image_mode: 'up'
 
 ---
 

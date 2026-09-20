@@ -12,7 +12,7 @@ pinned: false
 
 description: ""
 
-tags: [“技术”,"笔记"]
+tags: ["技术","笔记"]
 
 width: 0.5
 
@@ -26,7 +26,7 @@ sourceLink: "[fgmagi.pages.dev](https://fgmagi.pages.dev/)"
 
 image: './image/希绮菈.webp'
 
-image_model: 'up'
+image_mode: 'up'
 
 ---
 

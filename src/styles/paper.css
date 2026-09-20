@@ -1,0 +1,221 @@
+/* ====================================================================
+  26.09.18：文章纸质分页（display_mode: single / double）
+   ─────────────────────────────────────────────────────────────────────
+   由 src/scripts/paper-pagination.js 把正文切章、按 A4 版面分页，并插入分隔线。
+   本文件只负责「页、分隔线、章标题对齐、双栏、跨栏大图、横向滑动图组」的表现。
+   ⚠ 只作用于文章正文容器（.markdown-content / .custom-md），不碰封面与卡片本身。
+   ==================================================================== */
+
+/* 分页容器：页与页之间靠分隔线区分（见 .paper-divider） */
+.paper-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* 一张 A4 页：**只是不可见的排版框**（用户要求：分页用 md 分隔符表示，
+   不要画分页背景卡片）。宽高由 JS 按 1 : 1.4142 写成内联 px，量测才准。 */
+.paper-page {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  /* 26.09.18：把排版影响限制在页内 —— 分页要逐块量高度（触发强制重排），
+     没有 contain 时每次量测都会让整篇长文重排，长文章会卡死。 */
+  contain: content;
+}
+
+/* 章节末页/超高块：不补白 ⇒ 高度随内容，避免额外的 A4 空白 */
+.paper-page.paper-page--auto {
+  height: auto !important;
+  min-height: 0;
+}
+
+.paper-page__body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.paper-page.paper-page--auto .paper-page__body {
+  height: auto;
+  overflow: visible;
+}
+
+/* 双栏：按「列填满」排版（column-fill:auto），内容不足时优先填满第一栏 */
+.paper-page.paper-page--double .paper-page__body {
+  column-count: 2;
+  column-gap: 2.25rem;
+  column-fill: auto;
+}
+
+/* 章节末页/超高块：高度随内容 ⇒ 双栏改为均衡排布（短内容两栏平分，不会挤在左栏） */
+.paper-page.paper-page--auto .paper-page__body {
+  column-fill: balance;
+}
+
+/* 双栏模式下的跨栏元素：`<img data-span="full">`（或给任意块加 data-span="full"）
+   ⇒ 临时变回单栏整宽渲染的大图/大块。 */
+.paper-page--double .paper-page__body [data-span="full"] {
+  column-span: all;
+}
+
+.paper-page--double .paper-page__body [data-span="full"] img,
+.paper-page--double .paper-page__body img[data-span="full"] {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 分页/分章分隔线 */
+.paper-divider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: 2rem 0;
+  border: 0;
+  /* 与 markdown 的 `---` 分割线保持同一种观感 */
+  background: var(--line-color);
+  opacity: 0.8;
+}
+
+/* 章标题对齐（title_position） */
+.paper-page__body .paper-chapter-title {
+  margin-top: 0;
+}
+.paper-title--left {
+  text-align: left;
+}
+.paper-title--middle {
+  text-align: center;
+}
+.paper-title--right {
+  text-align: right;
+}
+
+/* 横向排列 + 横向滚动条的图组：<div data-img-row> 里放若干 <img data-w="40"> */
+[data-img-row] {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.35rem;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-img-row] > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* 单栏模式下图片默认整宽；带 data-w 的按百分比（配合图组横排） */
+.paper-page__body img[data-w] {
+  width: var(--paper-img-w, auto);
+  height: auto;
+  max-width: none;
+}
+
+/* 分页生效时：正文不再由外层卡片撑高，页与页之间也没有额外外边距 */
+.paper-paginated .markdown-content > .paper-pages + * {
+  margin-top: 0;
+}
+
+/* ====================================================================
+   26.09.20：双栏排版视觉优化（只调版面表现，不改正文内容）
+   ─────────────────────────────────────────────────────────────────────
+   1) 两栏之间加一条极细分隔线，密排时更容易认列；
+   2) 正文节奏收紧（段落/标题/图片间距），减少「因为间距太大而出现的空洞」；
+   3) 独立大图按栏宽铺满并居中，竖图限制在一栏高度内（一张图不再撑爆整页）；
+   4) 音频做成占满一栏的小卡片，原生控件在双栏里太窄太挤；
+   5) 标题不与后文分栏、段落两行以上才分栏（orphans/widows），避免「标题孤零零在栏尾」。
+   ==================================================================== */
+
+/* 1) 栏间分隔线 */
+.paper-page.paper-page--double .paper-page__body {
+  column-rule: 1px solid var(--line-color);
+}
+
+/* 2) 正文节奏：双栏里比单栏更紧凑一档 */
+.paper-page .paper-page__body p {
+  margin: 0 0 0.7rem;
+  orphans: 2;
+  widows: 2;
+}
+
+.paper-page .paper-page__body :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 1.1rem;
+  margin-bottom: 0.9rem;
+  break-after: avoid; /* 标题不与后面的正文分到两栏 */
+  break-inside: avoid;
+}
+
+/* 3) 图片：任何图片都不超过一栏高度（竖图、长图不会撑爆整页，
+      也不会把外层 flex 图组顶得比一栏还高）；高度受限时浏览器按原比例缩宽，不会变形。 */
+.paper-page .paper-page__body img {
+  max-height: calc(var(--paper-col-h, 45rem) - 2.4rem);
+  height: auto;
+  break-inside: avoid;
+}
+
+/* 独立成行的大图：按原比例铺满栏宽后居中、圆角 */
+.paper-page .paper-page__body > img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  /* 左右外边距走 text_position 变量（见 markdown.css 的同一组变量） */
+  margin-block: 0.85rem;
+  margin-inline: var(--text-align-start, 0) var(--text-align-end, auto);
+  border-radius: var(--radius-large, 1rem);
+}
+
+/* 4) 音频：占满一栏的卡片式控件 */
+.paper-page .paper-page__body audio {
+  display: block;
+  box-sizing: border-box;
+  width: min(100%, 22rem);
+  max-width: 100%;
+  margin-block: 0.6rem 0.9rem;
+  margin-inline: var(--text-align-start, 0) var(--text-align-end, auto);
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-large, 1rem);
+  background-color: var(--btn-plain-bg-hover);
+  box-shadow: inset 0 0 0 1px var(--line-color);
+  break-inside: avoid;
+}
+
+/* 5) 图组 / 跨栏大图整块不拆栏：
+      正文里手写的 `<div style="display:flex">` 图组如果不锁住，
+      会被浏览器拆到两栏里（一行图被切成两半，还留下大片空白）。 */
+.paper-page .paper-page__body > div,
+.paper-page .paper-page__body [data-img-row],
+.paper-page .paper-page__body [data-span="full"] {
+  break-inside: avoid;
+}
+
+/* 正文里手写的横向图组（<div style="display:flex">）：宽度不超出栏宽，
+   一行放不下时横向滚动，而不是把内容挤出栏目外（窄屏尤其明显）。 */
+.paper-page .paper-page__body > div {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+@media (max-width: 767px) {
+  /* 窄屏：A4 版面按屏幕宽等比缩小 */
+  .paper-page.paper-page--double .paper-page__body {
+    column-count: 1; /* 手机上双栏改为单栏，保证可读 */
+  }
+}
+
+@media print {
+  .paper-page {
+    break-after: page;
+  }
+  .paper-divider {
+    display: none;
+  }
+}

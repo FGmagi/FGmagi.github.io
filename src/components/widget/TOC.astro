@@ -114,7 +114,7 @@ const hasTocEntries = tocEntries.length > 0;
 
 <script>
   // 26.09.14：目录跳转统一实现（导航栏避让 + 可配平滑时长 + 长距离渐变过渡）
-  import { jumpToHeading } from "../../utils/anchor-nav";
+  import { jumpToHeading, anchorScrollTopClamped, activeHeadingLinePx, maxScrollY } from "../../utils/anchor-nav";
 class TableOfContents extends HTMLElement {
     tocEl: HTMLElement | null = null;
     visibleClass = "visible";
@@ -122,7 +122,6 @@ class TableOfContents extends HTMLElement {
     anchorNavTarget: HTMLElement | null = null;
     headingIdxMap = new Map<string, number>();
     headings: HTMLElement[] = [];
-    sections: HTMLElement[] = [];
     tocEntries: HTMLAnchorElement[] = [];
     active: boolean[] = [];
     activeIndicator: HTMLElement | null = null;
@@ -144,12 +143,17 @@ class TableOfContents extends HTMLElement {
 
     markVisibleSection = (entries: IntersectionObserverEntry[]) => {
         entries.forEach((entry) => {
-            const id = entry.target.children[0]?.getAttribute("id");
+            // 26.09.20：观察对象改成标题本身（原来是标题的父元素）。
+            // 父元素不一定是「一章」（纸质分页会把正文搬进 .paper-page__body，
+            // 一章一个 <section> 的结构不保证还在），标题自身的几何永远可靠。
+            const id = entry.target.getAttribute("id")
+                || entry.target.children[0]?.getAttribute("id");
             const idx = id ? this.headingIdxMap.get(id) : undefined;
             if (idx != undefined)
                 this.active[idx] = entry.isIntersecting;
 
-            if (entry.isIntersecting && this.anchorNavTarget == entry.target.firstChild)
+            if (entry.isIntersecting
+                && (this.anchorNavTarget == entry.target || this.anchorNavTarget == entry.target.firstChild))
                 this.anchorNavTarget = null;
         });
 
@@ -253,15 +257,23 @@ class TableOfContents extends HTMLElement {
     reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     currentIndex = () => {
-        if (!this.sections.length) return -1;
-        const nav = document.getElementById("navbar");
-        const navRect = nav ? nav.getBoundingClientRect() : null;
-        const line = navRect && navRect.height > 0 ? navRect.bottom : this.NAVBAR_FALLBACK_PX;
+        if (!this.headings.length) return -1;
+        // 26.09.20：判定线改用 anchor-nav 的口径（导航栏底边 + 跳转偏移 + 容差）。
+        // 只取导航栏底边时，刚跳转到位、正好停在「底边 + offset」的标题会被判成
+        // 还没越线，高亮就落到上一条标题上——就是「高光显示在前一个标题」的原因。
+        // 26.09.20：已经滚到文档底部时，末尾的标题再怎么点也滚不到判定线（被文档末尾夹住），
+        // 此时直接高亮最后一条，否则最后几章永远点不亮。
+        if (window.scrollY >= maxScrollY() - 2) {
+            for (let i = this.headings.length - 1; i >= 0; i--) {
+                if (this.headings[i]) return i;
+            }
+        }
+        const line = activeHeadingLinePx();
         let idx = 0;
-        for (let i = 0; i < this.sections.length; i++) {
-            const section = this.sections[i];
-            if (!section) continue;
-            if (section.getBoundingClientRect().top <= line) {
+        for (let i = 0; i < this.headings.length; i++) {
+            const heading = this.headings[i];
+            if (!heading) continue;
+            if (heading.getBoundingClientRect().top <= line) {
                 idx = i;
             } else {
                 break;
@@ -296,11 +308,13 @@ class TableOfContents extends HTMLElement {
     };
 
     fallback = () => {
-        if (!this.sections.length) return;
+        if (!this.headings.length) return;
 
-        for (let i = 0; i < this.sections.length; i++) {
-            let offsetTop = this.sections[i].getBoundingClientRect().top;
-            let offsetBottom = this.sections[i].getBoundingClientRect().bottom;
+        for (let i = 0; i < this.headings.length; i++) {
+            const heading = this.headings[i];
+            if (!heading) continue;
+            let offsetTop = heading.getBoundingClientRect().top;
+            let offsetBottom = heading.getBoundingClientRect().bottom;
 
             if (this.isInRange(offsetTop, 0, window.innerHeight)
                 || this.isInRange(offsetBottom, 0, window.innerHeight)
@@ -325,14 +339,18 @@ class TableOfContents extends HTMLElement {
             
             const id = decodeURIComponent(anchor.hash?.substring(1));
             const targetElement = document.getElementById(id);
-            
+            // 26.09.20：已经在目标位置时（例如重复点击同一条目）不再滚动 ——
+            // 否则会再补一次平滑滚动，把标题往上顶到导航栏下面，高亮也跟着错位。
+            const settled = !!targetElement
+                && Math.abs(window.scrollY - anchorScrollTopClamped(targetElement)) <= 2;
+
             if (targetElement) {
                 // 26.09.14：跳转统一走 src/utils/anchor-nav.ts
                 //   · 目标标题落在「导航栏底边 + config.toc.navigation.offset」之下，不会被吸顶导航栏挡住；
                 //   · 自绘 rAF 平滑滚动（时长/缓动可配，比原生 smooth 更慢更平滑）；
                 //   · 距离超过 longJumpViewports 个视口高度时，改为
                 //     「文章卡片 + 目录一起渐变消失 → 瞬移 → 预渲染 → 统一渐显」。
-                jumpToHeading(id);
+                if (!settled) jumpToHeading(id);
             }
             
             const idx = this.headingIdxMap.get(id);
@@ -341,6 +359,8 @@ class TableOfContents extends HTMLElement {
             } else {
                 this.anchorNavTarget = null;
             }
+            // 已在位 ⇒ 没有滚动事件，主动刷新一次高亮，保证点谁高亮谁
+            if (settled) this.update();
         }
     };
 
@@ -484,22 +504,19 @@ class TableOfContents extends HTMLElement {
         // 26.09.06：observer 已在 init() 开头 disconnect，此处仅重新挂载当前页 section
         // swup 换页后防残留
         this.headingIdxMap.clear();
-        this.sections = new Array(this.tocEntries.length);
         this.headings = new Array(this.tocEntries.length);
         for (let i = 0; i < this.tocEntries.length; i++) {
             const id = decodeURIComponent(this.tocEntries[i].hash?.substring(1));
             const heading = document.getElementById(id);
-            const section = heading?.parentElement;
-            if (heading instanceof HTMLElement && section instanceof HTMLElement) {
+            if (heading instanceof HTMLElement) {
                 this.headings[i] = heading;
-                this.sections[i] = section;
                 this.headingIdxMap.set(id, i);
             }
         }
         this.active = new Array(this.tocEntries.length).fill(false);
 
-        this.sections.forEach((section) =>
-            this.observer.observe(section)
+        this.headings.forEach((heading) =>
+            heading && this.observer.observe(heading)
         );
 
         this.fallback();
@@ -542,8 +559,8 @@ class TableOfContents extends HTMLElement {
     }
 
     disconnectedCallback() {
-        this.sections.forEach((section) =>
-            this.observer.unobserve(section)
+        this.headings.forEach((heading) =>
+            heading && this.observer.unobserve(heading)
         );
         this.observer.disconnect();
         this.tocEl?.removeEventListener("click", this.clickHandler, true);

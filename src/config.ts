@@ -53,8 +53,8 @@ export const dataFiles: DataFilesConfig = {
 	faviconIco: "public/favicon/favicon.ico", // 默认 favicon（OG 图片兜底；网页路径 /favicon/favicon.ico）
 	fontDir: "public/assets/font", // 字体文件目录（compress-fonts.js 按此读取 TTF）
 
-	white_webp:"public/images/white_webp",
-	black_webp:"public/images/black_webp",
+	white_webp: "public/images/white_webp",
+	black_webp: "public/images/black_webp",
 };
 
 // 横幅图片来源：fullBanner 用于全屏壁纸，wideBanner 用于顶部横幅
@@ -418,7 +418,7 @@ export const shareConfig: ShareConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题（留空使用 i18n 默认）
-	content: "FGmagi 个人博客，主要分享计算机笔记与游戏话题，由于买不起服务器\n加载不出来纯粹是外链太慢了，我也没招哇——", // 公告内容
+	content: "个人博客，图片挺多的，加载不出来纯粹是外链太慢了，我也没招哇——", // 公告内容
 	closable: true, // [死代码]：右侧 X 关闭按钮已取消（26.09.02），字段保留兼容
 	link: {
 		enable: true, // 启用链接
@@ -615,3 +615,4 @@ export const umamiConfig = {
 <script defer src="XXXX.XXX" data-website-id="ABCD1234"></script>
   `.trim(), // 要插入的统计脚本（无需再去 Layout 中插入）
 } as const;
+

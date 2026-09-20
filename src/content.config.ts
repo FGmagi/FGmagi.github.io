@@ -74,6 +74,27 @@ const postsCollection = defineCollection({
 		/* 文章封面渲染模式：up=标题上方，down=标题下方正文前，background=封面作为页面背景 */
 		image_mode: z.enum(["up", "down", "background"]).optional().default("up"),
 
+		/* 26.09.18：正文分页/排版模式（封面渲染不受影响）
+		   default=沿用现在的整篇流式排版；single=A4 分页 + 单栏；double=A4 分页 + 双栏。
+		   正文里还可以用 `<!-- model:single -->` 之类的指令，从该处往后临时切换模式。 */
+		display_mode: z
+			.enum(["default", "single", "double"])
+			.optional()
+			.default("default"),
+		/* 章标题（文章内最高一级标题）在章节首页的对齐方式 */
+		title_position: z
+			.enum(["left", "middle", "right"])
+			.optional()
+			.default("left"),
+
+		/* 26.09.20：正文 / 图片 / 音频的对齐方式（left=靠左，middle=居中，right=靠右）。
+		   正文里可以用 `<!-- text_position:middle -->` 指令，从该处往后临时切换；
+		   节点自带的行内 style（如 <p style="text-align:right">）优先级更高。 */
+		text_position: z
+			.enum(["left", "middle", "right"])
+			.optional()
+			.default("left"),
+
 		/* Custom permalink - 自定义固定链接，优先级高于 alias */
 		permalink: z.string().optional(),
 

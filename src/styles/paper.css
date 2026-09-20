@@ -134,6 +134,20 @@ img.img-half {
   }
 }
 
+img.img-half-mid {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+@media (min-width: 768px) {
+  img.img-half-mid {
+    width: 50%;
+  }
+}
+
 /* 分页生效时：正文不再由外层卡片撑高，页与页之间也没有额外外边距 */
 .paper-paginated .markdown-content > .paper-pages + * {
   margin-top: 0;

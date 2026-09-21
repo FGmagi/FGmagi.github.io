@@ -38,6 +38,7 @@ import {
 	nextPhotoBitmapJobId,
 	warmUpPhotoBitmap,
 } from "./photo-bitmap.js";
+import { mountMasonryGrid } from "./photo-masonry-grid.js";
 import { probePhotoSizes } from "./photo-probe-client.js";
 
 /** 未知尺寸项的默认宽高比占位（探测失败时先用；加载后校正成真实比例） */
@@ -157,19 +158,26 @@ async function runGallery(container: HTMLElement): Promise<void> {
 	warmUpPhotoBitmap();
 
 	// ---------- S0 / S1：尺寸期 ----------
+	// 26.09.21：跨列排版句柄（方案 B：超宽横图最多跨 2 列）。配置开启且相册是
+	// masonry 时才有值；此后任何尺寸变化都要请它重排一次（rAF 合帧）。
+	let relayout: (() => void) | undefined;
 	if (layout === "masonry") {
 		// 26.09.14：尺寸期不再阻塞排版 —— applyProvisionalDims 立刻给未知项默认比例，
 		// 整页排版一次完成；随后 Worker 探到的真实尺寸按帧批量回填（flushSizes）。
 		applyProvisionalDims(figures);
 		markSizingDone(container);
-		void probeSizes(figures, signal);
+		// 26.09.21：先按「已声明尺寸 + 兜底比例」接管排版（不改变 DOM 结构），
+		// 之后探测回填 / 加载校正都会触发重排。开关关闭时返回 null，走原 CSS 多列。
+		const grid = mountMasonryGrid(container, signal);
+		if (grid) relayout = grid.relayout;
+		void probeSizes(figures, signal, relayout);
 	} else {
 		// grid：CSS 1:1 裁剪，盒子比例由 CSS 决定，无需尺寸
 		markSizingDone(container);
 	}
 
 	// ---------- S2：加载期 ----------
-	startLazyLoading(figures, layout, signal);
+	startLazyLoading(figures, layout, signal, relayout);
 }
 
 /**
@@ -197,6 +205,7 @@ function applyProvisionalDims(figures: HTMLElement[]): void {
 async function probeSizes(
 	figures: HTMLElement[],
 	signal: AbortSignal,
+	relayout?: () => void,
 ): Promise<void> {
 	// key → figure：Worker 只回传 key，需在结果回调里定位到对应 figure
 	const byKey = new Map<string, HTMLElement>();
@@ -219,6 +228,7 @@ async function probeSizes(
 		if (pending.size === 0) return;
 		const batch = Array.from(pending.entries());
 		pending.clear();
+		let applied = 0;
 		for (const [key, dim] of batch) {
 			const figure = byKey.get(key);
 			if (!figure || !figure.isConnected) continue;
@@ -233,7 +243,10 @@ async function probeSizes(
 			applyDim(figure, dim.w, dim.h, true);
 			// 写缓存统一在 flush 内做（一次一帧，localStorage 写入不散落在回调里）
 			setSize(key, dim.w, dim.h);
+			applied++;
 		}
+		// 26.09.21：比例变了 ⇒ 跨列判定与行跨都要跟着重算（同帧只排一次）
+		if (applied > 0) relayout?.();
 	};
 
 	await probePhotoSizes(jobs, {
@@ -278,6 +291,7 @@ function startLazyLoading(
 	figures: HTMLElement[],
 	layout: string,
 	signal: AbortSignal,
+	relayout?: () => void,
 ): void {
 	const items: GalleryItem[] = figures.map(toItem);
 	const queue: GalleryItem[] = [];
@@ -291,7 +305,7 @@ function startLazyLoading(
 			void loadItem(item, layout, () => {
 				inFlight.delete(item);
 				pump();
-			});
+			}, relayout);
 		}
 	};
 
@@ -331,6 +345,7 @@ async function loadItem(
 	item: GalleryItem,
 	layout: string,
 	settle: () => void,
+	relayout?: () => void,
 ): Promise<void> {
 	const { figure, img, src } = item;
 	if (!img || !src) {
@@ -349,7 +364,8 @@ async function loadItem(
 		settle();
 	};
 	const onLoad = () => {
-		afterLoaded(item, layout);
+		// 26.09.21：比例被校正过 ⇒ 跨列/行跨要重算
+		if (afterLoaded(item, layout)) relayout?.();
 		done();
 	};
 	const onError = () => {
@@ -399,7 +415,7 @@ async function loadItem(
 			.then(() => {
 				img.removeEventListener("load", onLoad);
 				img.removeEventListener("error", onError);
-				afterLoaded(item, layout);
+				if (afterLoaded(item, layout)) relayout?.();
 				done();
 			})
 			.catch(() => {
@@ -417,7 +433,7 @@ async function loadItem(
 	if (img.complete && img.naturalWidth > 0) {
 		img.removeEventListener("load", onLoad);
 		img.removeEventListener("error", onError);
-		afterLoaded(item, layout);
+		if (afterLoaded(item, layout)) relayout?.();
 		done();
 	}
 }
@@ -468,22 +484,25 @@ function displayBitmap(item: GalleryItem, bitmap: ImageBitmap): boolean {
 	return true;
 }
 
-/** 加载完成：显示图片 + natural 尺寸比对校正。 */
+/**
+ * 加载完成：显示图片 + natural 尺寸比对校正。
+ * @returns true = 本次改动了盒子比例（调用方需要触发跨列/行跨重排）
+ */
 function afterLoaded(
 	item: GalleryItem,
 	layout: string,
 	naturalWidth?: number,
 	naturalHeight?: number,
 	skipResize = false,
-): void {
+): boolean {
 	const { figure, img, key } = item;
 	figure.classList.add("photo-loaded");
 	figure.classList.remove("photo-dim-fallback");
-	if (skipResize) return;
+	if (skipResize) return false;
 	const nw = naturalWidth ?? img?.naturalWidth ?? 0;
 	const nh = naturalHeight ?? img?.naturalHeight ?? 0;
-	if (layout !== "masonry") return;
-	if (!(nw > 0 && nh > 0)) return;
+	if (layout !== "masonry") return false;
+	if (!(nw > 0 && nh > 0)) return false;
 
 	const expected = readDimAttr(figure);
 	if (expected) {
@@ -494,11 +513,13 @@ function afterLoaded(
 			// 加载后校正：更新盒子 + 写尺寸缓存
 			applyDim(figure, nw, nh);
 			if (key) setSize(key, nw, nh);
+			return true;
 		}
-	} else {
-		applyDim(figure, nw, nh);
-		if (key) setSize(key, nw, nh);
+		return false;
 	}
+	applyDim(figure, nw, nh);
+	if (key) setSize(key, nw, nh);
+	return true;
 }
 
 function markError(figure: HTMLElement): void {

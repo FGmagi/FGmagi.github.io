@@ -76,6 +76,18 @@ export type SiteConfig = {
 		pageSize?: number; // 每页文章数量，范围 5-10
 	};
 
+	/**
+	 * 相册瀑布流「超宽横图跨列」（方案 B：CSS Grid + 行跨）。
+	 * 只在 layout=masonry 的相册生效；缺省 / enable=false 时完全保持原来的
+	 * CSS 多列瀑布流（无 JS 依赖，行为不变）。
+	 */
+	albumsMasonrySpan?: {
+		enable: boolean; // 总开关：允许超宽横图跨列
+		maxSpan: number; // 最多跨几列（1-2，越界会被钳制；1 = 不跨列）
+		minAspect: number; // 触发跨列的最小宽高比 w/h（例如 2.2）
+		gapAdaptive: number; // 自适应间距：单个间隙最多额外撑开多少 px 用于吸收跨列留白（0 = 关闭）
+	};
+
 	// 顶栏标题配置
 	navbarTitle?: {
 		mode?: "text-icon" | "logo"; // 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo

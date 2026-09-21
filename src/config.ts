@@ -105,6 +105,22 @@ export const siteConfig: SiteConfig = {
 		devices: false, // 设备
 	},
 
+	// 相册瀑布流：超宽横图跨列（26.09.21 新增）
+	// 原理：layout=masonry 的相册改由脚本用 CSS Grid + 行跨排版（方案 B），
+	//       宽高比 ≥ minAspect 的照片最多跨 maxSpan 列，其余仍是一列一张；
+	//       gapAdaptive 把跨列「必须等两列都空出来」留下的空白就近摊进相片间距，
+	//       避免跨列图上下出现整块空白。
+	// 关闭 enable 后：不加载任何排版脚本，相册回到原来的 CSS 多列瀑布流。
+	albumsMasonrySpan: {
+		enable: true, // 总开关
+		maxSpan: 2, // 最多跨 2 列（钳制到 1-2）
+		minAspect: 2.2, // 触发跨列的最小宽高比：Acg2 的 4.35:1 命中，普通 16:9（1.78）不命中
+		// 自适应间距：单个间隙最多额外撑开多少 px（0 = 关闭该特性）。
+		// 48 ≈ 基础间距(16px) 的 3 倍：Acg2 桌面 4 列下能把跨列留下的 193px 空洞摊完
+		// （代价：该列间隙变成 64px）。调小到 16/32 则间隙更紧，但会留下可见空洞。
+		gapAdaptive: 48,
+	},
+
 	// 顶栏标题（导航栏左侧）
 	navbarTitle: {
 		mode: "logo", // 显示模式："text-icon" 图标+文本 | "logo" 仅 Logo
@@ -615,4 +631,3 @@ export const umamiConfig = {
 <script defer src="XXXX.XXX" data-website-id="ABCD1234"></script>
   `.trim(), // 要插入的统计脚本（无需再去 Layout 中插入）
 } as const;
-

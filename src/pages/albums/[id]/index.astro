@@ -57,6 +57,23 @@ const galleryItems = album.photos.map((photo: Photo, index: number) => {
 				: undefined,
 	};
 });
+
+// 26.09.21：超宽横图跨列（方案 B：CSS Grid + 行跨）参数下发。
+// 只在「masonry 相册 + 总开关打开」时下发 data-* 参数；运行期脚本
+// （utils/photo-masonry-grid.ts）读到才接管排版，否则直接退出，
+// 页面保持原来的 CSS 多列瀑布流（无 JS 也照旧可读）。
+const spanConfig = siteConfig.albumsMasonrySpan;
+const spanMax = Math.min(2, Math.max(1, Math.round(spanConfig?.maxSpan ?? 1)));
+const spanActive =
+	!!spanConfig?.enable &&
+	album.layout === "masonry" &&
+	spanMax >= 2 &&
+	album.photos.length > 1;
+const spanMinAspect = Math.max(1, Number(spanConfig?.minAspect ?? 2.2) || 2.2);
+const spanGapAdaptive = Math.max(
+	0,
+	Math.round(Number(spanConfig?.gapAdaptive ?? 0) || 0),
+);
 ---
 
 <MainGridLayout title={album.title} description={album.description || album.title}>
@@ -121,6 +138,10 @@ const galleryItems = album.photos.map((photo: Photo, index: number) => {
         class={`photo-gallery ${album.layout === 'masonry' ? 'masonry-layout' : 'grid-layout'}`}
         data-layout={album.layout || 'grid'}
         data-columns={album.columns || 3}
+        data-span-enable={spanActive ? "1" : undefined}
+        data-span-max={spanActive ? String(spanMax) : undefined}
+        data-span-min-aspect={spanActive ? String(spanMinAspect) : undefined}
+        data-gap-adaptive={spanActive ? String(spanGapAdaptive) : undefined}
       >
         {galleryItems.map(({ photo, index, key, dimKnown, aspectStyle }) => (
           <figure 
@@ -327,6 +348,30 @@ const galleryItems = album.photos.map((photo: Photo, index: number) => {
     .masonry-layout .photo-item {
       transition: none;
     }
+  }
+
+  /* ============ 26.09.21：超宽横图跨列（方案 B：Grid 行跨） ============
+     默认不生效：只有运行期脚本（utils/photo-masonry-grid.ts）算好跨列数与行号后，
+     才给容器加 [data-masonry="grid"]。没有 JS / 配置关闭 / 参数缺失 → 仍是上面的
+     CSS 多列瀑布流，行为与改动前完全一致。
+     行间距不靠 row-gap，而是由脚本把「间距」算进每一项的行跨里（grid-auto-rows 的整数倍），
+     因此不会多出半格空白；跨列项盒子高度仍由 aspect-ratio 决定（align-self: start），
+     不会被行跨撑高，所以图不会被裁。 */
+  .masonry-layout[data-masonry="grid"] {
+    display: grid; /* grid 容器会忽略 columns，多列布局自动让位 */
+    grid-template-columns: repeat(var(--masonry-cols, 3), minmax(0, 1fr));
+    column-gap: 1rem;
+    row-gap: 0;
+    grid-auto-rows: 4px; /* 行量化单位：与 photo-masonry-grid.ts 的 ROW_UNIT 一致 */
+    align-items: start;
+  }
+
+  .masonry-layout[data-masonry="grid"] .photo-item {
+    break-inside: auto;
+    width: auto;
+    margin-bottom: 0;
+    align-self: start; /* 关键：不拉伸，盒高只由 aspect-ratio 决定 */
+    transition: none; /* 重排是内部行为，不做比例过渡，避免整块抖动 */
   }
 </style>
 

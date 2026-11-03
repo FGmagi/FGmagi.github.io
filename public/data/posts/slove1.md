@@ -12,7 +12,7 @@ pinned: false
 
 description: "暴力出奇迹，打表出AC"
 
-tags: [“技术”,"笔记"]
+tags: ["技术","笔记"]
 
 width: 0.5
 

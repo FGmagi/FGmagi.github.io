@@ -7,7 +7,7 @@ export interface FriendItem {
 	title: string;
 	imgurl: string;
 	desc: string;
-	siteurl: string;
+	siteurl: string | string[];
 	tags: string[];
 	// 26.11.03：可选的第二个跳转网页字段（与 utils/friend-links.ts 的 FriendRawItem 保持一致）
 	first?: string;

@@ -99,6 +99,52 @@
 				noResults.classList.add("hidden");
 				friendsGrid.classList.remove("hidden");
 			}
+
+			// 26.11.03：筛选会改变可见卡片，显示状态变化后重新判定 desc 滚动链与按钮图标
+			updateDynamicLayout();
+		}
+
+		// 26.11.03：desc 滚动链控制——只有「电脑端（≥768px）且 desc 内容超过两行、确实能滚动」时，
+		// 才给该 desc 加 .friend-desc--scroll-lock（overscroll-behavior: contain），
+		// 避免滚到 desc 边界后带动整页；移动端与两行内不滚动的卡片不加，滚动仍按默认传递给页面。
+		function updateDescScrollLock() {
+			var isDesktop = window.matchMedia
+				? window.matchMedia("(min-width: 768px)").matches
+				: window.innerWidth >= 768;
+			var descs = document.querySelectorAll(".friend-desc");
+			for (var d = 0; d < descs.length; d++) {
+				var descEl = descs[d];
+				// 允许 1px 亚像素误差；卡片被筛选隐藏（display:none）时高度均为 0，同样不锁定
+				var scrollable = descEl.scrollHeight - descEl.clientHeight > 1;
+				if (isDesktop && scrollable) {
+					descEl.classList.add("friend-desc--scroll-lock");
+				} else {
+					descEl.classList.remove("friend-desc--scroll-lock");
+				}
+			}
+		}
+
+		// 26.11.03：跳转按钮名称过长时自动去掉外链图标——带图标时名称被截断（scrollWidth > clientWidth），
+		// 就给按钮加 .is-text-only 隐藏图标，把宽度让给名称（e.g. z-library 的自定义名称「推特发布页」）。
+		function updateVisitIconVisibility() {
+			var links = document.querySelectorAll(".friend-visit-link");
+			for (var k = 0; k < links.length; k++) {
+				var link = links[k];
+				var label = link.querySelector(".friend-visit-label");
+				if (!label) continue;
+				// 先还原图标再测量（隐藏状态会改变可用宽度，否则无法退出该状态）
+				link.classList.remove("is-text-only");
+				// 允许 1px 亚像素误差
+				if (label.scrollWidth - label.clientWidth > 1) {
+					link.classList.add("is-text-only");
+				}
+			}
+		}
+
+		// 26.11.03：随布局变化（初始化 / 窗口尺寸 / 字体加载 / 筛选）统一刷新两类自适应样式
+		function updateDynamicLayout() {
+			updateDescScrollLock();
+			updateVisitIconVisibility();
 		}
 
 		// 搜索功能
@@ -128,17 +174,33 @@
 		]);
 
 		// 标签筛选
+		// 26.11.03：「全部」按钮（模板里 data-tag="all"），用于「再次点击已点亮标签 → 回到全部」
+		var allTagButton = null;
+		for (var t = 0; t < tagFilters.length; t++) {
+			if ((tagFilters[t].getAttribute("data-tag") || "all") === "all") {
+				allTagButton = tagFilters[t];
+				break;
+			}
+		}
+
 		for (var i = 0; i < tagFilters.length; i++) {
 			((button) => {
 				var clickHandler = () => {
+					var tag = button.getAttribute("data-tag") || "all";
+					// 26.11.03：再次单击已点亮的标签 → 该标签自动熄灭并点亮「全部」（回到不筛选状态）
+					var target =
+						tag !== "all" && button.classList.contains("active")
+							? allTagButton || button
+							: button;
+
 					// 更新选中状态
 					for (var j = 0; j < tagFilters.length; j++) {
 						var btn = tagFilters[j];
 						btn.classList.remove("active");
 					}
-					button.classList.add("active");
+					target.classList.add("active");
 
-					currentTag = button.getAttribute("data-tag") || "all";
+					currentTag = target.getAttribute("data-tag") || "all";
 					filterFriends();
 				};
 				button.addEventListener("click", clickHandler);
@@ -184,6 +246,25 @@
 					clickHandler,
 				]);
 			})(copyButtons[i]);
+		}
+
+		// 26.11.03：初始化自适应样式；窗口尺寸变化（换行列数变化）或字体加载完成（换行位置变化）后复查
+		updateDynamicLayout();
+		var layoutResizeTimer = null;
+		var layoutResizeHandler = () => {
+			if (layoutResizeTimer) clearTimeout(layoutResizeTimer);
+			layoutResizeTimer = setTimeout(updateDynamicLayout, 150);
+		};
+		window.addEventListener("resize", layoutResizeHandler);
+		window.friendsPageState.eventListeners.push([
+			window,
+			"resize",
+			layoutResizeHandler,
+		]);
+		if (document.fonts && document.fonts.ready) {
+			document.fonts.ready
+				.then(updateDynamicLayout)
+				.catch(() => {});
 		}
 
 		window.friendsPageState.initialized = true;

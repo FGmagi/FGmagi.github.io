@@ -35,7 +35,6 @@ interface RawFriend extends FriendRawItem {
 	title: string;
 	imgurl: string;
 	desc: string;
-	siteurl: string;
 	tags: string[];
 }
 const friendsJsonPath = path.join(process.cwd(), dataFiles.friendsJson);
@@ -61,6 +60,8 @@ const friendsList = rawFriends
 		flag: typeof item.flag === "number" ? item.flag : 1,
 		...parseFriendLinks(item, friendLabels, useFriendJsonNames),
 	}))
+	// 26.11.03：siteurl（含数组语法糖）解析后一个链接都没有、且无 first/second_siteurl 覆盖值时，该友链不显示
+	.filter((item) => item.hasUrl)
 	.sort((a, b) => {
 		if (a.flag !== b.flag) return a.flag - b.flag;
 		return a.id - b.id;
@@ -242,18 +243,18 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 											title={btn.label}
 											style={`--friend-btn-hue:calc(var(--hue, ${FRIEND_FALLBACK_HUE}) + ${btn.hueOffset})`}
 											class:list={[
-												"flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-white",
+												"friend-visit-link flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-white",
 												"bg-[oklch(0.70_0.14_var(--friend-btn-hue))] dark:bg-[oklch(0.75_0.14_var(--friend-btn-hue))]",
 												"hover:brightness-110 active:scale-95 transition-all duration-200",
 												"font-medium text-sm",
 												item.buttons.length > 1 ? "min-w-0 px-2" : "px-4",
 											]}
 										>
-											<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<svg class="friend-visit-icon w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
 													d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
 											</svg>
-											<span class="truncate">{btn.label}</span>
+											<span class="friend-visit-label truncate">{btn.label}</span>
 										</a>
 									))}
 									{item.copyUrl && (
@@ -321,16 +322,26 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 	.friend-card:nth-child(5) { animation-delay: 0.25s; }
 	.friend-card:nth-child(6) { animation-delay: 0.3s; }
 
-	/* 26.11.03：desc 固定两行高（text-sm 行高 1.25rem，随根字号缩放；原为 line-clamp-2 两行）。
-	   desc 超过两行时在卡片内部滚动查看全文：滚动条常隐（无滑块可拖，仅滚轮/触控滚动），
-	   overscroll-behavior 防止滚到边界后带动整页滚动。 */
+	/* 26.11.03：desc 固定两行高（text-sm 行高 1.25rem，随根字号缩放）。
+	   desc 超过两行时在卡片内部滚动查看全文：滚动条常隐（无滑块可拖，仅滚轮/触控滚动）。
+	   滚动链拦截（overscroll-behavior: contain）不写死——只有「电脑端（≥768px）且 desc 确实超过两行、可滚动」
+	   时才由 /js/friends-page-handler.js 动态加 .friend-desc--scroll-lock；移动端与两行内不滚动的卡片不加。 */
 	.friend-desc {
 		height: calc(1.25rem * 2);
 		overflow-y: auto;
 		overflow-x: hidden;
-		overscroll-behavior: contain;
 		scrollbar-width: none;
 		-ms-overflow-style: none;
+	}
+
+	.friend-desc.friend-desc--scroll-lock {
+		overscroll-behavior: contain;
+	}
+
+	/* 26.11.03：跳转按钮名称过长（带图标时被截断）时，由 /js/friends-page-handler.js 给按钮加
+	   .is-text-only，自动隐藏外链图标，把宽度让给名称（名称能完整显示时保留图标）。 */
+	.friend-visit-link.is-text-only .friend-visit-icon {
+		display: none;
 	}
 
 	.friend-desc::-webkit-scrollbar {

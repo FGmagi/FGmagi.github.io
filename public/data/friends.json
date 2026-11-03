@@ -23,7 +23,8 @@
 		"title": "z-library",
 		"imgurl": "https://www.google.com/s2/favicons?domain=z-library.sk&sz=128",
 		"desc": "全球最大的电子图书馆（至少目前链接有效）",
-		"siteurl": "https://z-library.sk",
+		"siteurl": ["https://z-library.sk","https://x.com/Z_Lib_official?lang=en"],
+		"second":"推特发布页",
 		"tags": ["资源网站"]
 	},
 	{
@@ -49,14 +50,14 @@
 		"flag": 1,
 		"title": "白嫖者联盟",
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://www.gamer520.com/&sz=128",
-		"desc": "单机游戏，问就老佛爷已经付过钱了，可惜百度网盘",
+		"desc": "单机游戏，问就老佛爷已经付过钱了，可惜百度网盘。",
 		"siteurl": "https://www.gamer520.com/",
 		"tags": ["资源网站"],
 		"first":"访问",
 		"first_active":true,		
 		"first_color":"0",
 		"first_siteurl": "https://www.gamer520.com/",
-		"second":"公告栏",
+		"second":"发布页",
 		"second_active":true,
 		"second_color":"180",
 		"second_siteurl":"https://www.laoquzhang.com/"
@@ -75,9 +76,53 @@
 		"flag": 1,
 		"title": "稻荷gal",
 		"imgurl": "https://www.google.com/s2/favicons?domain=inarigal.com/&sz=128",
-		"desc": "萌系多，有国G，要梯子。",
+		"desc": "萌系多，有国G，要梯子",
 		"siteurl": "https://inarigal.com/",
 		"tags": ["acg", "资源网站"]
+	},
+	{
+		"id": 12,
+		"flag": 1,
+		"title": "DeepSeek",
+		"imgurl": "https://www.google.com/s2/favicons?domain=https://chat.deepseek.com/&sz=128",
+		"desc": "平时叫梁圣，工作日请叫梁区",
+		"siteurl": "https://chat.deepseek.com/",
+		"tags": ["AI","agent"]
+	},	
+	{
+		"id": 13,
+		"flag": 1,
+		"title": "ChatGPT",
+		"imgurl": "https://www.google.com/s2/favicons?domain=https://chatgpt.com/&sz=128",
+		"desc": "这玩意查梯子纯净度，太脏了降智严重",
+		"siteurl": "https://chatgpt.com/",
+		"tags": ["AI","agent"]
+	},	
+	{
+		"id": 14,
+		"flag": 1,
+		"title": "Gemini",
+		"imgurl": "https://www.google.com/s2/favicons?domain=https://gemini.google.com/&sz=128",
+		"desc": "本质美国豆包，但综合能力还是比你豆姐强多了",
+		"siteurl": "https://gemini.google.com/",
+		"tags": ["AI","agent"]
+	},	
+	{
+		"id": 15,
+		"flag": 1,
+		"title": "Grok",
+		"imgurl": "https://www.google.com/s2/favicons?domain=https://grok.com/&sz=128",
+		"desc": "好兄弟，啥都聊。但自从收费后，就再也不是好兄弟了",
+		"siteurl": "https://grok.com/",
+		"tags": ["AI","agent"]
+	},	
+	{
+		"id": 16,
+		"flag": 1,
+		"title": "Steam",
+		"imgurl": "https://www.google.com/s2/favicons?domain=https://s.team/&sz=128",
+		"desc": "世界最大游戏（购物）平台——",
+		"siteurl": "https://s.team/",
+		"tags": ["AI","agent"]
 	}
-
 ]

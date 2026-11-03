@@ -16,7 +16,7 @@ tags: [环境配置]
 
 width: 0.5
 
-category: "技术"
+category: 技术
 
 licenseName: "MIT"
 

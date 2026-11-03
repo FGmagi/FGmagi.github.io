@@ -4,7 +4,7 @@ import type { Translation } from "../translation";
 export const zh_TW: Translation = {
 	[Key.home]: "首頁",
 	[Key.about]: "關於我們",
-	[Key.archive]: "全部", // 26.08.30修改，内容为：归档页文案由 歸檔 改为 全部
+	[Key.archive]: "文檔", 
 	[Key.search]: "搜尋",
 	[Key.other]: "其他",
 

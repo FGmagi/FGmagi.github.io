@@ -34,6 +34,9 @@ export const en: Translation = {
 	[Key.friendsFilterAll]: "All",
 	[Key.friendsNoResults]: "No matching friends found",
 	[Key.friendsVisit]: "Visit",
+	// 26.11.03: dual-site friend link buttons (left / right)
+	[Key.friendsVisitMain]: "Main",
+	[Key.friendsVisitBackup]: "Backup",
 	[Key.friendsCopyLink]: "Copy Link",
 	[Key.friendsCopySuccess]: "Copied",
 	[Key.friendsTags]: "Tags",

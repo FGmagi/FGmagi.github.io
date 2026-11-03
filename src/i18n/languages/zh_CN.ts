@@ -34,6 +34,9 @@ export const zh_CN: Translation = {
 	[Key.friendsFilterAll]: "全部",
 	[Key.friendsNoResults]: "未找到匹配的友链",
 	[Key.friendsVisit]: "访问",
+	// 26.11.03：友链双站点按钮文案（左侧/右侧）
+	[Key.friendsVisitMain]: "访问",
+	[Key.friendsVisitBackup]: "备用",
 	[Key.friendsCopyLink]: "复制链接",
 	[Key.friendsCopySuccess]: "已复制",
 	[Key.friendsTags]: "标签",

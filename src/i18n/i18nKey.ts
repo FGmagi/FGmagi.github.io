@@ -54,6 +54,9 @@ enum I18nKey {
 	friendsFilterAll = "friendsFilterAll",
 	friendsNoResults = "friendsNoResults",
 	friendsVisit = "friendsVisit",
+	// 26.11.03：友链双站点按钮文案（main=左侧/第一个，backup=右侧/第二个）
+	friendsVisitMain = "friendsVisitMain",
+	friendsVisitBackup = "friendsVisitBackup",
 	friendsCopyLink = "friendsCopyLink",
 	friendsCopySuccess = "friendsCopySuccess",
 	friendsTags = "friendsTags",

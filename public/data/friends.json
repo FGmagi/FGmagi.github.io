@@ -48,10 +48,18 @@
 		"id": 7,
 		"flag": 1,
 		"title": "白嫖者联盟",
-		"imgurl": "",
-		"desc": "单机游戏，问就老佛爷已经付过钱了，可惜百度网盘\n失效参考https://www.laoquzhang.com/",
+		"imgurl": "https://www.google.com/s2/favicons?domain=https://www.gamer520.com/&sz=128",
+		"desc": "单机游戏，问就老佛爷已经付过钱了，可惜百度网盘",
 		"siteurl": "https://www.gamer520.com/",
-		"tags": ["资源网站"]
+		"tags": ["资源网站"],
+		"first":"访问",
+		"first_active":true,		
+		"first_color":"0",
+		"first_siteurl": "https://www.gamer520.com/",
+		"second":"公告栏",
+		"second_active":true,
+		"second_color":"180",
+		"second_siteurl":"https://www.laoquzhang.com/"
 	},
 	{
 		"id": 51,
@@ -70,6 +78,6 @@
 		"desc": "萌系多，有国G，要梯子。",
 		"siteurl": "https://inarigal.com/",
 		"tags": ["acg", "资源网站"]
-	},
+	}
 
 ]

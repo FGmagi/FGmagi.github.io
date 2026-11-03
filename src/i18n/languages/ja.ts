@@ -34,6 +34,9 @@ export const ja: Translation = {
 	[Key.friendsFilterAll]: "すべて",
 	[Key.friendsNoResults]: "一致する友達が見つかりません",
 	[Key.friendsVisit]: "訪問",
+	// 26.11.03：友達リンクの 2 サイトボタン文言（左／右）
+	[Key.friendsVisitMain]: "訪問",
+	[Key.friendsVisitBackup]: "予備",
 	[Key.friendsCopyLink]: "リンク",
 	[Key.friendsCopySuccess]: "コピーしました",
 	[Key.friendsTags]: "タグ",

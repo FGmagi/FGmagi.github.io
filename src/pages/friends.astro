@@ -5,6 +5,11 @@ import { dataFiles, siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import {
+	type FriendLabelSet,
+	type FriendRawItem,
+	parseFriendLinks,
+} from "../utils/friend-links";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -23,7 +28,8 @@ const { Content } = await render(friendsPost);
 
 // 26.09.02 [7]：友链数据路径改读 config（dataFiles.friendsJson，网页路径 /data/friends.json）；按 flag 升序、相同 flag 按 id 升序排序
 // friends.json 单条结构（flag 可选，缺失时归入默认分组）——用于给 JSON.parse 结果补类型，消除隐式 any
-interface RawFriend {
+// 26.11.03：新增 first/second 等可选字段的类型（见 utils/friend-links.ts），支持单卡片两个跳转网页
+interface RawFriend extends FriendRawItem {
 	id: number;
 	flag?: number;
 	title: string;
@@ -36,10 +42,24 @@ const friendsJsonPath = path.join(process.cwd(), dataFiles.friendsJson);
 const rawFriends = JSON.parse(
 	fs.readFileSync(friendsJsonPath, "utf-8"),
 ) as RawFriend[];
+
+// 26.11.03：按钮文案/启用判定/色相偏移统一由 parseFriendLinks 决策
+// - 仅简中、繁中采用 friends.json 里的 first/second 自定义名称；ja/en 按 i18n 固定文案（訪問/Visit、訪問/予備、Main/Backup）
+const FRIEND_LANG = (siteConfig.lang || "en").toLowerCase().replace(/-/g, "_");
+const useFriendJsonNames = FRIEND_LANG === "zh_cn" || FRIEND_LANG === "zh_tw";
+const friendLabels: FriendLabelSet = {
+	visit: i18n(I18nKey.friendsVisit), // 单站点默认名
+	main: i18n(I18nKey.friendsVisitMain), // 双站点左侧
+	backup: i18n(I18nKey.friendsVisitBackup), // 双站点右侧 / 单站点备用
+};
+// var(--hue) 在构建期尚不存在时的兜底值（运行时主题色由 setting-utils 写入）
+const FRIEND_FALLBACK_HUE = siteConfig.themeColor?.hue ?? 185;
+
 const friendsList = rawFriends
 	.map((item) => ({
 		...item,
 		flag: typeof item.flag === "number" ? item.flag : 1,
+		...parseFriendLinks(item, friendLabels, useFriendJsonNames),
 	}))
 	.sort((a, b) => {
 		if (a.flag !== b.flag) return a.flag - b.flag;
@@ -180,20 +200,23 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 												 group-hover:text-[var(--primary)] transition-colors duration-200">
 										{item.title}
 									</h3>
-									<a 
-										href={item.siteurl} 
-										target="_blank" 
-										rel="noopener noreferrer"
-										class="text-xs text-black/50 dark:text-white/50 hover:text-[var(--primary)] 
-												 truncate block transition-colors duration-200"
-									>
-										{new URL(item.siteurl).hostname}
-									</a>
+									{/* 26.11.03：链接改用解析后的有效站点地址（first_siteurl 优先覆盖 siteurl），hostname 解析失败时回退原串 */}
+									{item.siteUrl && (
+										<a 
+											href={item.siteUrl} 
+											target="_blank" 
+											rel="noopener noreferrer"
+											class="text-xs text-black/50 dark:text-white/50 hover:text-[var(--primary)] 
+													 truncate block transition-colors duration-200"
+										>
+											{item.hostname}
+										</a>
+									)}
 								</div>
 							</div>
 
-							<!-- 描述 -->
-							<p class="text-sm text-black/60 dark:text-white/60 mb-4 line-clamp-2 min-h-[2.5rem]">
+							<!-- 描述：固定三行高度，超出部分在卡片内滚动（滚动条常隐，仅滚轮/触控滚动） -->
+							<p class="friend-desc text-sm text-black/60 dark:text-white/60 mb-4">
 								{item.desc}
 							</p>
 
@@ -208,39 +231,49 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 								))}
 							</div>
 
-							<!-- 操作按钮 -->
-							<div class="flex gap-2">
-								<a 
-									href={item.siteurl}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="flex-1 flex items-center justify-center gap-2 px-4 py-2 
-											 rounded-lg bg-[var(--primary)] text-white 
-											 hover:bg-[var(--primary)]/90 
-											 active:scale-95 transition-all duration-200
-											 font-medium text-sm"
-								>
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-											d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-									</svg>
-									{i18n(I18nKey.friendsVisit)}
-								</a>
-								<button 
-									class="copy-link-btn px-3 py-2 rounded-lg 
-											 bg-[var(--btn-regular-bg)] 
-											 hover:bg-[var(--btn-regular-bg-hover)] 
-											 active:scale-95 transition-all duration-200
-											 text-black/70 dark:text-white/70"
-									data-url={item.siteurl}
-									title={i18n(I18nKey.friendsCopyLink)}
-								>
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-											d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-									</svg>
-								</button>
-							</div>
+							<!-- 操作按钮：单站点=一个跳转按钮；双站点=左右等宽两个按钮（各占原按钮宽度一半，高度与位置不变） -->
+							{item.buttons.length > 0 && (
+								<div class="flex gap-2">
+									{item.buttons.map((btn) => (
+										<a 
+											href={btn.url}
+											target="_blank"
+											rel="noopener noreferrer"
+											title={btn.label}
+											style={`--friend-btn-hue:calc(var(--hue, ${FRIEND_FALLBACK_HUE}) + ${btn.hueOffset})`}
+											class:list={[
+												"flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-white",
+												"bg-[oklch(0.70_0.14_var(--friend-btn-hue))] dark:bg-[oklch(0.75_0.14_var(--friend-btn-hue))]",
+												"hover:brightness-110 active:scale-95 transition-all duration-200",
+												"font-medium text-sm",
+												item.buttons.length > 1 ? "min-w-0 px-2" : "px-4",
+											]}
+										>
+											<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+													d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+											</svg>
+											<span class="truncate">{btn.label}</span>
+										</a>
+									))}
+									{item.copyUrl && (
+										<button 
+											class="copy-link-btn px-3 py-2 rounded-lg 
+													 bg-[var(--btn-regular-bg)] 
+													 hover:bg-[var(--btn-regular-bg-hover)] 
+													 active:scale-95 transition-all duration-200
+													 text-black/70 dark:text-white/70"
+											data-url={item.copyUrl}
+											title={i18n(I18nKey.friendsCopyLink)}
+										>
+											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+													d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+											</svg>
+										</button>
+									)}
+								</div>
+							)}
 						</div>
 
 						<!-- 悬停装饰效果 -->
@@ -287,6 +320,24 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 	.friend-card:nth-child(4) { animation-delay: 0.2s; }
 	.friend-card:nth-child(5) { animation-delay: 0.25s; }
 	.friend-card:nth-child(6) { animation-delay: 0.3s; }
+
+	/* 26.11.03：desc 固定两行高（text-sm 行高 1.25rem，随根字号缩放；原为 line-clamp-2 两行）。
+	   desc 超过两行时在卡片内部滚动查看全文：滚动条常隐（无滑块可拖，仅滚轮/触控滚动），
+	   overscroll-behavior 防止滚到边界后带动整页滚动。 */
+	.friend-desc {
+		height: calc(1.25rem * 2);
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.friend-desc::-webkit-scrollbar {
+		width: 0;
+		height: 0;
+		display: none;
+	}
 
 	@keyframes fadeInUp {
 		from {

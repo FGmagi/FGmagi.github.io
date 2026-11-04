@@ -464,12 +464,18 @@ export const postCardHoverConfig: PostCardHoverConfig = {
  * 隐藏：短暂下滑 + 透明度递减到 0；显示：从下方短暂上滑到原位 + 透明度递增到 1。
  * 同时作用于首页标签筛选卡与 /friends/ 的标签过滤。
  * · enable=false：即时显隐（无动画）；
- * · 系统开启「减少动效」（prefers-reduced-motion: reduce）时自动退化为即时显隐。
+ * · 系统开启「减少动效」（prefers-reduced-motion: reduce）时**不再整段禁用**：
+ *   保留淡入淡出、把位移收成 0（见 src/scripts/card-filter-visibility.js）。
  */
 export const cardFilterAnimationConfig: CardFilterAnimationConfig = {
 	enable: true, // 是否启用（false = 即时显示/隐藏）
 	duration: 200, // 单张卡片过渡时长（ms）
 	offset: 10, // 位移幅度（px）：正值 = 隐藏时向下、显示时从下方上滑
+	// 26.11.05：默认 **不** 遵循系统「减少动效」——
+	// 站点主人明确要求这个滑动效果，而 Windows「动画效果」关闭 / 远程桌面 / 部分浏览器
+	// 会全局置 reduce，之前那版会把位移归零，表现为「只有淡入淡出、没有滑动」。
+	// 需要无障碍优先时改成 true（则只保留淡入淡出）。
+	respectReducedMotion: false,
 };
 
 export const musicPlayerConfig: MusicPlayerConfig = {

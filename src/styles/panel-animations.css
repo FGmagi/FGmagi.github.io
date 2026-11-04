@@ -28,12 +28,16 @@
     visibility 0s linear 0s;
 }
 
-/* 打开：立即可见、不位移 */
+/* 打开：状态复位。
+   ⚠ 26.11.05 修「隐藏面板仍能点」：这里**绝不能**写 `pointer-events: auto` / `visibility: visible`。
+   `#wallpaper-mode-panel` 的结构是「外层 .float-panel-closed 包裹内层 .card-base.float-panel」，
+   内层不是 closed，于是这两条声明会把外层关闭态下已经失效的命中区域重新打开：
+   面板虽然 opacity:0 看不见，却仍然浮在页面上拦截点击 —— 实测文章页右上角「日期日历图标」的点击
+   全被它吃掉，命中的是面板里的「全屏 / 简洁 / 夜晚模式」按钮，表现成「点日历图标却切换了模式/主题」。
+   现在只复位透明与位移，可见性与命中由下面的 .float-panel-closed 统一负责（并会向子孙继承）。 */
 .float-panel:not(.float-panel-closed) {
   opacity: 1;
   transform: none;
-  pointer-events: auto;
-  visibility: visible;
 }
 
 /* 关闭：轻微上移 + 微缩，最后才 hidden（等过渡播完再把 visibility 落下） */
@@ -48,6 +52,14 @@
     background-color var(--mo-base, 220ms) linear,
     backdrop-filter var(--mo-base, 220ms) linear,
     visibility 0s linear var(--mo-base, 220ms);
+}
+
+/* 嵌套面板兜底：外层处于关闭态时，内层 .float-panel 必须一起不可见、不可点。
+   ⚠ 只收敛「内层浮层」，不给 `.float-panel-closed *` 全体加 hidden ——
+   那会让关闭过程里的内容瞬间消失，只剩空壳在淡出。 */
+.float-panel-closed .float-panel {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* 各面板的展开锚点（方向感：从触发它的按钮附近长出来） */

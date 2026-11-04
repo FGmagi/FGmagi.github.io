@@ -51,10 +51,12 @@ const {
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
     <!-- publish date -->
+    <!-- 26.11.05：日期旁的日历图标是纯装饰 —— aria-hidden + pointer-events:none，
+         不参与命中测试、没有 hover/active 反馈，避免与浮层/导航栏抢点击。 -->
     <div class="flex items-center meta-date">
         {!hideMetaIcons && (
-            <div class="meta-icon">
-                <Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl"></Icon>
+            <div class="meta-icon" aria-hidden="true">
+                <Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl pointer-events-none"></Icon>
             </div>
         )}
         <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(published)}</span>
@@ -63,8 +65,8 @@ const {
     <!-- update date -->
     {!hideUpdateDate && updated && updated.getTime() !== published.getTime() && (
         <div class="flex items-center">
-            <div class="meta-icon">
-                <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl"></Icon>
+            <div class="meta-icon" aria-hidden="true">
+                <Icon name="material-symbols:edit-calendar-outline-rounded" class="text-xl pointer-events-none"></Icon>
             </div>
             <span class="text-50 text-sm font-medium">{formatDateToYYYYMMDD(updated)}</span>
         </div>

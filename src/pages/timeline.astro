@@ -329,15 +329,17 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
     overflow: hidden;
   }
   
-  /* 时间线节点动画 */
-  @keyframes pulse {
+  /* 时间线节点动画
+     26.11.05：关键帧改名 timeline-pulse —— 全站原有两个同名 @keyframes pulse
+     （另一个在 MusicPlayer.svelte），同页/同包加载时会互相覆盖。 */
+  @keyframes timeline-pulse {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
     70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
   }
   
   .timeline-node {
-    animation: pulse 2s infinite;
+    animation: timeline-pulse 2s infinite;
   }
   
   /* 优化夜间模式下的原生滚动条样式 */

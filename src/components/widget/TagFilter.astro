@@ -135,76 +135,22 @@ const style = Astro.props.style;
 						}
 					}
 				}
-				setCardVisible(card, visible, animate !== false);
-			}
-		}
-
-		// 26.11.05：卡片「筛选显隐」动效（配置见 config.ts 的 cardFilterAnimationConfig，
-		// 由 Layout.astro 解析期写入 window.__cardFilterAnim 与 --card-filter-* 变量）。
-		function getAnimConfig() {
-			var cfg = window.__cardFilterAnim || {};
-			var reduce =
-				window.matchMedia &&
-				window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-			var duration =
-				typeof cfg.duration === 'number' ? cfg.duration : 200;
-			return {
-				enable: cfg.enable !== false && !reduce && duration > 0,
-				duration: duration,
-			};
-		}
-
-		// 26.11.05：逐卡显隐——
-		//   隐藏：加 .card-filter-hidden（下滑 + 淡出），过渡结束后再 display:none；
-		//   显示：先 display 回来，把「下方 + 透明」的起点落进样式快照，再摘类 ⇒ 上滑 + 淡入到原位。
-		//   卡片隐藏时同步隐藏紧随其后的移动端分隔线，恢复时一并恢复。
-		function setCardVisible(card, visible, animate) {
-			var cfg = getAnimConfig();
-			var next = card.nextElementSibling;
-			var divider =
-				next && next.classList.contains('post-card-divider') ? next : null;
-			if (!card.classList.contains('card-filter-anim')) {
-				card.classList.add('card-filter-anim');
-			}
-
-			if (visible) {
-				var wasHidden =
-					card.style.display === 'none' ||
-					card.classList.contains('card-filter-hidden');
-				if (!wasHidden) {
-					if (divider) divider.style.display = '';
-					return;
-				}
-				window.clearTimeout(card.__filterHideTimer);
-				card.style.display = '';
-				if (divider) divider.style.display = '';
-				if (animate && cfg.enable) {
-					card.classList.add('card-filter-hidden');
-					void card.offsetHeight;
-					card.classList.remove('card-filter-hidden');
+				// 26.11.05：逐卡显隐统一交给 src/scripts/card-filter-visibility.js（window.CardFilter），
+				// 与 /friends/ 的过滤共用同一份实现；脚本尚未执行时退化为即时显隐。
+				var next = card.nextElementSibling;
+				var divider =
+					next && next.classList.contains('post-card-divider')
+						? next
+						: null;
+				if (window.CardFilter) {
+					window.CardFilter.apply(card, visible, {
+						divider: divider,
+						animate: animate !== false,
+					});
 				} else {
-					card.classList.remove('card-filter-hidden');
+					card.style.display = visible ? '' : 'none';
+					if (divider) divider.style.display = visible ? '' : 'none';
 				}
-				return;
-			}
-
-			// 隐藏
-			if (card.style.display === 'none') {
-				if (divider) divider.style.display = 'none';
-				return;
-			}
-			if (divider) divider.style.display = 'none';
-			card.classList.add('card-filter-hidden');
-			if (animate && cfg.enable) {
-				window.clearTimeout(card.__filterHideTimer);
-				card.__filterHideTimer = window.setTimeout(function () {
-					// 期间又被显示（类已摘）就不要隐藏
-					if (card.classList.contains('card-filter-hidden')) {
-						card.style.display = 'none';
-					}
-				}, cfg.duration + 20);
-			} else {
-				card.style.display = 'none';
 			}
 		}
 

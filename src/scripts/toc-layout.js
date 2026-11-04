@@ -1,6 +1,9 @@
 /**
  * 目录（TOC）侧栏布局控制器（客户端，仅浏览器）。任务二 B + C 的实现载体。
  *
+ * 26.11.05：`prefers-reduced-motion` 判定改为复用 src/utils/motion-preference.ts，
+ * 不再在本文件里各写一份（此前全站有 4 处重复实现，口径容易漂移）。
+ *
  * 职责一（宽度模式 C）：写入 `--viewport-w`（clientWidth，排除滚动条），并判定
  *   `html[data-toc-layout="desktop" | "narrow"]`：
  *   - 仅「含 TOC 的桌面文章页」参与收窄；首页/列表/相册等页面不参与（≥1024 时移除属性，
@@ -21,6 +24,8 @@
  * 模式翻转（wallpaper-mode-change、simple-mode-change）/ TOC 初始化后 300ms。**不监听 scroll**。
  * 计算完成后派发 `toc:relayout`，供 TOC 组件重新居中高亮项。
  */
+
+import { prefersReducedMotion } from "../utils/motion-preference";
 
 const NAV_GAP = 16; // 导航栏底部与 TOC 顶部间距（px）
 const DEFAULT_ANCHOR_OFFSET = 12; // 锚点落点与导航栏底边的间距兜底值（同 config.toc.navigation.offset）
@@ -158,13 +163,6 @@ function applyLayoutMode() {
 const SPRING_EASE = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 const RAIL_ANIM_MS = 340;
 let railAnimTimers = [];
-
-function prefersReducedMotion() {
-	return !!(
-		window.matchMedia &&
-		window.matchMedia("(prefers-reduced-motion: reduce)").matches
-	);
-}
 
 function clearRailAnimTimers() {
 	railAnimTimers.forEach((t) => clearTimeout(t));

@@ -356,7 +356,9 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 	/* 26.11.03：本地 @keyframes fadeInUp 已删除，卡片入场改用 motion.css 的 mo-rise
 	   （只动 transform，淡入统一由父级 #main-grid 的 opacity 过渡负责）。 */
 
-	/* 标签筛选按钮样式 - 与番剧页面一致 */
+	/* 标签筛选按钮样式 - 与番剧页面一致
+	   （26.11.05 评估：友链/设备/番剧三处 chip 的尺寸与选中态类名各不相同，
+	    强行合并会引入耦合且不减少行数，故保持各自页面内维护。） */
 	.filter-container {
 		display: flex;
 		flex-wrap: wrap;
@@ -372,14 +374,11 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 		font-size: 0.875rem;
 		font-weight: 500;
 		cursor: pointer;
-		/* 26.11.03：`transition: all` → 明确属性清单（只过渡会变的那些；
-		   26.11.04 补回 color/box-shadow —— 原来 `all` 也在过渡它们，漏掉会让激活态变色变成硬切） */
 		transition:
 			background-color var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
 			border-color var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
 			color var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
-			box-shadow var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
-			transform var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1));
+			box-shadow var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1));
 		white-space: nowrap;
 	}
 	

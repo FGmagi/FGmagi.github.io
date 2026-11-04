@@ -439,6 +439,7 @@ export type CardFilterAnimationConfig = {
 	enable: boolean; // 是否启用该动效；false = 即时显隐（无动画）
 	duration: number; // 单张卡片的过渡时长（ms），建议 160~260
 	offset: number; // 位移幅度（px），建议 6~16
+	respectReducedMotion?: boolean; // true=遵循系统「减少动效」（只淡入淡出、位移归零）；默认 false=始终播放滑动
 };
 
 export type MusicPlayerConfig = {

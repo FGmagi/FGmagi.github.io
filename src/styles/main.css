@@ -558,6 +558,12 @@ html::-webkit-scrollbar-thumb:active {
   .meta-icon {
     @apply w-8 h-8 transition-colors duration-150 rounded-md flex items-center justify-center bg-[var(--btn-regular-bg)]
         text-[var(--btn-content)] mr-2;
+    /* 26.11.05：文章元信息里的图标（日期/字数/标签/浏览量）是**纯装饰**：
+       不接收 hover / 点击 / 触摸（pointer-events:none）、不可被选中，避免和覆盖在页面上的
+       浮层/导航栏抢命中，也避免用户误以为它是可点按钮。 */
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
   .with-divider {
     @apply before:content-['/'] before:ml-1.5 before:mr-1.5 before:text-[var(--meta-divider)] before:text-sm

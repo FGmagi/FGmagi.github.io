@@ -183,6 +183,11 @@ body.page-rise #content-wrapper > :nth-child(6) {
      由 Layout.astro 按 config 写入；这里只给兜底值。
    -------------------------------------------------------------------- */
 .card-filter-anim {
+  /* animation: none 很关键：卡片入场用的是 `body.page-rise … { animation: mo-fade-rise }`，
+     动画会抢走 opacity/transform 的控制权，导致「筛选过渡」只剩透明度、位移不生效
+     （用户反馈：有淡入淡出但没有上下滑动）。这里一旦进入筛选动效就停掉入场动画，
+     让 transition 独占这两个属性。 */
+  animation: none !important;
   transition:
     opacity var(--card-filter-duration, 200ms)
       var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
@@ -197,24 +202,9 @@ body.page-rise #content-wrapper > :nth-child(6) {
   pointer-events: none;
 }
 
-/* 减少动效：直接显隐，不做位移与渐变 */
-@media (prefers-reduced-motion: reduce) {
-  .card-filter-anim {
-    transition: none !important;
-  }
-
-  .card-filter-hidden {
-    transform: none !important;
-  }
-}
-
-html.reduce-motion .card-filter-anim {
-  transition: none !important;
-}
-
-html.reduce-motion .card-filter-hidden {
-  transform: none !important;
-}
+/* 减少动效：是否去掉位移由 JS 决定（config.cardFilterAnimationConfig.respectReducedMotion），
+   这里不再用媒体查询把 transform 写死为 none —— 否则即使站点明确要求播放滑动，
+   reduce 环境也会被 CSS 拦掉（用户反馈「只有淡入淡出、没有上下滑动」的原因之一）。 */
 
 /* --------------------------------------------------------------------
    减少动效（系统偏好）：CSS 侧统一入口

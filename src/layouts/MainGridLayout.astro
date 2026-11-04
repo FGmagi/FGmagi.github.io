@@ -1219,29 +1219,19 @@ const mainContentClass = `
     flex: 1 1 auto;
 }
 
-/* Banner text styles */
+/* Banner text styles
+   26.11.05：改用 motion.css 的 mo-fade-rise（原先本文件自带一份 fadeInUp 关键帧）。 */
 .banner-title {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    animation: fadeInUp 1s ease-out;
+    animation: mo-fade-rise var(--mo-hero, 560ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) both;
     font-weight: bold;
 }
 
 .banner-subtitle {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-    animation: fadeInUp 1s ease-out 0.3s both;
+    animation: mo-fade-rise var(--mo-hero, 560ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) 0.3s both;
     min-height: 1.5em; /* 确保副标题容器有最小高度 */
     line-height: 1.2; /* 确保一致的行高 */
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* 当没有 banner 时，主内容区域移到顶部 */

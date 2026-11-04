@@ -442,6 +442,8 @@ if (fontFaces.length > 0) {
 					enable: cfg.enable !== false,
 					duration: duration,
 					offset: offset,
+					// 26.11.05：默认 false（始终播放滑动）；置 true 才在 reduce 环境去掉位移
+					respectReducedMotion: cfg.respectReducedMotion === true,
 				};
 				document.documentElement.style.setProperty(
 					"--card-filter-duration",
@@ -1690,4 +1692,7 @@ function disableAnimation() {
 	import "../scripts/toc-layout.js";
 	// 26.09.14：导航栏与主卡片重合时的下边界描边（下拉后区分导航栏/主卡片边界）
 	import "../scripts/navbar-card-separator.js";
+	// 26.11.05：卡片「筛选显隐」共享实现（window.CardFilter）——
+	// 首页标签筛选内联脚本与 /js/friends-page-handler.js 共用，避免两份逻辑漂移。
+	import "../scripts/card-filter-visibility.js";
 </script>

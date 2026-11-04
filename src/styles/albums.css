@@ -13,9 +13,9 @@
   box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.4);
 }
 
-/* 照片网格布局 */
+/* 照片网格布局（26.11.05：动画改用 motion.css 的 mo-fade-rise，删掉本文件自带的 fadeInUp） */
 .photo-gallery {
-  animation: fadeInUp 0.6s ease-out;
+  animation: mo-fade-rise var(--mo-slow, 320ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) both;
 }
 
 .photo-item {
@@ -145,17 +145,7 @@
   }
 }
 
-/* 加载动画 */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* 加载动画：已统一到 motion.css 的 mo-fade-rise（26.11.05 移除本地 @keyframes fadeInUp） */
 
 /* 图片懒加载占位符 */
 .photo-image[loading="lazy"] {

@@ -68,58 +68,22 @@
 		var currentTag = "all";
 		var searchTerm = "";
 
-		// 26.11.05：卡片「筛选显隐」动效（下滑淡出 / 上滑淡入）。
-		// 配置来源：Layout.astro 解析期写入的 window.__cardFilterAnim
-		// （见 config.ts 的 cardFilterAnimationConfig）；系统开启减少动效时自动禁用。
-		function getCardAnimConfig() {
-			var cfg = window.__cardFilterAnim || {};
-			var reduce =
-				window.matchMedia &&
-				window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-			var duration = typeof cfg.duration === "number" ? cfg.duration : 200;
-			return {
-				enable: cfg.enable !== false && !reduce && duration > 0,
-				duration: duration,
-			};
-		}
-
-		// 隐藏：加 .card-filter-hidden（下滑 + 淡出）→ 过渡结束再 display:none；
-		// 显示：display 回来 → 把「下方 + 透明」起点落进样式快照 → 摘类 ⇒ 上滑 + 淡入到位。
-		function setFriendCardVisible(card, visible) {
-			var cfg = getCardAnimConfig();
-			if (!card.classList.contains("card-filter-anim")) {
-				card.classList.add("card-filter-anim");
-			}
-
-			if (visible) {
-				var wasHidden =
-					card.style.display === "none" ||
-					card.classList.contains("card-filter-hidden");
-				if (!wasHidden) return;
-				window.clearTimeout(card.__filterHideTimer);
-				card.style.display = "";
-				if (cfg.enable) {
-					card.classList.add("card-filter-hidden");
-					void card.offsetHeight;
-					card.classList.remove("card-filter-hidden");
-				} else {
-					card.classList.remove("card-filter-hidden");
-				}
+		// 26.11.05：卡片「筛选显隐」动效统一走 src/scripts/card-filter-visibility.js
+		// 暴露的 window.CardFilter（与首页标签筛选共用同一份实现与配置）。
+		// 脚本尚未执行（极早期交互）时退化为即时显隐。
+		function applyCardVisibility(card, visible) {
+			if (window.CardFilter) {
+				window.CardFilter.apply(card, visible);
 				return;
 			}
+			card.style.display = visible ? "" : "none";
+		}
 
-			if (card.style.display === "none") return;
-			card.classList.add("card-filter-hidden");
-			if (cfg.enable) {
-				window.clearTimeout(card.__filterHideTimer);
-				card.__filterHideTimer = window.setTimeout(function () {
-					if (card.classList.contains("card-filter-hidden")) {
-						card.style.display = "none";
-					}
-				}, cfg.duration + 20);
-			} else {
-				card.style.display = "none";
-			}
+		function currentAnimDuration() {
+			var cfg = window.CardFilter
+				? window.CardFilter.config()
+				: { enable: false, duration: 0 };
+			return cfg.enable ? cfg.duration : 0;
 		}
 
 		// 过滤函数
@@ -139,7 +103,7 @@
 					currentTag === "all" || tags.split(",").indexOf(currentTag) >= 0;
 
 				var visible = matchesSearch && matchesTag;
-				setFriendCardVisible(card, visible);
+				applyCardVisibility(card, visible);
 				if (visible) visibleCount++;
 			}
 
@@ -154,12 +118,12 @@
 			// 26.11.03：筛选会改变可见卡片，显示状态变化后重新判定 desc 滚动链与按钮图标
 			// 26.11.05：动画期间隐藏卡仍占位，动画结束后再量一次，避免把正在淡出的卡片算进去
 			updateDynamicLayout();
-			var anim = getCardAnimConfig();
-			if (anim.enable) {
+			var animDuration = currentAnimDuration();
+			if (animDuration > 0) {
 				window.clearTimeout(window.__friendsLayoutTimer);
 				window.__friendsLayoutTimer = window.setTimeout(
 					updateDynamicLayout,
-					anim.duration + 40,
+					animDuration + 40,
 				);
 			}
 		}

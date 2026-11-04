@@ -1,83 +1,74 @@
 /* 
- * 浮层面板动画增强样式
- * 为所有浮层面板提供统一、流畅的动画效果
+ * 浮层面板动效（26.11.03 重写）
+ * ────────────────────────────────────────────────────────────────────
+ * 旧实现的问题：
+ *   · 本文件只声明了「关闭态」的 scaleY/scaleX，却**没有任何 transition**；
+ *     真正的过渡由 src/utils/panel-manager.ts 用内联 `transition: all 100ms` +
+ *     强制重排 panel.offsetHeight 完成 —— 两套实现互相覆盖，面板只有 100ms、
+ *     而且 `all` 会把无关属性一起过渡；
+ *   · 关闭态用 scaleY(0) 压扁，展开瞬间文字被纵向拉伸。
+ * 现实现：过渡完全由 CSS 承担（只动 opacity/transform，时长与曲线取统一令牌），
+ * panel-manager.ts 只负责切类并等待 transitionend。
+ *
+ * 与 main.css 的关系：main.css 的 `.float-panel-closed` 在 @layer components 里
+ * （且只给了 translate-y-1/opacity-0），本文件为无层级 CSS，优先级更高，是最终表现。
  */
-
-.float-panel {
-  z-index: 50;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-
-  /* 为动画做准备 */
-  transform-origin: top center;
-}
-
-/* 面板打开时的默认状态 */
-.float-panel:not(.float-panel-closed) {
-  transform: scaleY(1) scaleX(1);
-  pointer-events: auto;
-}
-
-/* 面板关闭时的状态 */
+.float-panel,
 .float-panel-closed {
-  transform: scaleY(0) scaleX(0.8);
-  pointer-events: none;
+  z-index: 50;
+  transform-origin: top center;
+  /* 令牌来自 src/styles/motion.css；给出兜底值以防该文件尚未加载。
+     background-color / backdrop-filter 也要列进来：原来由
+     wallpaper-navbar-transparent.css 用高优先级规则单独过渡，现已收回本文件统一拥有。 */
+  transition:
+    opacity var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+    transform var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+    background-color var(--mo-base, 220ms) linear,
+    backdrop-filter var(--mo-base, 220ms) linear,
+    visibility 0s linear 0s;
 }
 
-/* 特定面板的动画调整 */
+/* 打开：立即可见、不位移 */
+.float-panel:not(.float-panel-closed) {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* 关闭：轻微上移 + 微缩，最后才 hidden（等过渡播完再把 visibility 落下） */
+.float-panel-closed {
+  opacity: 0;
+  transform: translateY(calc(-1 * var(--mo-shift, 6px))) scale(0.97);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+    transform var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+    background-color var(--mo-base, 220ms) linear,
+    backdrop-filter var(--mo-base, 220ms) linear,
+    visibility 0s linear var(--mo-base, 220ms);
+}
+
+/* 各面板的展开锚点（方向感：从触发它的按钮附近长出来） */
 #mobile-toc-panel {
   transform-origin: top right;
-}
-
-#mobile-toc-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.7);
 }
 
 #display-setting {
   transform-origin: top right;
 }
 
-#display-setting.float-panel-closed {
-  transform: scaleY(0) scaleX(0.6);
-}
-
 #search-panel {
   transform-origin: top center;
-}
-
-#search-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.8);
 }
 
 #nav-menu-panel {
   transform-origin: top right;
 }
 
-#nav-menu-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.65);
-}
-
 #wallpaper-mode-panel {
   transform-origin: top right;
-}
-
-#wallpaper-mode-panel.float-panel-closed {
-  transform: scaleY(0) scaleX(0.5);
-}
-
-/* 移动端 */
-@media (max-width: 768px) {
-  .float-panel-closed {
-    transform: scaleY(0) scaleX(0.85);
-  }
-
-  #mobile-toc-panel.float-panel-closed {
-    transform: scaleY(0) scaleX(0.8);
-  }
-
-  #wallpaper-mode-panel.float-panel-closed {
-    transform: scaleY(0) scaleX(0.7);
-  }
 }
 
 /* 移动设备触摸优化 */
@@ -85,4 +76,30 @@
   .float-panel {
     touch-action: manipulation;
   }
+}
+
+/* 减少动效：面板不做位移/缩放，但保留极短的透明度过渡（不是直接消失）。
+   26.11.04：原来这里压到 1ms，会让「面板开合」看起来完全没有动效。 */
+@media (prefers-reduced-motion: reduce) {
+  .float-panel,
+  .float-panel-closed {
+    transition:
+      opacity 120ms linear,
+      visibility 0s linear 0s;
+  }
+
+  .float-panel-closed {
+    transform: none;
+  }
+}
+
+html.reduce-motion .float-panel,
+html.reduce-motion .float-panel-closed {
+  transition:
+    opacity 120ms linear,
+    visibility 0s linear 0s;
+}
+
+html.reduce-motion .float-panel-closed {
+  transform: none;
 }

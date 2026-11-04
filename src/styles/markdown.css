@@ -1,6 +1,8 @@
-/* 26.08.30修改，内容为：md 阅读页正文使用 思源黑体（占位字体，后续替换） */
+/* 26.08.30修改，内容为：md 阅读页正文使用 思源黑体（占位字体，后续替换）
+   26.11.03：从字体栈中移除「思源黑体」——该字体没有任何实际文件（@font-face 已在
+   src/config.ts 里删除），留在栈里只会让排印回退路径更难读。 */
 .markdown-content {
-  font-family: system-ui,"思源黑体", "萝莉体 第二版", "ZenMaruGothic-Medium", sans-serif;
+  font-family: system-ui, "萝莉体 第二版", "ZenMaruGothic-Medium", sans-serif;
 }
 
 .custom-md {

@@ -433,6 +433,14 @@ export type PostCardHoverConfig = {
 	restoredDarkness: number; // 停顿后恢复到的暗度（%，默认 5，即"悬停暗度的一半"）
 };
 
+// 26.11.05：卡片「筛选显隐」动效（标签筛选过滤卡片时使用：
+// 隐藏 = 短暂下滑 + 淡出，显示 = 从下方短暂上滑 + 淡入）
+export type CardFilterAnimationConfig = {
+	enable: boolean; // 是否启用该动效；false = 即时显隐（无动画）
+	duration: number; // 单张卡片的过渡时长（ms），建议 160~260
+	offset: number; // 位移幅度（px），建议 6~16
+};
+
 export type MusicPlayerConfig = {
 	enable: boolean; // 是否启用音乐播放器功能
 	mode: "meting" | "local"; // 音乐播放器模式

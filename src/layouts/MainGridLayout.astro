@@ -911,7 +911,7 @@ const mainContentClass = `
     
     <!-- Water waves effect -->
     {siteConfig.banner.waves?.enable && (
-        <div class="waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]" id="header-waves" style="transform: translateZ(0); will-change: fill;">
+        <div class="waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]" id="header-waves" style="transform: translateZ(0);">
             <svg
                 class="waves"
                 xmlns="http://www.w3.org/2000/svg"
@@ -934,28 +934,28 @@ const mainContentClass = `
                         x="48"
                         y="0"
                         class="opacity-25 fill-[var(--page-bg)]"
-                        style="animation-delay: -2s; animation-duration: 7s; will-change: transform;"
+                        style="animation-delay: -2s; animation-duration: 7s; "
                     ></use>
                     <use
                         xlink:href="#gentle-wave"
                         x="48"
                         y="3"
                         class="opacity-50 fill-[var(--page-bg)]"
-                        style="animation-delay: -3s; animation-duration: 10s; will-change: transform;"
+                        style="animation-delay: -3s; animation-duration: 10s; "
                     ></use>
                     <use
                         xlink:href="#gentle-wave"
                         x="48"
                         y="5"
                         class="opacity-75 fill-[var(--page-bg)]"
-                        style="animation-delay: -4s; animation-duration: 13s; will-change: transform;"
+                        style="animation-delay: -4s; animation-duration: 13s; "
                     ></use>
                     <use
                         xlink:href="#gentle-wave"
                         x="48"
                         y="7"
                         class="fill-[var(--page-bg)]"
-                        style="animation-delay: -5s; animation-duration: 20s; will-change: transform;"
+                        style="animation-delay: -5s; animation-duration: 20s; "
                     ></use>
                 </g>
             </svg>
@@ -1643,32 +1643,21 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     #banner-carousel {
         overflow: hidden !important;
     }
-    
-    /* 移动端banner加载动画优化 */
-    .onload-animation-fade-in {
-        animation: mobile-fade-in 0.8s ease-out forwards !important;
-    }
+
+    /* 26.11.03：原 .onload-animation-fade-in 的 mobile-fade-in 覆盖已删除——
+       该类全站无任何元素使用（仅此文件与 transition.css 声明过），其 keyframes 同步移除。 */
 }
 
-/* 移动端专用淡入动画 - 与电脑端保持一致 */
-@keyframes mobile-fade-in {
-    0% {
-        opacity: 0;
-        transform: scale(1.1);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1); /* 与电脑端当前图片缩放保持一致 */
-    }
-}
+/* 26.11.03：@keyframes mobile-fade-in 已随 .onload-animation-fade-in 的覆盖规则一并删除
+   （唯一消费者已不存在；移动端入场统一走 motion.css 的 mo-rise 级联）。 */
 
 /* 手机端非首页隐藏banner - 改进的分阶段动画 */
 @media (max-width: 1279px) {
     #banner-wrapper {
         transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease-out;
         transform-origin: top center;
-        /* 硬件加速优化 */
-        will-change: transform, opacity;
+        /* 26.11.03：移除常驻 will-change（每帧都占着一个合成层、且没有实际收益——
+           transform/opacity 动画期间浏览器本就会自动提升）。硬件加速保留 translateZ(0)。 */
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
         transform: translateZ(0);
@@ -1724,24 +1713,22 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* 移动端banner性能优化 */
 @media (max-width: 1279px) {
     .banner-container {
-        /* 启用硬件加速 */
+        /* 启用硬件加速（26.11.03：去掉常驻 will-change，只留 translateZ 层） */
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
-        will-change: transform, opacity;
-        
+
         /* 优化渲染性能 */
         contain: layout style paint;
-        
+
         /* 减少重绘 */
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
     }
 
     .carousel-item {
-        /* 硬件加速 */
+        /* 硬件加速（26.11.03：去掉常驻 will-change） */
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
-        will-change: transform, opacity;
         
         /* 优化触摸响应 */
         touch-action: pan-y;
@@ -1950,9 +1937,8 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     /* 确保水波纹完整显示 */
     overflow: visible;
     z-index: 5;
-    /* 硬件加速，确保与背景同步渲染 */
+    /* 硬件加速，确保与背景同步渲染（26.11.03：去掉常驻 will-change） */
     transform: translateZ(0);
-    will-change: transform;
     /* 确保与页面背景在同一合成层 */
     contain: layout style paint;
 }
@@ -1967,11 +1953,9 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     backface-visibility: hidden;
 }
 
-/* 波浪填充色主题切换优化 */
-.waves use {
-    /* 确保填充色与页面背景同步更新 */
-    will-change: fill;
-}
+/* 波浪填充色主题切换优化
+   26.11.03：原来的 `.waves use { will-change: fill }` 已删除——fill 变化只是重绘，
+   will-change 对它没有任何加速作用，只会让四个 <use> 常驻合成层。 */
 
 /* 波浪与背景同步切换优化 - 解决交界线闪烁 */
 #header-waves {

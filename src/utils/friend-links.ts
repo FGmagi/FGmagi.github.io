@@ -2,6 +2,8 @@
  * 友链卡片「双站点跳转」数据归一化（26.11.03 新增）。
  *
  * friends.json 单条可选的额外字段（全部可选，缺省时行为与原「访问」按钮完全一致）：
+ *   imgurl                     : 站点图标；为空（缺失 / 空串 / 纯空白）时按第一个网页链接自动生成
+ *                                Google favicon 地址：https://www.google.com/s2/favicons?domain=<第一个链接>/&sz=128
  *   siteurl                    : 站点链接；也支持「数组语法糖」——
  *                                ["第一个网页", "第二个网页"] 依次作为 first_siteurl / second_siteurl 的缺省值，
  *                                ["第一个网页"] 只作为 first_siteurl 的缺省值；
@@ -20,6 +22,8 @@
 
 /** friends.json 中与友链跳转相关的可选字段（unknown 兼容手写 JSON 的类型漂移） */
 export interface FriendRawItem {
+	/** 站点图标；为空（缺失 / 空串 / 纯空白）时按第一个网页链接自动生成 Google favicon 地址 */
+	imgurl?: string;
 	/** 站点链接；数组语法糖：依次作为 first_siteurl / second_siteurl 的缺省值 */
 	siteurl?: string | string[];
 	first?: string;
@@ -63,6 +67,8 @@ export interface FriendCardView {
 	/** 复制按钮要复制的链接：双站点时为左侧（first），未启用任何站点时为空串 */
 	copyUrl: string;
 	layout: "none" | "single" | "dual";
+	/** 卡片图标：imgurl 非空时原样使用；为空时按第一个网页链接生成 Google favicon 地址 */
+	imgUrl: string;
 	/** 解析后是否还存在任何链接；false 表示「siteurl 全空且无覆盖值」→ 该友链不渲染 */
 	hasUrl: boolean;
 }
@@ -116,6 +122,21 @@ export function safeHostname(url: string): string {
 	} catch {
 		return url;
 	}
+}
+
+/**
+ * 解析卡片图标：imgurl 为空（缺失 / 空串 / 纯空白）时，用第一个网页链接生成 Google favicon 地址：
+ * `https://www.google.com/s2/favicons?domain=<第一个网页链接>/&sz=128`
+ * （链接末尾已有斜杠时不重复添加；完全没有链接时返回空串，此时友链本身也不会渲染）。
+ */
+export function resolveFriendImgUrl(
+	imgurl: unknown,
+	primaryUrl: string,
+): string {
+	const raw = text(imgurl);
+	if (raw !== "") return raw;
+	if (primaryUrl === "") return "";
+	return `https://www.google.com/s2/favicons?domain=${primaryUrl.replace(/\/+$/, "")}/&sz=128`;
 }
 
 /**
@@ -207,6 +228,8 @@ export function parseFriendLinks(
 		buttons,
 		copyUrl: buttons.length > 0 ? buttons[0].url : "",
 		layout,
+		// imgurl 为空时按第一个网页链接自动生成 favicon 地址
+		imgUrl: resolveFriendImgUrl(raw.imgurl, siteUrl),
 		// 解析后没有任何链接（siteurl 全空且无覆盖值）→ 该友链整体不渲染
 		hasUrl: firstUrl !== "" || secondUrl !== "",
 	};

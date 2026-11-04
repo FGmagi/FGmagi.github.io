@@ -113,6 +113,18 @@ const TAIL_MS = 60;
 const CLASS_LEAVING = "swup-leaving";
 const CLASS_ENTERING = "page-entering";
 const CLASS_PRERENDER = "page-prerender";
+/**
+ * 26.11.03：「上升级联」状态类（表现见 src/styles/motion.css 的 body.page-rise 段）。
+ *
+ * 为什么不复用 CLASS_ENTERING：page-entering 还带 `pointer-events: none`，按现有
+ * 收尾计时它只活 PAGE_FADE_IN_MS + TAIL_MS；而级联最长要
+ * `--mo-slow`(320ms) + `--mo-stagger-max`(180ms) ≈ 500ms。若把级联绑在 entering 上，
+ * 摘类的瞬间动画被强行中断、元素会从半途跳回终点。故独立成类、独立计时，
+ * 互不影响交互可用性。
+ */
+const CLASS_RISE = "page-rise";
+/** 级联播完摘类的时间：与 motion.css 的 --mo-slow + --mo-stagger-max 对齐并留余量 */
+const RISE_TOTAL_MS = 700;
 
 type Phase = "idle" | "out" | "pending" | "prerender" | "in";
 
@@ -137,6 +149,8 @@ const state = {
 	fadeTimer: null as ReturnType<typeof setTimeout> | null,
 	enterTimer: null as ReturnType<typeof setTimeout> | null,
 	fallbackTimer: null as ReturnType<typeof setTimeout> | null,
+	/** 上升级联（body.page-rise）的摘类计时 */
+	riseTimer: null as ReturnType<typeof setTimeout> | null,
 	/** 归一化令牌：每次新导航递增，旧回调据此退出 */
 	token: 0,
 	/** 一次页面加载内只注册一次 swup 钩子 */
@@ -151,7 +165,9 @@ function setPhase(phase: Phase) {
 	state.phase = phase;
 }
 
-function clearTimer(name: "fadeTimer" | "enterTimer" | "fallbackTimer") {
+function clearTimer(
+	name: "fadeTimer" | "enterTimer" | "fallbackTimer" | "riseTimer",
+) {
 	const timer = state[name];
 	if (timer) clearTimeout(timer);
 	state[name] = null;
@@ -171,7 +187,7 @@ function startFallback() {
 }
 
 function clearVisibleClasses() {
-	document.body.classList.remove(CLASS_LEAVING, CLASS_ENTERING);
+	document.body.classList.remove(CLASS_LEAVING, CLASS_ENTERING, CLASS_RISE);
 }
 
 function clearPrerenderClass() {
@@ -185,11 +201,33 @@ function clearEnter() {
 	document.body.classList.remove(CLASS_ENTERING);
 }
 
+/** 摘掉上升级联类与它的计时器 */
+function clearRise() {
+	clearTimer("riseTimer");
+	document.body.classList.remove(CLASS_RISE);
+}
+
+/**
+ * 起跑「上升级联」（幂等）：摘 → 强制重算 → 挂，保证每次导航都会重播。
+ * 表现全部在 CSS（src/styles/motion.css），这里只负责状态类与计时。
+ */
+function armRise() {
+	clearRise();
+	// 摘类后必须让样式落定一次，否则「摘+挂」会被合并进同一次样式计算 ⇒ 动画不重启
+	void document.body.offsetHeight;
+	document.body.classList.add(CLASS_RISE);
+	state.riseTimer = setTimeout(() => {
+		state.riseTimer = null;
+		document.body.classList.remove(CLASS_RISE);
+	}, RISE_TOTAL_MS);
+}
+
 /** 把一切「不可见」状态撤掉，恢复页面可见（失败 / 中止 / 超时兜底） */
 function forceEnd() {
 	state.token += 1;
 	clearTimer("fadeTimer");
 	clearEnter();
+	clearRise();
 	cancelFallback();
 	clearVisibleClasses();
 	clearPrerenderClass();
@@ -342,6 +380,8 @@ function armEnter() {
 	document.body.classList.remove(CLASS_LEAVING);
 	document.body.classList.add(CLASS_ENTERING);
 	(window as any).__pagePrerenderArmed = false;
+	// 上升级联与渐显同帧起跑（26.11.03）；独立计时，见 CLASS_RISE 注释
+	armRise();
 }
 
 /** 摘掉渐显类并收尾（渐显时长 + 余量之后） */
@@ -521,6 +561,7 @@ export function playAnchorFade(
 
 	// 先把可能还在排队的渐显收尾，避免稍后又去摘一次类
 	clearEnter();
+	clearRise();
 	state.token += 1;
 	const token = state.token;
 
@@ -566,6 +607,7 @@ function startOut(visit?: any): OutHandle {
 	if (state.phase === "in") {
 		state.token += 1;
 		clearEnter();
+		clearRise();
 		setPhase("idle");
 	}
 

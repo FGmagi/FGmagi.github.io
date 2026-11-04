@@ -7,9 +7,13 @@
    来源：恢复 main.css 入口后，此处 @import 会把 anime.css 内联进**每个**页面的 CSS 包，
    并与 /anime 页自身的 JS import 形成同一份样式双份打包（Vite 只对 JS 模块去重，
    对「内联副本」不去重）。 */
-/* 导入动画样式 */
+/* 导入动画样式
+   26.11.03：拆成两层——motion.css 是令牌 + 通用动效层（入场级联、悬浮/按压、
+   链接下划线、减少动效策略），transition.css 只保留切页渐变机制。
+   旧 animation-enhancements.css 的类全站无人引用，已删除（其 reduced-motion
+   通配规则迁入 motion.css，改为按令牌归零）。 */
+@import "./motion.css";
 @import "./transition.css";
-@import "./animation-enhancements.css";
 /* 导入渐变按钮样式 */
 @import "./gradient-buttons.css";
 /* 加密内容样式已移除，现在直接使用非加密文章的样式 */
@@ -60,7 +64,10 @@ html::-webkit-scrollbar-thumb:active {
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.15) 60%, rgba(255, 255, 255, 0.05) 80%, transparent 100%);
   pointer-events: none;
   z-index: 20;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 26.11.03：原来写 `transition: all 0.3s`，但这条高光只会在主题/壁纸切换时改
+     background 与 opacity —— background 不可过渡，`all` 纯属让浏览器多检查一堆属性。
+     现在只过渡真正会变的那一个。 */
+  transition: opacity var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1));
 }
 
 /* 暗色主题下的渐变高光效果 */

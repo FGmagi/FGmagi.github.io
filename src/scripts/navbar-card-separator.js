@@ -6,12 +6,18 @@
  * 画一条主题色横线（带阴影，观感是横线而不是圆角矩形的下边线），
  * 重合出现/消失都走 opacity 渐变。
  *
- * 实现要点：
- *   · 只在 scroll / resize / swup 换页 / 壁纸与简洁模式变化 / 目录重排后，按 rAF 节流重算，
- *     不做常驻逐帧计算；
- *   · 判「重合」= 该卡片在竖直方向上跨过导航栏底边（navBottom 落在卡片内有交集）；
- *   · 采样点横跨导航栏内宽（去掉两端 8px），命中后向上找「有可见背景」的那一层当卡片，
- *     再把所有被压住卡片的横向区间合并 ⇒ 得到「仅重合部分」的区间。
+ * 26.11.03（动效整体修缮 · 批 3）性能重写：
+ *   旧实现把「找卡片」放在每一帧滚动里做 —— 12 次 elementFromPoint + 每个命中点向上遍历
+ *   祖先、逐层 getComputedStyle（读 border-radius / background-color），单帧几十次样式计算，
+ *   这是下拉掉帧的主要来源之一。
+ *   现在拆成两段：
+ *     · refreshGeometry()：只在 resize / swup 换页 / 目录重排 / 壁纸与简洁模式变化 / load
+ *       时跑一次「找卡片」，并把卡片几何换算成**文档坐标**缓存起来；
+ *     · paint()：每帧只读一次 window.scrollY 与导航栏底边，纯算术判断遮挡，不碰
+ *       getComputedStyle / elementFromPoint。
+ *
+ * 表现完全不变：采样点横跨导航栏内宽（两端各留 4px）、命中后取「最宽且不超过导航栏宽、
+ * 有可见背景且带圆角」的那层当卡片，横向区间合并后仅在重合部分画线。
  */
 
 // ⚠ 必须用 #navbar 自身：它的第一个子 div 是「用于入场动画」的 absolute 辅助层
@@ -30,6 +36,8 @@ const EDGE_FADE_RATIO = 0.05;
 let separator = null;
 let rafId = 0;
 let lastKey = "";
+/** 缓存：卡片在文档坐标系里的位置 + 线的横向区间（null = 当前没有可画的卡片） */
+let geometry = null;
 
 function ensureSeparator() {
 	if (separator && separator.isConnected) return separator;
@@ -47,11 +55,12 @@ function hide(el) {
 /**
  * 找「主卡片」：在竖直方向跨过导航栏底边、且有可见背景的元素里，取最宽的那个。
  *
- * ⚠ 为什么取最宽而不是「第一个有背景的祖先」（上一版的做法，用户反馈「渐变不稳定、
- *   存在丢失」）：命中点下面是普通人无法预测的内容——代码块、引用块、license 块、图片、
- *   左右磁贴……它们各自都有背景，取第一个会让线长随滚动内容不断变化、甚至短到被丢弃。
- *   卡片是这些内部块的共同祖先，取「最宽且不超过导航栏宽度」的那个，长度才稳定，
- *   也对应需求里的「主卡片（文章卡片、友链卡片、图片卡片等）」。
+ * ⚠ 为什么取最宽而不是「第一个有背景的祖先」：命中点下面是普通人无法预测的内容——
+ *   代码块、引用块、license 块、图片、左右磁贴……它们各自都有背景，取第一个会让线长
+ *   随滚动内容不断变化、甚至短到被丢弃。卡片是这些内部块的共同祖先，取「最宽且不超过
+ *   导航栏宽度」的那个，长度才稳定，也对应需求里的「主卡片」。
+ *
+ * 只在 refreshGeometry() 里调用（不在滚动帧里）。
  */
 function findMainCard(nav, navBottom, innerLeft, innerRight) {
 	const sampleY = navBottom + 1;
@@ -79,7 +88,7 @@ function findMainCard(nav, navBottom, innerLeft, innerRight) {
 					rect.width > 0
 				) {
 					bestWidth = rect.width;
-					best = { left: rect.left, right: rect.right };
+					best = { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
 				}
 			}
 			cur = cur.parentElement;
@@ -99,30 +108,52 @@ function lineGradient(width) {
 	return `linear-gradient(to right, transparent ${fade}px, ${LINE_COLOR} ${center}px, transparent ${w - fade}px)`;
 }
 
-function update() {
-	rafId = 0;
-	const navCard = document.querySelector(NAV_CARD_SELECTOR);
-	const el = ensureSeparator();
-	if (!navCard || !el) return;
+function currentScrollY() {
+	return window.scrollY || window.pageYOffset || 0;
+}
 
-	const nav = navCard.getBoundingClientRect();
-	const navBottom = Math.round(nav.bottom);
-	// 导航栏不在视口内 / 尺寸异常 → 直接隐藏
-	if (nav.width <= 0 || navBottom <= 0 || navBottom >= window.innerHeight - 1) {
-		hide(el);
+/**
+ * 重算缓存（事件驱动，不是每帧）：把所有布局读取集中在这里。
+ */
+function refreshGeometry() {
+	// 切页渐变期间（预渲染帧 / 渐显中）#main-grid 是 pointer-events:none，
+	// elementFromPoint 采不到卡片。此时**保持旧缓存不动**，等重试/后续事件再量，
+	// 否则每来一次事件就把缓存清空、重试循环又从头跑，白烧几十次样式计算。
+	if (
+		document.body.classList.contains("page-prerender") ||
+		document.body.classList.contains("page-entering")
+	) {
+		schedulePaint();
 		return;
 	}
 
+	const navCard = document.querySelector(NAV_CARD_SELECTOR);
+	if (!navCard) {
+		geometry = null;
+		schedulePaint();
+		return;
+	}
+
+	const nav = navCard.getBoundingClientRect();
+	const navBottom = Math.round(nav.bottom);
 	const innerLeft = nav.left + EDGE_INSET;
 	const innerRight = nav.right - EDGE_INSET;
-	if (innerRight - innerLeft < MIN_RUN_PX) {
-		hide(el);
+
+	if (
+		nav.width <= 0 ||
+		navBottom <= 0 ||
+		navBottom >= window.innerHeight - 1 ||
+		innerRight - innerLeft < MIN_RUN_PX
+	) {
+		geometry = null;
+		schedulePaint();
 		return;
 	}
 
 	const card = findMainCard(nav, navBottom, innerLeft, innerRight);
 	if (!card) {
-		hide(el);
+		geometry = null;
+		schedulePaint();
 		return;
 	}
 
@@ -130,41 +161,138 @@ function update() {
 	const right = Math.round(Math.min(card.right, innerRight));
 	const width = right - left;
 	if (width < MIN_RUN_PX) {
+		geometry = null;
+		schedulePaint();
+		return;
+	}
+
+	// 换算成文档坐标：之后每帧只做减法即可判断遮挡，不再触碰布局
+	const scrollY = currentScrollY();
+	// 导航栏通常挂在 #top-row 上并被 CSS 固定为 fixed（吸顶），此时底边恒定，
+	// 可完全免掉每帧的 getBoundingClientRect；#top-row 回到 static（navbar.pinned=false）
+	// 时才需要每帧读一次。
+	const anchor = navCard.closest("#top-row") || navCard;
+	const anchorPosition = window.getComputedStyle(anchor).position;
+	geometry = {
+		left,
+		width,
+		navBottom,
+		fixed: anchorPosition === "fixed" || anchorPosition === "sticky",
+		topDoc: card.top + scrollY,
+		bottomDoc: card.bottom + scrollY,
+	};
+	// 采到就停掉首载重试
+	if (retryTimer) {
+		window.clearTimeout(retryTimer);
+		retryTimer = 0;
+	}
+	schedulePaint();
+}
+
+/**
+ * 每帧的写入端：只读 scrollY（吸顶导航栏连底边都不用再量），
+ * 其余全是算术 —— 不做元素命中测试、不读 computedStyle。
+ */
+function paint() {
+	rafId = 0;
+	const el = ensureSeparator();
+	if (!el) return;
+
+	if (!geometry) {
 		hide(el);
 		return;
 	}
-	const background = lineGradient(width);
-	// 只有几何真的变了才写样式，减少无谓的重排/重绘
-	const key = `${left}|${width}|${navBottom}`;
+
+	const navCard = document.querySelector(NAV_CARD_SELECTOR);
+	if (!navCard) {
+		hide(el);
+		return;
+	}
+
+	// fixed/sticky 时用缓存值（零布局读取）；随页滚动的导航栏才每帧量一次
+	const navBottom = geometry.fixed
+		? geometry.navBottom
+		: Math.round(navCard.getBoundingClientRect().bottom);
+	if (navBottom <= 0 || navBottom >= window.innerHeight - 1) {
+		hide(el);
+		return;
+	}
+
+	const scrollY = currentScrollY();
+	const cardTop = geometry.topDoc - scrollY;
+	const cardBottom = geometry.bottomDoc - scrollY;
+	// 卡片必须仍横跨导航栏底边才画线（纯算术）
+	if (navBottom < cardTop || navBottom > cardBottom) {
+		hide(el);
+		return;
+	}
+
+	const key = `${geometry.left}|${geometry.width}|${navBottom}`;
 	if (key !== lastKey) {
 		lastKey = key;
-		el.style.left = `${left}px`;
-		el.style.width = `${width}px`;
+		el.style.left = `${geometry.left}px`;
+		el.style.width = `${geometry.width}px`;
 		el.style.top = `${navBottom}px`;
-		el.style.background = background;
+		el.style.background = lineGradient(geometry.width);
 	}
 	if (!el.classList.contains("is-visible")) el.classList.add("is-visible");
 }
 
-function schedule() {
+function schedulePaint() {
 	if (rafId) return;
-	rafId = window.requestAnimationFrame(update);
+	rafId = window.requestAnimationFrame(paint);
+}
+
+/**
+ * 首载重试（26.11.03）：颜色/几何都要靠 elementFromPoint 采样，而首载的预渲染门
+ * （body.page-prerender / page-entering）期间 #main-grid 是 pointer-events:none，
+ * 此时 elementFromPoint 采不到卡片 ⇒ 缓存为空。旧实现每帧都在滚动时重算，所以会自愈；
+ * 现在改为「没采到就有限次重试」，一旦采到立即停止（不常驻轮询）。
+ */
+let retryTimer = 0;
+let retryCount = 0;
+function retryUntilReady() {
+	if (geometry || retryCount >= 8) return;
+	retryCount += 1;
+	retryTimer = window.setTimeout(() => {
+		retryTimer = 0;
+		refreshGeometry();
+		retryUntilReady();
+	}, 250);
+}
+
+/**
+ * 换页 / 首次加载后补量几拍：图片陆续加载会改变卡片高度，
+ * 只量一次可能记下的是「还没长高」的几何，导致描边区间偏小。
+ */
+function refreshSoon() {
+	refreshGeometry();
+	window.setTimeout(refreshGeometry, 400);
+	window.setTimeout(refreshGeometry, 1200);
 }
 
 function bind() {
 	if (window.__navbarCardSeparatorBound) return;
 	window.__navbarCardSeparatorBound = true;
 	ensureSeparator();
-	window.addEventListener("scroll", schedule, { passive: true });
-	window.addEventListener("resize", schedule, { passive: true });
+
+	// 滚动：只重绘（paint 内无布局读取）
+	window.addEventListener("scroll", schedulePaint, { passive: true });
+
+	// 几何变化：这里才重算卡片
+	window.addEventListener("resize", refreshGeometry, { passive: true });
 	// 换页 / 壁纸模式与简洁模式变化 / 目录重排都会改变卡片位置，一并重算
-	document.addEventListener("swup:page:view", schedule);
-	document.addEventListener("swup:content:replace", schedule);
-	window.addEventListener("wallpaper-mode-change", schedule);
-	window.addEventListener("simple-mode-change", schedule);
-	document.addEventListener("toc:relayout", schedule);
-	window.addEventListener("load", schedule);
-	schedule();
+	document.addEventListener("swup:page:view", refreshSoon);
+	document.addEventListener("swup:content:replace", refreshGeometry);
+	window.addEventListener("wallpaper-mode-change", refreshGeometry);
+	window.addEventListener("simple-mode-change", refreshGeometry);
+	document.addEventListener("toc:relayout", refreshGeometry);
+	window.addEventListener("load", refreshSoon);
+	// 首载渐显结束后再量一次（此时 pointer-events 已恢复，elementFromPoint 能命中卡片）
+	document.addEventListener("mizuki:page:loaded", refreshGeometry);
+
+	refreshSoon();
+	retryUntilReady();
 }
 
 bind();

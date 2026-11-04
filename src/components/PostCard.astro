@@ -46,12 +46,20 @@ const restOpacity = (postCardHoverConfig.restoredDarkness / 100).toFixed(3);
 
 const hoverDimCss = `
 <style data-post-card-hover>
+/* 26.11.05：进入 hover **瞬时**点亮、离开再平滑淡出（snap-in / ease-out）。
+   原因（用户反馈：快速划过时「只有停顿处的卡片会响应」）：
+   原来进入与离开都是 ${postCardHoverConfig.startDuration ?? 150}ms 渐变，快速划过时
+   指针在每张卡片上只停留几十毫秒，10% 的暗色只淡入了一两成，肉眼几乎看不出来；
+   只有停下来才会走完整段渐变，于是看起来「只有停顿处有反应」。
+   现在进入用 0ms（指针掠过即点亮，扫过一串卡片会依次闪烁，符合预期），
+   离开保留 endDuration 的淡出，形成短暂的拖尾，观感更顺。 */
 .post-card-hover-dim {
   opacity: 0;
-  transition: opacity ${postCardHoverConfig.startDuration ?? 150}ms ease;
+  transition: opacity ${postCardHoverConfig.endDuration ?? 150}ms ease;
 }
 .group:hover .post-card-hover-dim {
   opacity: ${hoverOpacity};
+  transition-duration: 0ms;
 }
 @media (prefers-reduced-motion: reduce) {
   .post-card-hover-dim {
@@ -59,6 +67,7 @@ const hoverDimCss = `
   }
   .group:hover .post-card-hover-dim {
     opacity: ${restOpacity};
+    transition-duration: 0ms;
   }
 }
 </style>`;
@@ -80,6 +89,11 @@ try {
 
 <div
 	class:list={[
+		// 26.11.04：这里不再加 hover 抬升类。
+		// 原因：PostPage 有一条作用域规则 `#post-list-container[data-astro-cid-…] > * { transition: opacity .3s }`，
+		// 优先级（ID+属性）高于任何普通类，卡片根节点上的 transition 清单一律会被它接管 ——
+		// 于是 hover 的 transform 动画根本不会过渡，只会瞬跳（观感即「指针一指就抖」）。
+		// 卡片悬停反馈沿用原有实现：变暗层（.post-card-hover-dim，150ms 透明度）+ 标题变色。
 		"card-base group flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative",
 		className,
 	]}

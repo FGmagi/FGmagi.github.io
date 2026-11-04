@@ -1,5 +1,6 @@
 import type {
 	AnnouncementConfig,
+	CardFilterAnimationConfig,
 	CommentConfig,
 	DataFilesConfig,
 	ExpressiveCodeConfig,
@@ -26,8 +27,10 @@ const SITE_LANG = "zh_CN"; // 语言代码：'en' | 'zh_CN' | 'zh_TW' | 'ja' | '
 const SITE_TIMEZONE = 8; // 站点时区（UTC 偏移小时，范围 -12 ~ 12，默认 UTC+8）
 
 // 导航栏标题 Logo/图标兜底路径（相对 public/ 的网页路径，供 Navbar.astro 在配置留空时使用）
-export const navbarLogoFallback = "/assets/home/default-logo.png";
-export const navbarIconFallback = "/assets/home/home.png";
+// 26.11.03：由 PNG 换成 WebP（default-logo 273KB→13KB、home 790KB→4.4KB），
+// 渲染尺寸分别只有 36px 高 / 28px 见方，原图纯属浪费首屏带宽。
+export const navbarLogoFallback = "/assets/home/default-logo.webp";
+export const navbarIconFallback = "/assets/home/home.webp";
 
 // ================================================================
 // 数据与资源路径（dataFiles）
@@ -289,22 +292,20 @@ export const siteConfig: SiteConfig = {
 		// 字体文件目录（网页路径，相对 public/；compress-fonts.js 读取同目录 TTF）
 		webDir: "/assets/font",
 		// @font-face 注册列表（由 Layout.astro 按此注入页面）：files 为 webDir 下文件名，按顺序降级
+		// 26.11.03：每个 face 的 src 必须至少有一个**真实存在**的文件，否则浏览器会先打一个
+		// 404 再回退（萝莉体 ttf 有 10.7MB，一旦真的被用到代价极高）。故：
+		//   · 删掉「思源黑体」face —— public/assets/font 下根本没有它的任何文件；
+		//   · 其余两个把已存在的 .ttf 补进降级链（woff2 子集由 compress-fonts 产出后自动优先）。
 		faces: [
 			{
-				family: "思源黑体", // 字体族名（与 CSS font-family 一致）
-				files: ["思源黑体.woff2", "思源黑体.ttf"], // 生产用 woff2 子集优先，dev 回退 ttf
-				weight: "400",
-				style: "normal",
-			},
-			{
 				family: "萝莉体 第二版",
-				files: ["萝莉体 第二版.woff2"],
+				files: ["萝莉体 第二版.woff2", "萝莉体 第二版.ttf"],
 				weight: "400",
 				style: "normal",
 			},
 			{
 				family: "ZenMaruGothic-Medium",
-				files: ["ZenMaruGothic-Medium.woff2"],
+				files: ["ZenMaruGothic-Medium.woff2", "ZenMaruGothic-Medium.ttf"],
 				weight: "500",
 				style: "normal",
 			},
@@ -456,6 +457,19 @@ export const postCardHoverConfig: PostCardHoverConfig = {
 	endDuration: 150, //离开恢复时间
 	hoverDarkness: 10, // 悬停时暗度 10%
 	restoredDarkness: 0, // 恢复后的暗度
+};
+
+/**
+ * 26.11.05：卡片「筛选显隐」动效 —— 标签筛选过滤卡片时的逐卡动画。
+ * 隐藏：短暂下滑 + 透明度递减到 0；显示：从下方短暂上滑到原位 + 透明度递增到 1。
+ * 同时作用于首页标签筛选卡与 /friends/ 的标签过滤。
+ * · enable=false：即时显隐（无动画）；
+ * · 系统开启「减少动效」（prefers-reduced-motion: reduce）时自动退化为即时显隐。
+ */
+export const cardFilterAnimationConfig: CardFilterAnimationConfig = {
+	enable: true, // 是否启用（false = 即时显示/隐藏）
+	duration: 200, // 单张卡片过渡时长（ms）
+	offset: 10, // 位移幅度（px）：正值 = 隐藏时向下、显示时从下方上滑
 };
 
 export const musicPlayerConfig: MusicPlayerConfig = {

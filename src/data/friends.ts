@@ -5,7 +5,7 @@ import { dataFiles } from "../config";
 export interface FriendItem {
 	id: number;
 	title: string;
-	imgurl: string;
+	imgurl?: string;
 	desc: string;
 	siteurl: string | string[];
 	tags: string[];

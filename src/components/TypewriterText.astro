@@ -20,120 +20,139 @@ const textData = Array.isArray(text) ? JSON.stringify(text) : text;
 <span class={`typewriter ${className}`} data-text={textData} data-speed={speed} data-delete-speed={deleteSpeed} data-pause-time={pauseTime}></span>
 
 <script>
-class TypewriterEffect {
-    private element: HTMLElement;
-    private texts: string[];
-    private currentTextIndex: number = 0;
-    private speed: number;
-    private deleteSpeed: number;
-    private pauseTime: number;
-    private currentIndex: number = 0;
-    private isDeleting: boolean = false;
-    private timeoutId: number | null = null;
+// 26.11.03 重写（动效整体修缮 · 批 3）
+// 旧实现的三处问题：
+//   1. DOMContentLoaded 与 swup 换页各 new 一个实例、旧实例从不 destroy ——
+//      横幅副标题这类「不被 swup 替换」的元素会被多个定时器同时写 textContent
+//      （表现为文字跳动/闪烁），切页越多实例越多；
+//   2. 每 50~100ms 一次 textContent 写入，后台标签页也照跑；
+//   3. 完全忽略 prefers-reduced-motion。
+// 现在：模块级 WeakMap 单实例 + 页面隐藏时暂停 + 减少动效时直出全文。
+import { prefersReducedMotion } from "../utils/motion-preference";
 
-    constructor(element: HTMLElement) {
-        this.element = element;
-        const textData = element.dataset.text || '';
-        
-        // 尝试解析为JSON数组，如果失败则作为单个字符串处理
-        try {
-            const parsed = JSON.parse(textData);
-            this.texts = Array.isArray(parsed) ? parsed : [textData];
-        } catch {
-            this.texts = [textData];
-        }
-        
-        this.speed = parseInt(element.dataset.speed || '100');
-        this.deleteSpeed = parseInt(element.dataset.deleteSpeed || '50');
-        this.pauseTime = parseInt(element.dataset.pauseTime || '2000');
-        
-        // 如果有多条文本且未启用打字机效果，随机显示一条
-        if (this.texts.length > 1 && !this.isTypewriterEnabled()) {
-            this.showRandomText();
-        } else {
-            this.start();
-        }
-    }
-
-    private isTypewriterEnabled(): boolean {
-        // 检查是否有打字机相关的数据属性
-        return this.element.dataset.speed !== undefined || 
-               this.element.dataset.deleteSpeed !== undefined || 
-               this.element.dataset.pauseTime !== undefined;
-    }
-
-    private showRandomText() {
-        const randomIndex = Math.floor(Math.random() * this.texts.length);
-        this.element.textContent = this.texts[randomIndex];
-    }
-
-    private start() {
-        if (this.texts.length === 0) return;
-        this.type();
-    }
-
-    private getCurrentText(): string {
-        return this.texts[this.currentTextIndex] || '';
-    }
-
-    private type() {
-        const currentText = this.getCurrentText();
-        
-        if (this.isDeleting) {
-            // 删除字符
-            if (this.currentIndex > 0) {
-                this.currentIndex--;
-                this.element.textContent = currentText.substring(0, this.currentIndex);
-                this.timeoutId = window.setTimeout(() => this.type(), this.deleteSpeed);
-            } else {
-                // 删除完成，切换到下一条文本
-                this.isDeleting = false;
-                this.currentTextIndex = (this.currentTextIndex + 1) % this.texts.length;
-                this.timeoutId = window.setTimeout(() => this.type(), this.speed);
-            }
-        } else {
-            // 添加字符
-            if (this.currentIndex < currentText.length) {
-                this.currentIndex++;
-                this.element.textContent = currentText.substring(0, this.currentIndex);
-                this.timeoutId = window.setTimeout(() => this.type(), this.speed);
-            } else {
-                // 打字完成，暂停后开始删除（如果有多条文本）
-                if (this.texts.length > 1) {
-                    this.isDeleting = true;
-                    this.timeoutId = window.setTimeout(() => this.type(), this.pauseTime);
-                } else {
-                    // 如果只有一条文本，保持显示不删除，但确保元素有内容
-                    if (this.texts.length === 1 && this.texts[0] === '') {
-                        this.element.innerHTML = '&nbsp;'; // 使用不间断空格保持布局
-                    }
-                }
-            }
-        }
-    }
-
-    public destroy() {
-        if (this.timeoutId) {
-            clearTimeout(this.timeoutId);
-        }
-    }
+interface TypewriterInstance {
+	destroy(): void;
 }
 
-// 初始化所有打字机效果
-document.addEventListener('DOMContentLoaded', () => {
-    const typewriterElements = document.querySelectorAll('.typewriter');
-    typewriterElements.forEach((element) => {
-        new TypewriterEffect(element as HTMLElement);
-    });
-});
+/** 每个元素只保留一个实例（弱引用，元素被 swup 换掉后自然回收） */
+const instances = new WeakMap<HTMLElement, TypewriterInstance>();
 
-// 支持页面切换时重新初始化
-document.addEventListener('swup:contentReplaced', () => {
-    const typewriterElements = document.querySelectorAll('.typewriter');
-    typewriterElements.forEach((element) => {
-        new TypewriterEffect(element as HTMLElement);
-    });
-});
+class TypewriterEffect implements TypewriterInstance {
+	private element: HTMLElement;
+	private texts: string[];
+	private speed: number;
+	private deleteSpeed: number;
+	private pauseTime: number;
+	private currentTextIndex = 0;
+	private currentIndex = 0;
+	private isDeleting = false;
+	private timerId: number | null = null;
+	private disposed = false;
+	private readonly onVisibilityChange = () => {
+		if (document.hidden) {
+			this.clearTimer();
+		} else if (!this.disposed) {
+			this.schedule(this.speed);
+		}
+	};
+
+	constructor(element: HTMLElement) {
+		this.element = element;
+		const raw = element.dataset.text || "";
+		try {
+			const parsed = JSON.parse(raw);
+			this.texts = Array.isArray(parsed) ? parsed : [raw];
+		} catch {
+			this.texts = [raw];
+		}
+
+		this.speed = Number.parseInt(element.dataset.speed || "100", 10) || 100;
+		this.deleteSpeed =
+			Number.parseInt(element.dataset.deleteSpeed || "50", 10) || 50;
+		this.pauseTime =
+			Number.parseInt(element.dataset.pauseTime || "2000", 10) || 2000;
+
+		// 减少动效：直接把第一条文本放上去，不留任何定时器
+		if (prefersReducedMotion() || this.texts.length === 0) {
+			this.element.textContent = this.texts[0] ?? "";
+			return;
+		}
+
+		document.addEventListener("visibilitychange", this.onVisibilityChange);
+		this.step();
+	}
+
+	private clearTimer() {
+		if (this.timerId !== null) {
+			window.clearTimeout(this.timerId);
+			this.timerId = null;
+		}
+	}
+
+	private schedule(delay: number) {
+		this.clearTimer();
+		if (this.disposed || document.hidden) return;
+		this.timerId = window.setTimeout(() => this.step(), delay);
+	}
+
+	private step() {
+		if (this.disposed) return;
+		const currentText = this.texts[this.currentTextIndex] || "";
+
+		if (this.isDeleting) {
+			if (this.currentIndex > 0) {
+				this.currentIndex -= 1;
+				this.element.textContent = currentText.substring(0, this.currentIndex);
+				this.schedule(this.deleteSpeed);
+				return;
+			}
+			this.isDeleting = false;
+			this.currentTextIndex = (this.currentTextIndex + 1) % this.texts.length;
+			this.schedule(this.speed);
+			return;
+		}
+
+		if (this.currentIndex < currentText.length) {
+			this.currentIndex += 1;
+			this.element.textContent = currentText.substring(0, this.currentIndex);
+			this.schedule(this.speed);
+			return;
+		}
+
+		// 只有一条文本时保持显示，不删除
+		if (this.texts.length > 1) {
+			this.isDeleting = true;
+			this.schedule(this.pauseTime);
+		} else if (currentText === "") {
+			this.element.innerHTML = "&nbsp;";
+		}
+	}
+
+	public destroy() {
+		this.disposed = true;
+		this.clearTimer();
+		document.removeEventListener("visibilitychange", this.onVisibilityChange);
+	}
+}
+
+function mountTypewriters() {
+	const elements = document.querySelectorAll<HTMLElement>(".typewriter");
+	elements.forEach((element) => {
+		// 先销毁旧实例，避免同一元素被多个定时器轮流写
+		instances.get(element)?.destroy();
+		instances.set(element, new TypewriterEffect(element));
+	});
+}
+
+if (document.readyState === "loading") {
+	document.addEventListener("DOMContentLoaded", mountTypewriters, { once: true });
+} else {
+	mountTypewriters();
+}
+
+// swup 换页后重新挂载（新节点）；事件名两种都监听，任一先到都只做一次幂等重挂
+document.addEventListener("swup:page:view", mountTypewriters);
+document.addEventListener("swup:contentReplaced", mountTypewriters);
 </script>
 
 <style>

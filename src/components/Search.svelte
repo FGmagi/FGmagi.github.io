@@ -36,7 +36,37 @@ const fakeResult: SearchResult[] = [
 	},
 ];
 
+// 26.11.03：Pagefind 改为按需加载（见 Navbar.astro 的 window.__ensurePagefind）。
+// 这里负责「首次搜索意图 → 触发加载 → 初始化」，不再依赖页面加载时就绪。
+const initializeSearch = () => {
+	initialized = true;
+	pagefindLoaded =
+		typeof window !== "undefined" &&
+		!!window.pagefind &&
+		typeof window.pagefind.search === "function";
+};
+
+let ensureStarted = false;
+const ensureSearchEngine = async (): Promise<void> => {
+	if (pagefindLoaded) return;
+	if (import.meta.env.DEV) {
+		initializeSearch();
+		return;
+	}
+	if (ensureStarted) return;
+	ensureStarted = true;
+	const ensure = (window as unknown as { __ensurePagefind?: () => Promise<unknown> })
+		.__ensurePagefind;
+	try {
+		if (typeof ensure === "function") await ensure();
+	} catch (error) {
+		console.warn("Pagefind ensure failed:", error);
+	}
+	initializeSearch();
+};
+
 const togglePanel = () => {
+	void ensureSearchEngine();
 	const panel = document.getElementById("search-panel");
 	panel?.classList.toggle("float-panel-closed");
 };
@@ -46,6 +76,7 @@ const toggleDesktopSearch = () => {
 	if (windowJustFocused) {
 		return;
 	}
+	void ensureSearchEngine();
 	isDesktopSearchExpanded = !isDesktopSearchExpanded;
 	if (isDesktopSearchExpanded) {
 		setTimeout(() => {
@@ -129,22 +160,15 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 };
 
 onMount(() => {
-	const initializeSearch = () => {
-		initialized = true;
-		pagefindLoaded =
-			typeof window !== "undefined" &&
-			!!window.pagefind &&
-			typeof window.pagefind.search === "function";
-		console.log("Pagefind status on init:", pagefindLoaded);
-	};
 	if (import.meta.env.DEV) {
 		console.log(
 			"Pagefind is not available in development mode. Using mock data.",
 		);
 		initializeSearch();
 	} else {
+		// 26.11.03：加载由 ensureSearchEngine 按需触发，这里只负责接事件
+		// （旧版在这里挂了一个 2s 兜底定时器，会把「尚未加载」误判成「加载失败」）。
 		document.addEventListener("pagefindready", () => {
-			console.log("Pagefind ready event received.");
 			initializeSearch();
 		});
 		document.addEventListener("pagefindloaderror", () => {
@@ -153,13 +177,6 @@ onMount(() => {
 			);
 			initializeSearch(); // Initialize with pagefindLoaded as false
 		});
-		// Fallback in case events are not caught or pagefind is already loaded by the time this script runs
-		setTimeout(() => {
-			if (!initialized) {
-				console.log("Fallback: Initializing search after timeout.");
-				initializeSearch();
-			}
-		}, 2000); // Adjust timeout as needed
 	}
 
 	// 监听窗口焦点事件，防止切换窗口时自动展开搜索框
@@ -247,7 +264,7 @@ onDestroy(() => {
 </div>
 
 <!-- toggle btn for phone/tablet view -->
-<button onclick={togglePanel} aria-label="Search Panel" id="search-switch"
+<button onclick={togglePanel} onmouseenter={() => { void ensureSearchEngine(); }} aria-label="Search Panel" id="search-switch"
         class="btn-plain scale-animation lg:!hidden rounded-lg w-11 h-11 active:scale-90">
     <Icon icon="material-symbols:search" class="text-[1.25rem]"></Icon>
 </button>
@@ -261,6 +278,7 @@ onDestroy(() => {
   ">
         <Icon icon="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
         <input placeholder={i18n(I18nKey.search)} bind:value={keywordMobile}
+               onfocus={() => { void ensureSearchEngine(); }}
                oncontextmenu={(e) => { e.preventDefault(); keywordMobile = ""; result = []; }}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0
                focus:w-60 text-black/50 dark:text-white/50"

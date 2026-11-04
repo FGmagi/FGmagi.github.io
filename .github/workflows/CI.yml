@@ -65,3 +65,12 @@ jobs:
         run: pnpm astro build
         env:
           ENABLE_CONTENT_SYNC: false
+
+      # 26.11.03：搜索索引原本只存在于本地 `pnpm build` 的链路里（astro build && pagefind），
+      # CI 直接调 `pnpm astro build` ⇒ 线上 dist 没有 /pagefind/，导航栏搜索会退化为空结果。
+      # 这里补上同一份索引生成；与本地脚本使用同一 pagefind 默认配置（读取 pagefind.yml）。
+      - name: Build Pagefind index
+        run: pnpm exec pagefind --site dist
+        env:
+          ENABLE_CONTENT_SYNC: false
+

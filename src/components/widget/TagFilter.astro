@@ -65,15 +65,9 @@ const style = Astro.props.style;
 )}
 
 <style>
-	/* 26.09.14：标签筛选切换时只让「中间内容卡片」渐变消失/显示（左右磁贴不参与）。
-	   时长读 :root 的 --page-fade-out / --page-fade-in（与页面切换同一份 config）。 */
-	:global(#post-list-container) {
-		transition: opacity var(--page-fade-in, 250ms) cubic-bezier(0.4, 0, 0.2, 1);
-	}
-	:global(#post-list-container.tag-filter-switching) {
-		opacity: 0 !important;
-		transition: opacity var(--page-fade-out, 200ms) cubic-bezier(0.4, 0, 0.2, 1) !important;
-	}
+	/* 26.11.05：标签筛选改为「逐卡」动画（下滑淡出 / 上滑淡入），
+	   由 motion.css 的 .card-filter-anim / .card-filter-hidden 提供表现，
+	   这里不再对 #post-list-container 整体做淡入淡出（避免与逐卡动画叠成两次）。 */
 
 	/* 26.09.02 [13]：行内拉伸（space-between 占满行宽）+ 末行占位（filler）实现最后一行靠左；字母序由 getTagList 保证 */
 	.tag-filter-list {
@@ -123,7 +117,8 @@ const style = Astro.props.style;
 
 		// 26.09.02 [13]：应用过滤——激活集为空恢复全量；卡片 data-tags 为 trim+小写、空格分隔的标签列表；
 		// 命中任一激活标签即显示（OR）；仅操作带 data-tags 的真实卡，空白占位卡/分隔线不受影响
-		function applyTagFilter() {
+		// animate=false：不做逐卡动画（复位/切页时用，避免与页面切换的入场动画叠在一起）
+		function applyTagFilter(animate) {
 			var container = document.getElementById('post-list-container');
 			if (!container) return;
 			var active = getActiveTags();
@@ -140,44 +135,77 @@ const style = Astro.props.style;
 						}
 					}
 				}
-				setCardVisible(card, visible);
+				setCardVisible(card, visible, animate !== false);
 			}
 		}
 
-		// 26.09.02 [13]：卡片显隐（无动画 display 切换）；卡片隐藏时同步隐藏紧随其后的移动端分隔线，恢复时一并恢复
-		function setCardVisible(card, visible) {
-			card.style.display = visible ? '' : 'none';
-			var next = card.nextElementSibling;
-			if (next && next.classList.contains('post-card-divider')) {
-				next.style.display = visible ? '' : 'none';
-			}
-		}
-
-		// 26.09.14：标签筛选改走「中间内容卡片渐变消失 → 改显隐 → 渐变显示」。
-		// ⚠ 只动 #post-list-container（中间列表），左右磁贴（.home-sidebar/.home-right-sidebar）不参与，避免跟着闪。
-		var tagSwitchTimer = 0;
-		function applyTagFilterWithFade() {
-			var container = document.getElementById('post-list-container');
-			var reduceMotion =
+		// 26.11.05：卡片「筛选显隐」动效（配置见 config.ts 的 cardFilterAnimationConfig，
+		// 由 Layout.astro 解析期写入 window.__cardFilterAnim 与 --card-filter-* 变量）。
+		function getAnimConfig() {
+			var cfg = window.__cardFilterAnim || {};
+			var reduce =
 				window.matchMedia &&
 				window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-			if (!container || reduceMotion) {
-				applyTagFilter();
+			var duration =
+				typeof cfg.duration === 'number' ? cfg.duration : 200;
+			return {
+				enable: cfg.enable !== false && !reduce && duration > 0,
+				duration: duration,
+			};
+		}
+
+		// 26.11.05：逐卡显隐——
+		//   隐藏：加 .card-filter-hidden（下滑 + 淡出），过渡结束后再 display:none；
+		//   显示：先 display 回来，把「下方 + 透明」的起点落进样式快照，再摘类 ⇒ 上滑 + 淡入到原位。
+		//   卡片隐藏时同步隐藏紧随其后的移动端分隔线，恢复时一并恢复。
+		function setCardVisible(card, visible, animate) {
+			var cfg = getAnimConfig();
+			var next = card.nextElementSibling;
+			var divider =
+				next && next.classList.contains('post-card-divider') ? next : null;
+			if (!card.classList.contains('card-filter-anim')) {
+				card.classList.add('card-filter-anim');
+			}
+
+			if (visible) {
+				var wasHidden =
+					card.style.display === 'none' ||
+					card.classList.contains('card-filter-hidden');
+				if (!wasHidden) {
+					if (divider) divider.style.display = '';
+					return;
+				}
+				window.clearTimeout(card.__filterHideTimer);
+				card.style.display = '';
+				if (divider) divider.style.display = '';
+				if (animate && cfg.enable) {
+					card.classList.add('card-filter-hidden');
+					void card.offsetHeight;
+					card.classList.remove('card-filter-hidden');
+				} else {
+					card.classList.remove('card-filter-hidden');
+				}
 				return;
 			}
-			window.clearTimeout(tagSwitchTimer);
-			container.classList.add('tag-filter-switching');
-			var outMs =
-				parseFloat(
-					getComputedStyle(document.documentElement).getPropertyValue(
-						'--page-fade-out',
-					),
-				) || 200;
-			tagSwitchTimer = window.setTimeout(function () {
-				applyTagFilter();
-				void container.offsetHeight; // 让「已消失」这个起点真正落进样式快照
-				container.classList.remove('tag-filter-switching');
-			}, outMs);
+
+			// 隐藏
+			if (card.style.display === 'none') {
+				if (divider) divider.style.display = 'none';
+				return;
+			}
+			if (divider) divider.style.display = 'none';
+			card.classList.add('card-filter-hidden');
+			if (animate && cfg.enable) {
+				window.clearTimeout(card.__filterHideTimer);
+				card.__filterHideTimer = window.setTimeout(function () {
+					// 期间又被显示（类已摘）就不要隐藏
+					if (card.classList.contains('card-filter-hidden')) {
+						card.style.display = 'none';
+					}
+				}, cfg.duration + 20);
+			} else {
+				card.style.display = 'none';
+			}
 		}
 
 		// 26.09.02 [13]：清空激活态并恢复全量（切页/原地跳回主页/翻页时调用）
@@ -189,7 +217,8 @@ const style = Astro.props.style;
 					chip.classList.remove('active');
 					chip.setAttribute('aria-pressed', 'false');
 				});
-			applyTagFilter();
+			// 复位不做逐卡动画：切页/跳转本身已有入场动画，叠在一起会显得拖沓
+			applyTagFilter(false);
 		}
 
 		// 26.09.02 [13]：点击未激活 chip 加入激活集（高亮）并过滤；点击已激活 chip 取消激活并恢复
@@ -211,7 +240,7 @@ const style = Astro.props.style;
 							active.add(tag);
 						}
 						// 26.09.14：增删标签都走渐变（中间卡片淡出→改显隐→淡入）
-						applyTagFilterWithFade();
+						applyTagFilter(true);
 					});
 				});
 		}

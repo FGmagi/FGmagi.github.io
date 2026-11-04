@@ -33,7 +33,6 @@ interface RawFriend extends FriendRawItem {
 	id: number;
 	flag?: number;
 	title: string;
-	imgurl: string;
 	desc: string;
 	tags: string[];
 }
@@ -173,7 +172,7 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 					<div 
 						class="friend-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10
 								 overflow-hidden transition-all duration-300
-								 hover:shadow-xl hover:-translate-y-1"
+								 hover:shadow-xl"
 						data-title={item.title.toLowerCase()}
 						data-desc={item.desc.toLowerCase()}
 						data-tags={item.tags.join(',')}
@@ -182,13 +181,13 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 						<div class="p-6">
 							<!-- 头像和标题区 -->
 							<div class="flex items-start gap-4 mb-4">
-								<!-- 网站图标 -->
+								<!-- 网站图标（26.11.03：imgurl 为空时由 parseFriendLinks 按第一个网页链接生成 favicon 地址） -->
 								<div class="w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden 
 												bg-[var(--btn-regular-bg)] 
 												ring-2 ring-transparent
 												transition-all duration-300">
 									<img 
-										src={item.imgurl} 
+										src={item.imgUrl} 
 										alt={item.title}
 										class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
 										loading="lazy"
@@ -309,18 +308,22 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 </MainGridLayout>
 
 <style>
-	/* 友链卡片动画 */
+	/* 友链卡片动画
+	   26.11.03：改用统一令牌（motion.css），曲线与位移和全站一档。
+	   26.11.04：改回带淡入的 `mo-fade-rise` —— 上一版只留 transform，卡片不再淡入，
+	   观感上是「入场动画没了」（与改动前的 fadeInUp 行为不一致）。
+	   26.11.05：fill 由 both 改 backwards —— both 会让动画结束后仍“钉住” opacity/transform，
+	   使标签筛选的「下滑淡出 / 上滑淡入」类改不动这两个属性（动画值优先级高于普通声明）。 */
 	.friend-card {
-		animation: fadeInUp 0.5s ease-out forwards;
-		opacity: 0;
+		animation: mo-fade-rise var(--mo-slow, 320ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) backwards;
 	}
 
-	.friend-card:nth-child(1) { animation-delay: 0.05s; }
-	.friend-card:nth-child(2) { animation-delay: 0.1s; }
-	.friend-card:nth-child(3) { animation-delay: 0.15s; }
-	.friend-card:nth-child(4) { animation-delay: 0.2s; }
-	.friend-card:nth-child(5) { animation-delay: 0.25s; }
-	.friend-card:nth-child(6) { animation-delay: 0.3s; }
+	.friend-card:nth-child(1) { animation-delay: calc(var(--mo-stagger, 45ms) * 1); }
+	.friend-card:nth-child(2) { animation-delay: calc(var(--mo-stagger, 45ms) * 2); }
+	.friend-card:nth-child(3) { animation-delay: calc(var(--mo-stagger, 45ms) * 3); }
+	.friend-card:nth-child(4) { animation-delay: calc(var(--mo-stagger, 45ms) * 4); }
+	.friend-card:nth-child(5) { animation-delay: calc(var(--mo-stagger, 45ms) * 5); }
+	.friend-card:nth-child(6) { animation-delay: calc(var(--mo-stagger, 45ms) * 6); }
 
 	/* 26.11.03：desc 固定两行高（text-sm 行高 1.25rem，随根字号缩放）。
 	   desc 超过两行时在卡片内部滚动查看全文：滚动条常隐（无滑块可拖，仅滚轮/触控滚动）。
@@ -350,16 +353,8 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 		display: none;
 	}
 
-	@keyframes fadeInUp {
-		from {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
+	/* 26.11.03：本地 @keyframes fadeInUp 已删除，卡片入场改用 motion.css 的 mo-rise
+	   （只动 transform，淡入统一由父级 #main-grid 的 opacity 过渡负责）。 */
 
 	/* 标签筛选按钮样式 - 与番剧页面一致 */
 	.filter-container {
@@ -377,14 +372,21 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 		font-size: 0.875rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition: all 0.2s ease;
+		/* 26.11.03：`transition: all` → 明确属性清单（只过渡会变的那些；
+		   26.11.04 补回 color/box-shadow —— 原来 `all` 也在过渡它们，漏掉会让激活态变色变成硬切） */
+		transition:
+			background-color var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+			border-color var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+			color var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+			box-shadow var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+			transform var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1));
 		white-space: nowrap;
 	}
 	
 	.filter-tag:hover:not(.active) {
 		background: var(--btn-hover-bg);
 		border-color: var(--primary);
-		transform: translateY(-1px);
+		box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
 	}
 	
 	.filter-tag.active {
@@ -397,6 +399,5 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 		background: var(--primary) !important;
 		color: white !important;
 		border-color: var(--primary) !important;
-		transform: translateY(-1px);
 	}
 </style>

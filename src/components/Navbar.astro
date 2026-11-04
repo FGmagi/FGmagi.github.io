@@ -47,10 +47,12 @@ const [homeLink, ...restLinks] = links;
 				{/* 使用navbarTitle配置或默认配置 */}
                 {siteConfig.navbarTitle ? (
                     siteConfig.navbarTitle.mode === "logo" ? (
-                        <img src={url(siteConfig.navbarTitle.logo || navbarLogoFallback)} alt={siteConfig.navbarTitle.text} class="h-[2.25rem] max-w-full object-contain" loading="lazy" />
+                        // 26.11.03：首屏可见的 Logo 不再 lazy（lazy 只会让它更晚出现），
+                        // 并显式给出 width/height 撑住版位，避免图片到达时的横向抖动。
+                        <img src={url(siteConfig.navbarTitle.logo || navbarLogoFallback)} alt={siteConfig.navbarTitle.text} width="109" height="36" class="h-[2.25rem] max-w-full object-contain" loading="eager" decoding="async" fetchpriority="high" />
                     ) : (
                         <>
-                            <img src={url(siteConfig.navbarTitle.icon || navbarIconFallback)} alt={siteConfig.navbarTitle.text} class="h-[1.75rem] w-[1.75rem] mb-1 mr-2 object-contain" loading="lazy" />
+                            <img src={url(siteConfig.navbarTitle.icon || navbarIconFallback)} alt={siteConfig.navbarTitle.text} width="28" height="28" class="h-[1.75rem] w-[1.75rem] mb-1 mr-2 object-contain" loading="eager" decoding="async" />
                             <span class="dark:text-white text-black">{siteConfig.navbarTitle.text}</span>
                         </>
                     )
@@ -264,37 +266,47 @@ if (document.readyState === 'loading') {
 </script>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
-async function loadPagefind() {
-    try {
-        const response = await fetch(scriptUrl, { method: 'HEAD' });
-        if (!response.ok) {
-            throw new Error(`Pagefind script not found: ${response.status}`);
-        }
-
-        const pagefind = await import(scriptUrl);
-
-        await pagefind.options({
-            excerptLength: 20
-        });
-
-        window.pagefind = pagefind;
-
-        document.dispatchEvent(new CustomEvent('pagefindready'));
-        console.log('Pagefind loaded and initialized successfully, event dispatched.');
-    } catch (error) {
-        console.error('Failed to load Pagefind:', error);
-        window.pagefind = {
-            search: () => Promise.resolve({ results: [] }),
-            options: () => Promise.resolve(),
+/**
+ * 26.11.03（动效整体修缮 · 批 2）：Pagefind 改为「按需加载」
+ * ────────────────────────────────────────────────────────────────────
+ * 旧行为：DOMContentLoaded 就对 /pagefind/pagefind.js 发 HEAD 再动态 import，
+ * 即便访问者从不搜索也要付一次索引/wasm 的下载；而 CI 用的是 `pnpm astro build`
+ * （不跑 pagefind 生成），线上 dist 里根本没有该目录 ⇒ 每页白花一次 404。
+ * 现在：只在「搜索入口被使用」时由 window.__ensurePagefind() 触发，
+ * 对外契约（pagefindready / pagefindloaderror 事件、window.pagefind 桩）保持不变，
+ * Search.svelte 在悬停/聚焦/打开面板时调用本函数并等待其完成。
+ */
+if (!window.__ensurePagefind) {
+    window.__ensurePagefind = (function () {
+        let pending = null;
+        const installFallback = () => {
+            window.pagefind = {
+                search: () => Promise.resolve({ results: [] }),
+                options: () => Promise.resolve(),
+            };
+            document.dispatchEvent(new CustomEvent('pagefindloaderror'));
         };
-        document.dispatchEvent(new CustomEvent('pagefindloaderror'));
-        console.log('Pagefind load error, event dispatched.');
-    }
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadPagefind);
-} else {
-    loadPagefind();
+        return function ensurePagefind() {
+            if (window.pagefind) return Promise.resolve(window.pagefind);
+            if (pending) return pending;
+            pending = (async () => {
+                try {
+                    const response = await fetch(scriptUrl, { method: 'HEAD' });
+                    if (!response.ok) {
+                        throw new Error(`Pagefind script not found: ${response.status}`);
+                    }
+                    const pagefind = await import(scriptUrl);
+                    await pagefind.options({ excerptLength: 20 });
+                    window.pagefind = pagefind;
+                    document.dispatchEvent(new CustomEvent('pagefindready'));
+                } catch (error) {
+                    console.warn('[pagefind] 按需加载失败，搜索将退化为空结果：', error);
+                    installFallback();
+                }
+                return window.pagefind;
+            })();
+            return pending;
+        };
+    })();
 }
 </script>}

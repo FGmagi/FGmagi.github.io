@@ -6,7 +6,7 @@
 		"imgurl": "https://www.touchgal.ink/logo.webp",
 		"desc": "大部分直链，资源齐全，无墙",
 		"siteurl": "https://www.touchgal.ink/",
-		"tags": ["acg", "资源网站"]
+		"tags": ["acg", "资源网站","游戏"]
 	},
 	{
 		"id": 3,
@@ -15,7 +15,7 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=www.shinnku.com&sz=128",
 		"desc": "直链，新资源没有，但旧资源稳定，伟大无需多言",
 		"siteurl": "https://www.shinnku.com/",
-		"tags": ["acg", "资源网站"]
+		"tags": ["acg", "资源网站","游戏"]
 	},
 	{
 		"id": 4,
@@ -43,7 +43,7 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://www.mhh1.com/&sz=128",
 		"desc": "不确定是否真的，但确实能下，百度网盘资源",
 		"siteurl": "https://www.mhh1.com/",
-		"tags": ["acg", "资源网站"]
+		"tags": ["acg", "资源网站","游戏"]
 	},
 	{
 		"id": 7,
@@ -52,7 +52,7 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://www.gamer520.com/&sz=128",
 		"desc": "单机游戏，问就老佛爷已经付过钱了，可惜百度网盘。",
 		"siteurl": "https://www.gamer520.com/",
-		"tags": ["资源网站"],
+		"tags": ["资源网站","游戏"],
 		"first":"访问",
 		"first_active":true,		
 		"first_color":"0",
@@ -87,7 +87,7 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://chat.deepseek.com/&sz=128",
 		"desc": "平时叫梁圣，工作日请叫梁区",
 		"siteurl": "https://chat.deepseek.com/",
-		"tags": ["AI","agent"]
+		"tags": ["AI"]
 	},	
 	{
 		"id": 13,
@@ -96,7 +96,7 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://chatgpt.com/&sz=128",
 		"desc": "这玩意查梯子纯净度，太脏了降智严重",
 		"siteurl": "https://chatgpt.com/",
-		"tags": ["AI","agent"]
+		"tags": ["AI"]
 	},	
 	{
 		"id": 14,
@@ -105,7 +105,7 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://gemini.google.com/&sz=128",
 		"desc": "本质美国豆包，但综合能力还是比你豆姐强多了",
 		"siteurl": "https://gemini.google.com/",
-		"tags": ["AI","agent"]
+		"tags": ["AI"]
 	},	
 	{
 		"id": 15,
@@ -114,7 +114,7 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://grok.com/&sz=128",
 		"desc": "好兄弟，啥都聊。但自从收费后，就再也不是好兄弟了",
 		"siteurl": "https://grok.com/",
-		"tags": ["AI","agent"]
+		"tags": ["AI"]
 	},	
 	{
 		"id": 16,
@@ -123,6 +123,22 @@
 		"imgurl": "https://www.google.com/s2/favicons?domain=https://s.team/&sz=128",
 		"desc": "世界最大游戏（购物）平台——",
 		"siteurl": "https://s.team/",
-		"tags": ["AI","agent"]
+		"tags": ["游戏"]
+	},
+	{
+		"id": 17,
+		"flag": 1,
+		"title": "DLsite",
+		"desc": "音声、游戏购物平台",
+		"siteurl": "https://www.dlsite.com",
+		"tags": ["acg","游戏"]
+	},
+	{
+		"id": 18,
+		"flag": 1,
+		"title": "Prism",
+		"desc": "科研能力超强的免费ai平台，但目前功能已整合进codex。相比在线平台，本地agent还是更有优势。将于2027.1.1关停，终究是为商业化让步了（同样是openai出的，与sora难兄难弟了）",
+		"siteurl": "https://prism.openai.com/",
+		"tags": ["AI"]
 	}
 ]

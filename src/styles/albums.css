@@ -1,12 +1,16 @@
 /* 相册模块样式 */
 
-/* 相册卡片动画 */
+/* 相册卡片动画
+   26.11.04：hover 不再整体上移（-4px 位移会让指针贴边时 hover 反复进出 ⇒ 抖动），
+   改为阴影加深 + 只过渡真正会变的属性（不再 `transition: all`）。 */
 .album-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    box-shadow var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+    border-color var(--mo-fast, 140ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1));
 }
 
 .album-card:hover {
-  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.4);
 }
 
 /* 照片网格布局 */

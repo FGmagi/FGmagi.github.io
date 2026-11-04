@@ -83,20 +83,46 @@ const positionClass = (() => {
 	}
 })();
 
+/**
+ * 26.11.03（动效整体修缮 · 批 2）：壁纸改「单图 + 双缓冲」
+ * ────────────────────────────────────────────────────────────────────
+ * 旧实现的浪费：桌面 4 张 + 移动 3 张全部以 <img> 写进 DOM，且都是
+ * `absolute inset-0 w-full h-full` ⇒ 它们全部落在视口内，`loading="lazy"`
+ * 完全不生效（实测桌面端首屏会请求 5 张：4 桌面 + 移动组那张 eager，≈561KB），
+ * 而真正显示的只有 1 张。
+ *
+ * 现实现：
+ *   · 每个设备组只有一个「活动槽 a」与一个「缓冲槽 b」，SSR 都**不写 src**；
+ *   · 解析期脚本（首帧前执行）按当前设备 + sessionStorage 里的索引，只给活动槽
+ *     写入那一张图的 src ⇒ 首屏壁纸请求从 5 张降为 1 张；
+ *   · 切换时把目标图写进缓冲槽，载入完成后 1s 交叉淡化，再释放旧槽的 src
+ *     ⇒ 任意时刻内存里最多 2 张图；
+ *   · 跨断点 resize 时若另一组的活动槽还空着，才补一次（仍只 1 张）。
+ *
+ * 对外契约保持不变（WallpaperSwitch.svelte / MainGridLayout 依赖）：
+ *   `data-fullscreen-wallpaper`、`data-wp-desktop-count`、`data-wp-mobile-count`、
+ *   `window.__mizukiSwitchWallpaper(force?)`、sessionStorage 的
+ *   `mizuki_wallpaper_index` / `mizuki_wallpaper_last_switch`、
+ *   `wallpaper_desktop_index` / `wallpaper_mobile_index`（非轮播时的随机记忆）。
+ */
+
+// 设备组渲染清单（两组都渲染，便于跨断点补位；空组不渲染槽位）
 const renderGroups = [
 	{
-		key: 'desktop',
-		images: imageSources.desktop,
+		key: "desktop",
 		containerClass: "hidden md:block",
-		hasImages: hasDesktopImages
+		count: imageSources.desktop.length,
 	},
 	{
-		key: 'mobile',
-		images: imageSources.mobile,
+		key: "mobile",
 		containerClass: "block md:hidden",
-		hasImages: hasMobileImages
-	}
+		count: imageSources.mobile.length,
+	},
 ];
+
+// 图片公共样式：不再常驻 will-change（旧实现每张图都有），交叉淡化交给 transition-opacity
+const slotStyle = `transform: translateZ(0); backface-visibility: hidden;${blurAmount > 0 ? ` filter: blur(${blurAmount}px);` : ""}`;
+const slotClass = `absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`;
 ---
 
 <!-- 26.09.02 [14]：容器暴露 SSR 解析后的桌面/移动组实际图数（含 desktop↔mobile 回退与 imageApi 分支），供“切换壁纸”按钮判断当前设备可用壁纸数 -->
@@ -105,7 +131,7 @@ const renderGroups = [
 		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none",
 		className
 	]}
-	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0); perspective: 1000px;`}
+	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0);`}
 	data-fullscreen-wallpaper
 	data-wp-desktop-count={imageSources.desktop.length}
 	data-wp-mobile-count={imageSources.mobile.length}
@@ -121,165 +147,236 @@ const renderGroups = [
 	})();
 	</script>
 
-	{isCarouselEnabled ? (
-		renderGroups.map(group => group.hasImages && (
-			<div class={`${group.containerClass} w-full h-full relative`} style="transform: translateZ(0);">
-				{group.images.map((src, index) => (
-					<img
-						src={src}
-						alt={`${group.key} wallpaper ${index + 1}`}
-						class={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`}
-						data-carousel-item={index}
-						style={`transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''}; opacity: ${index === 0 ? 1 : 0};`}
-						decoding="async"
-						loading={index === 0 ? "eager" : "lazy"} 
-					/>
-				))}
+	{renderGroups.map((group) => (
+		group.count > 0 && (
+			<div
+				class={`${group.containerClass} w-full h-full relative`}
+				data-wp-group={group.key}
+			>
+				<img
+					data-wp-slot="a"
+					alt={`${group.key} wallpaper`}
+					class={slotClass}
+					style={slotStyle}
+					decoding="async"
+					fetchpriority="high"
+				/>
+				<img
+					data-wp-slot="b"
+					alt=""
+					aria-hidden="true"
+					class={slotClass}
+					style={`${slotStyle} opacity: 0;`}
+					decoding="async"
+				/>
 			</div>
-		))
-	) : (
-		<div id="wallpaper-single-container" class="w-full h-full relative">
-			<script is:inline define:vars={{ desktopImages: imageSources.desktop, mobileImages: imageSources.mobile, positionClass, blurAmount }}>
-				(function() {
-					const getRandomImage = (images, storageKey) => {
-						if (images.length === 0) return null;
-						if (images.length === 1) return images[0];
-						
-						const lastIndex = sessionStorage.getItem(storageKey);
-						let newIndex;
-						
-						do {
-							newIndex = Math.floor(Math.random() * images.length);
-						} while (newIndex === parseInt(lastIndex || '-1'));
-						
-						sessionStorage.setItem(storageKey, newIndex.toString());
-						return images[newIndex];
-					};
-					
-					const desktopSrc = getRandomImage(desktopImages, 'wallpaper_desktop_index');
-					const mobileSrc = getRandomImage(mobileImages, 'wallpaper_mobile_index');
-					
-					const container = document.getElementById('wallpaper-single-container');
-					
-					if (desktopSrc) {
-						const desktopDiv = document.createElement('div');
-						desktopDiv.className = 'hidden lg:block w-full h-full relative';
-						desktopDiv.style.transform = 'translateZ(0)';
-						desktopDiv.innerHTML = `
-							<img
-								src="${desktopSrc}"
-								alt="desktop wallpaper"
-								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''} opacity: 1;"
-								decoding="async"
-								loading="eager"
-							/>
-						`;
-						container.appendChild(desktopDiv);
-					}
-					
-					if (mobileSrc) {
-						const mobileDiv = document.createElement('div');
-						mobileDiv.className = 'block lg:hidden w-full h-full relative';
-						mobileDiv.style.transform = 'translateZ(0)';
-						mobileDiv.innerHTML = `
-							<img
-								src="${mobileSrc}"
-								alt="mobile wallpaper"
-								class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}"
-								style="transform: translateZ(0); backface-visibility: hidden; will-change: opacity; ${blurAmount > 0 ? `filter: blur(${blurAmount}px);` : ''} opacity: 1;"
-								decoding="async"
-								loading="eager"
-							/>
-						`;
-						container.appendChild(mobileDiv);
-					}
-				})();
-			</script>
-		</div>
-	)}
-	<script is:inline>
-	// 26.09.01修改，内容为：解析期（首帧前）按 sessionStorage 保存的轮播索引恢复背景图可见性，消除刷新时“先显示第 0 张、再淡入切换”的渲染残留
-	(function() {
-		var savedIndex = parseInt(sessionStorage.getItem('mizuki_wallpaper_index') || '0', 10);
-		var container = document.currentScript.parentElement;
-		if (!container) return;
-		container.querySelectorAll('.hidden.md\\:block, .block.md\\:hidden').forEach(function(group) {
-			var items = group.querySelectorAll('[data-carousel-item]');
-			if (items.length === 0) return;
-			var safeIndex = (savedIndex >= 0 && savedIndex < items.length) ? savedIndex : 0;
-			for (var i = 0; i < items.length; i++) {
-				items[i].style.opacity = i === safeIndex ? '1' : '0';
+		)
+	))}
+
+	<!-- 解析期（首帧前）只为「当前设备组」的活动槽写入一张图的 src -->
+	<script
+		is:inline
+		define:vars={{
+			desktopImages: imageSources.desktop,
+			mobileImages: imageSources.mobile,
+			carouselEnabled: isCarouselEnabled,
+		}}
+	>
+		(function () {
+			const root = document.currentScript.parentElement;
+			if (!root) return;
+
+			const INDEX_KEY = "mizuki_wallpaper_index";
+			const DESKTOP_KEY = "wallpaper_desktop_index";
+			const MOBILE_KEY = "wallpaper_mobile_index";
+			const lists = { desktop: desktopImages || [], mobile: mobileImages || [] };
+
+			const clampIndex = (value, len) => {
+				const n = Number.isFinite(value) ? value : 0;
+				if (len <= 0) return 0;
+				return n < 0 ? 0 : n >= len ? len - 1 : n;
+			};
+
+			// 非轮播：随机记住上一条，避免连续两次同一张（沿用旧键位语义）
+			function randomIndex(storageKey, len) {
+				if (len <= 1) return 0;
+				const last = parseInt(sessionStorage.getItem(storageKey) || "-1", 10);
+				let next = Math.floor(Math.random() * len);
+				let guard = 0;
+				while (next === last && guard < 8) {
+					next = Math.floor(Math.random() * len);
+					guard += 1;
+				}
+				sessionStorage.setItem(storageKey, String(next));
+				return next;
 			}
-		});
-	})();
+
+			function resolveIndex(groupKey, len) {
+				if (carouselEnabled) {
+					return clampIndex(
+						parseInt(sessionStorage.getItem(INDEX_KEY) || "0", 10),
+						len,
+					);
+				}
+				const key = groupKey === "desktop" ? DESKTOP_KEY : MOBILE_KEY;
+				const saved = sessionStorage.getItem(key);
+				return saved === null ? randomIndex(key, len) : clampIndex(parseInt(saved, 10), len);
+			}
+
+			const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+			const primary = isDesktop ? "desktop" : "mobile";
+			const secondary = isDesktop ? "mobile" : "desktop";
+
+			// 壁纸模式不是「全屏」时容器已被上一段脚本 display:none：
+			// 此时一张都不加载（旧实现照旧挂满 5 张），等切回全屏模式再补。
+			const isVisible = () => root.style.display !== "none";
+
+			// 只填「当前设备组」的活动槽；该组无图时退回另一组（与旧版 desktop↔mobile 回退一致）
+			function activate(groupKey) {
+				const list = lists[groupKey] || [];
+				if (list.length === 0) return false;
+				const group = root.querySelector('[data-wp-group="' + groupKey + '"]');
+				if (!group) return false;
+				const slot = group.querySelector('[data-wp-slot="a"]');
+				if (!slot) return false;
+				if (!slot.getAttribute("src")) {
+					slot.src = list[resolveIndex(groupKey, list.length)];
+				}
+				return true;
+			}
+
+			if (isVisible() && !activate(primary)) activate(secondary);
+			// 当前可见槽位记在 DOM 上：swup 换页可能重放脚本，闭包状态会丢，DOM 不会
+			root.dataset.wpActiveSlot = "a";
+
+			// 跨断点：另一组首次可见时才补一次图（仍只 1 张，且已有 src 不重复请求）
+			const mq = window.matchMedia("(min-width: 768px)");
+			const sync = () => {
+				if (!isVisible()) return;
+				const key = mq.matches ? "desktop" : "mobile";
+				if (!activate(key)) activate(mq.matches ? "mobile" : "desktop");
+			};
+			if (typeof mq.addEventListener === "function") {
+				mq.addEventListener("change", sync);
+			} else if (typeof mq.addListener === "function") {
+				mq.addListener(sync);
+			}
+
+			// 壁纸模式在 banner / 全屏之间切换时（见 WallpaperSwitch.svelte 派发的事件）补图
+			window.addEventListener("wallpaper-mode-change", sync);
+		})();
 	</script>
-</div>
 
-{isCarouselEnabled && (
-	<script is:inline define:vars={{ carouselInterval, carouselEnabled: config.carousel?.enable }}>
-		/**
-		 * 26.09.01 [3]：移除 setInterval 定时自动轮播，改为暴露 window.__mizukiSwitchWallpaper 手动切换接口
-		 * 由 MainGridLayout 的 swup 钩子在“页面切换且目标页为主页”时调用：随机换图（>2 张时保证前后不同）、
-		 * 复用图片的 transition-opacity duration-1000 实现 1s 渐变淡出/淡入；
-		 * 距上次切换不足 carousel.interval 秒则跳过；carousel.enable 仍为总开关（false 时直接返回）
-		 * 26.09.02 [14]：新增可选参数 force——true 时跳过最小间隔检查（“切换壁纸”按钮手动触发），
-		 * 仍执行随机换图/渐变并写回 mizuki_wallpaper_index/last_switch；swup 自动触发不传 force，保持原间隔门控
-		 */
-		function initFullscreenWallpaperSwitch() {
-			const container = document.querySelector('[data-fullscreen-wallpaper]');
-			if (!container) return;
+	{isCarouselEnabled && (
+		<script
+			is:inline
+			define:vars={{
+				carouselInterval,
+				carouselEnabled: config.carousel?.enable,
+				desktopImages: imageSources.desktop,
+				mobileImages: imageSources.mobile,
+			}}
+		>
+			/**
+			 * 26.09.01 [3]：移除 setInterval 定时自动轮播，改为暴露 window.__mizukiSwitchWallpaper 手动切换接口
+			 * 由 MainGridLayout 的 swup 钩子在「页面切换且目标页为主页」时调用：随机换图（>2 张时保证前后不同）、
+			 * 距上次切换不足 carousel.interval 秒则跳过；carousel.enable 仍为总开关（false 时直接返回）
+			 * 26.09.02 [14]：新增可选参数 force——true 时跳过最小间隔检查（“切换壁纸”按钮手动触发），
+			 * 仍执行随机换图/渐变并写回 mizuki_wallpaper_index/last_switch；swup 自动触发不传 force，保持原间隔门控
+			 * 26.11.03：实现改为「双缓冲槽交叉淡化」——只把目标图写进当前不可见的缓冲槽，
+			 * 载入完成后淡化并把旧槽的 src 释放，任意时刻最多 2 张图在内存（旧版一次性挂满全部图）。
+			 */
+			function initFullscreenWallpaperSwitch() {
+				const root = document.querySelector('[data-fullscreen-wallpaper]');
+				if (!root) return;
 
-			const INDEX_KEY = 'mizuki_wallpaper_index';
-			const LAST_SWITCH_KEY = 'mizuki_wallpaper_last_switch';
+				const INDEX_KEY = 'mizuki_wallpaper_index';
+				const LAST_SWITCH_KEY = 'mizuki_wallpaper_last_switch';
+				const FADE_MS = 1050;
 
-			// 手动切换接口：页面切至主页时由 swup 钩子触发；force=true 由“切换壁纸”按钮触发（绕过间隔门控）
-			window.__mizukiSwitchWallpaper = function(force) {
-				// 总开关：enable=false 时完全不切换
-				if (!carouselEnabled) return;
-				if (!container || !document.body.contains(container)) return;
-
-				// 最小切换间隔检查（首次/无记录时允许切换）
-				const lastSwitch = parseInt(sessionStorage.getItem(LAST_SWITCH_KEY) || '0', 10);
-				// 26.09.02 [14]：force=true 时跳过间隔检查（切换后仍写回 last_switch，重新计时）
-				if (!force && lastSwitch && Date.now() - lastSwitch < carouselInterval * 1000) return;
-
-				// 按设备类型确定目标组（md 断点：桌面组 hidden.md:block / 移动组 block.md:hidden）
-				const isDesktop = window.matchMedia && window.matchMedia('(min-width: 768px)').matches;
-				const items = isDesktop
-					? container.querySelectorAll('.hidden.md\\:block [data-carousel-item]')
-					: container.querySelectorAll('.block.md\\:hidden [data-carousel-item]');
-				const length = items.length;
-				// 长度 1 或空则忽略
-				if (length <= 1) return;
-
-				const savedIndex = parseInt(sessionStorage.getItem(INDEX_KEY) || '0', 10);
-				const currentIndex = (savedIndex >= 0 && savedIndex < length) ? savedIndex : 0;
-
-				let newIndex;
-				if (length === 2) {
-					// 两张图直接互切，保证必定换图
-					newIndex = 1 - currentIndex;
-				} else {
-					// >2 张：循环随机直到与当前索引不同，保证前后两次不选同一张
-					do {
-						newIndex = Math.floor(Math.random() * length);
-					} while (newIndex === currentIndex);
+				function currentGroup() {
+					const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+					return {
+						list: isDesktop ? desktopImages : mobileImages,
+						el: root.querySelector(
+							isDesktop ? '[data-wp-group="desktop"]' : '[data-wp-group="mobile"]',
+						),
+					};
 				}
 
-				// 渐变切换：旧图淡出、新图淡入（复用 transition-opacity duration-1000）
-				items[currentIndex].style.opacity = '0';
-				items[newIndex].style.opacity = '1';
+				// 手动切换接口：页面切至主页时由 swup 钩子触发；force=true 由“切换壁纸”按钮触发（绕过间隔门控）
+				window.__mizukiSwitchWallpaper = function (force) {
+					// 总开关：enable=false 时完全不切换
+					if (!carouselEnabled) return;
+					if (!root || !document.body.contains(root)) return;
 
-				sessionStorage.setItem(INDEX_KEY, newIndex.toString());
-				sessionStorage.setItem(LAST_SWITCH_KEY, Date.now().toString());
-			};
-		}
+					// 最小切换间隔检查（首次/无记录时允许切换）
+					const lastSwitch = parseInt(sessionStorage.getItem(LAST_SWITCH_KEY) || '0', 10);
+					// 26.09.02 [14]：force=true 时跳过间隔检查（切换后仍写回 last_switch，重新计时）
+					if (!force && lastSwitch && Date.now() - lastSwitch < carouselInterval * 1000) return;
 
-		if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', initFullscreenWallpaperSwitch);
-		} else {
-			initFullscreenWallpaperSwitch();
-		}
-	</script>
-)}
+					const group = currentGroup();
+					const list = group.list || [];
+					// 长度 1 或空则忽略
+					if (!group.el || list.length <= 1) return;
+
+					const savedIndex = parseInt(sessionStorage.getItem(INDEX_KEY) || '0', 10);
+					const currentIndex = savedIndex >= 0 && savedIndex < list.length ? savedIndex : 0;
+
+					let newIndex;
+					if (list.length === 2) {
+						// 两张图直接互切，保证必定换图
+						newIndex = 1 - currentIndex;
+					} else {
+						// >2 张：循环随机直到与当前索引不同，保证前后两次不选同一张
+						let guard = 0;
+						do {
+							newIndex = Math.floor(Math.random() * list.length);
+							guard += 1;
+						} while (newIndex === currentIndex && guard < 12);
+					}
+
+					const activeSlot = root.dataset.wpActiveSlot === 'b' ? 'b' : 'a';
+					const activeEl = group.el.querySelector('[data-wp-slot="' + activeSlot + '"]');
+					const bufferSlot = activeSlot === 'a' ? 'b' : 'a';
+					const bufferEl = group.el.querySelector('[data-wp-slot="' + bufferSlot + '"]');
+					if (!activeEl || !bufferEl) return;
+
+					// 缓冲槽先压到上层并透明，等新图解码完成再淡化 ⇒ 不会闪白/闪旧图
+					bufferEl.style.zIndex = '1';
+					bufferEl.style.opacity = '0';
+					bufferEl.onload = function () {
+						bufferEl.onload = null;
+						bufferEl.style.opacity = '1';
+						activeEl.style.opacity = '0';
+						window.setTimeout(function () {
+							// 交棒：缓冲槽成为可见层，旧层释放图片资源后待命
+							activeEl.removeAttribute('src');
+							activeEl.style.zIndex = '';
+							activeEl.style.opacity = '1';
+							bufferEl.style.zIndex = '';
+							root.dataset.wpActiveSlot = bufferSlot;
+						}, FADE_MS);
+					};
+					bufferEl.onerror = function () {
+						bufferEl.onload = null;
+						bufferEl.onerror = null;
+						bufferEl.removeAttribute('src');
+						bufferEl.style.zIndex = '';
+						bufferEl.style.opacity = '0';
+					};
+					bufferEl.src = list[newIndex];
+
+					sessionStorage.setItem(INDEX_KEY, newIndex.toString());
+					sessionStorage.setItem(LAST_SWITCH_KEY, Date.now().toString());
+				};
+			}
+
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', initFullscreenWallpaperSwitch);
+			} else {
+				initFullscreenWallpaperSwitch();
+			}
+		</script>
+	)}
+</div>

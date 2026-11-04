@@ -128,8 +128,10 @@ const albumsData = await scanAlbums();
     overflow: hidden;
   }
   
+  /* 26.11.04：去掉 hover 位移（元素在指针下方移动会让贴边时 hover 反复进出 ⇒ 抖动），
+     悬浮反馈保留卡片自带的 hover:shadow-md 与封面图内部的 group-hover 放大。 */
   .album-card:hover {
-    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.35);
   }
   
   @keyframes fadeInUp {

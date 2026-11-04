@@ -6,7 +6,9 @@ import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import fs from "node:fs";
 import path from "node:path";
-import "../styles/anime.css";
+// 26.11.03：番剧样式改为本页 head 显式挂载（`?url` 只取产物地址）。
+// 直接 import 会被并进 Vite 的全局 CSS chunk，导致**每个页面**都下载这 4.7KB。
+import animeStyleUrl from "../styles/anime.css?url";
 
 interface AnimeItem {
 	title: string;
@@ -228,6 +230,8 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 	title={i18n(I18nKey.anime)}
 	description={i18n(I18nKey.animeSubtitle)}
 >
+	{/* 26.11.03：番剧页专属样式（见文件头 animeStyleUrl 注释） */}
+	<link slot="head" rel="stylesheet" href={animeStyleUrl} />
 	<div
 		class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32"
 	>

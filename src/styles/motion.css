@@ -1,0 +1,280 @@
+/* ====================================================================
+   统一动效令牌层（26.11.03「动效整体修缮」批 1 引入）
+   ────────────────────────────────────────────────────────────────────
+   目的：把此前散落在 20+ 文件里的时长/曲线/位移收敛成一套令牌，后续所有
+   动效只引用变量，改观感只改这一处。
+
+   分工（勿混淆）：
+     · 本文件的 --mo-*  → 组件级动效（入场、悬浮、面板、按钮、链接）
+     · 切页时长 --page-fade-out / --page-fade-in 仍由 siteConfig.pageTransition
+       经 MainGridLayout.astro 的 <style define:vars> 写入，是切页淡入淡出的
+       唯一来源，**不在本文件定义、也不得被本文件覆盖**。
+
+   动画纪律：
+     · 只动画 transform / opacity（不触发布局与重绘）；
+     · 不写死毫秒值（除非本文件顶部的令牌定义本身）；
+     · 尊重 prefers-reduced-motion（见文件末尾），JS 侧统一读
+       src/utils/motion-preference.ts。
+   ==================================================================== */
+
+:root {
+  /* 时长 */
+  --mo-fast: 140ms; /* 悬浮 / 按压 / 颜色 */
+  --mo-base: 220ms; /* 面板 / 卡片状态切换 */
+  --mo-slow: 320ms; /* 页面内区块入场、滚动揭示 */
+  --mo-hero: 560ms; /* 横幅、首屏大块 */
+
+  /* 级联（stagger） */
+  --mo-stagger: 45ms; /* 相邻元素起跑间隔 */
+  --mo-stagger-max: 180ms; /* 级联延迟上限：列表很长时不再无限后移 */
+
+  /* 位移 / 抬升 */
+  --mo-shift: 6px; /* 入场位移（超过 8px 会显得浮夸） */
+  --mo-lift: 2px; /* 悬浮抬升 */
+
+  /* 曲线 */
+  --mo-ease-out: cubic-bezier(0.22, 0.8, 0.32, 1); /* 默认：快起慢收 */
+  --mo-ease-in-out: cubic-bezier(0.6, 0.04, 0.28, 1);
+  --mo-ease-emphasis: cubic-bezier(0.2, 0.9, 0.25, 1.05); /* 轻微过冲，不做弹跳 */
+}
+
+/* --------------------------------------------------------------------
+   统一 keyframes：全部只动 transform / opacity
+   命名统一 mo- 前缀，避免与各页面自带的 fadeInUp 等同名冲突
+   -------------------------------------------------------------------- */
+
+/* 入场位移：只动 transform —— 淡入始终由父区域（#main-grid 的 opacity 过渡）
+   统一负责，子块不再自己改 opacity，这是「一次渐变、有层次」的关键。 */
+@keyframes mo-rise {
+  from {
+    transform: translateY(var(--mo-shift));
+  }
+}
+
+/* 弹入：给浮层内的图标/角标用（自带 opacity，仅用于不与区域渐变叠加的位置） */
+@keyframes mo-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+/* 淡入 + 升起：需要自带淡入的卡片/条目用（页面级区块仍由父区域统一淡入） */
+@keyframes mo-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--mo-shift));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mo-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------------------
+   .onload-animation 降级为「无副作用标记类」
+   ────────────────────────────────────────────────────────────────────
+   历史：该类曾自带 fade-in-up 500ms + 150ms 延迟 + fill both，为了不与
+   #main-grid 的整体渐变相乘成二次淡入，切页控制器不得不在每个预渲染帧里
+   把它摘掉（page-transition.ts 的 clearRegionEnterAnimations）——于是子元素
+   实际上从来没有入场动效，观感就是「整块淡入」。
+   现在：淡入仍由父区域统一负责，子元素改用下面的 page-rise 级联（只动
+   transform），本类保留为空标记，老模板无需改动即可继续工作。
+   -------------------------------------------------------------------- */
+.onload-animation {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------
+   切页 / 首载的「上升级联」
+   ────────────────────────────────────────────────────────────────────
+   由 page-transition.ts 在 armEnter() 的同一帧挂上 body.page-rise，
+   一个完整级联播完后摘掉（见该文件 RISE_TOTAL_MS）。
+   与 transition.css 的分工：父级 opacity 过渡管「整体渐显」，本段只管
+   「各区块错峰落位」，两者同帧起跑、互不叠加透明度。
+
+   · #content-wrapper 的直接子块：页面级卡片（排除首页的文章列表容器，
+     它的子卡片由下面更精确的规则接管，避免两级位移叠成 12px）；
+   · #post-list-container 内的文章卡片：--i 由 PostPage.astro 的内联 style
+     按索引写出，天然错峰；
+   · 侧栏两列与页脚：单块轻抬，不逐组件错峰（避免整片抖动）。
+   -------------------------------------------------------------------- */
+body.page-rise #content-wrapper > :nth-child(-n + 6):not(#post-list-container),
+body.page-rise #post-list-container > .card-base,
+body.page-rise #sidebar-swup-container > *,
+body.page-rise #main-grid > .footer {
+  /* 26.11.04：改为「淡入 + 升起」。上一版只动 transform，切页时子块完全没有淡入，
+     用户反馈「大量过渡动画失效」——父级 #main-grid 的 250ms 渐变在视觉上很短，
+     没有子块淡入就近似硬切。这里与改动前的实现对齐：子块自带淡入（HEAD 里友链卡片
+     本来就是 fadeInUp + 父级渐变同时进行，观感正常），父级渐变仍保留为整体兜底。 */
+  animation: mo-fade-rise var(--mo-slow) var(--mo-ease-out) backwards;
+  animation-delay: min(
+    calc(var(--i, 0) * var(--mo-stagger)),
+    var(--mo-stagger-max)
+  );
+}
+
+/* 页面级块的序号（首块 --i 取默认 0，无需声明） */
+body.page-rise #content-wrapper > :nth-child(2) {
+  --i: 1;
+}
+body.page-rise #content-wrapper > :nth-child(3) {
+  --i: 2;
+}
+body.page-rise #content-wrapper > :nth-child(4) {
+  --i: 3;
+}
+body.page-rise #content-wrapper > :nth-child(5) {
+  --i: 4;
+}
+body.page-rise #content-wrapper > :nth-child(6) {
+  --i: 5;
+}
+
+/* --------------------------------------------------------------------
+   关于「悬浮抬升」类（.u-lift）—— 26.11.04 已移除，勿再加回
+   ────────────────────────────────────────────────────────────────────
+   曾给文章卡片加过 hover 抬升（translateY -2px + 阴影），实测有两个坑：
+   1) 位移会让「指针贴住卡片底边」时 hover 反复进出 ⇒ 卡片高频抖动；
+   2) PostPage 有一条作用域规则
+        #post-list-container[data-astro-cid-…] > * { transition: opacity .3s }
+      优先级（ID + 属性）高于任何普通工具类，卡片根节点上的 transition 会被它接管 ——
+      hover 的 transform 不会过渡、只会瞬跳，抖动更明显（这也是「过渡动画失效」的来源之一）。
+   结论：卡片悬停反馈只用「不改变几何」的方式（变暗层 / 阴影 / 变色），
+   需要过渡的属性必须写进**能赢过那条 scoped 规则**的选择器里，否则不会生效。
+   -------------------------------------------------------------------- */
+/* --------------------------------------------------------------------
+   快速划过时的悬停响应（26.11.05）
+   ────────────────────────────────────────────────────────────────────
+   问题（用户反馈）：快速挥动鼠标时，只有指针停住的那张卡片看得出悬停效果，
+   轨迹经过的卡片「没反应」。真因是入场渐变太长：指针在每张卡片上只停留几十毫秒，
+   200~300ms 的过渡连一小段都走不完，视觉上等于没变。
+   做法：进入 hover 立即生效（transition-duration: 0），离开仍走各自原有的平滑过渡 ——
+   扫过一串卡片会依次点亮、并在身后留下短暂淡出，正是期望的「依次响应」。
+   仅收紧进入时长，不改颜色/阴影本身。
+   ⚠ 选择器带 :hover，优先级高于同名基类与 Tailwind 单类工具，能稳定生效。
+   -------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .album-card:hover,
+  .device-card:hover,
+  .friend-card:hover,
+  .card-base:hover {
+    transition-duration: 0ms;
+  }
+}
+
+/* --------------------------------------------------------------------
+   卡片「筛选显隐」动效（26.11.05，配置见 config.ts 的 cardFilterAnimationConfig）
+   ────────────────────────────────────────────────────────────────────
+   语义：隐藏 = 短暂下滑 + 透明度递减到 0；显示 = 从下方上滑到原位 + 透明度递增到 1。
+   做法：把卡片标成 .card-filter-anim（过渡清单），隐藏态由 .card-filter-hidden 提供；
+   由脚本在隐藏前加类、在显示时「先加类→强制重排→摘类」，从而每次都播放一遍。
+   ⚠ 必须 !important：PostPage 有一条作用域规则
+     `#post-list-container[data-astro-cid-…] > * { transition: opacity .3s }`，
+     优先级（ID+属性）高于普通类，不加 !important 的话过渡清单会被它接管；
+     友链卡片的入场 animation（fill）也会抢走 opacity/transform，同样需要 !important 压住。
+   ⚠ 时长与位移由 <html> 上的 --card-filter-duration / --card-filter-offset 提供，
+     由 Layout.astro 按 config 写入；这里只给兜底值。
+   -------------------------------------------------------------------- */
+.card-filter-anim {
+  transition:
+    opacity var(--card-filter-duration, 200ms)
+      var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
+    transform var(--card-filter-duration, 200ms)
+      var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) !important;
+}
+
+.card-filter-hidden {
+  /* 隐藏态：向下位移 + 透明 */
+  opacity: 0 !important;
+  transform: translateY(var(--card-filter-offset, 10px)) !important;
+  pointer-events: none;
+}
+
+/* 减少动效：直接显隐，不做位移与渐变 */
+@media (prefers-reduced-motion: reduce) {
+  .card-filter-anim {
+    transition: none !important;
+  }
+
+  .card-filter-hidden {
+    transform: none !important;
+  }
+}
+
+html.reduce-motion .card-filter-anim {
+  transition: none !important;
+}
+
+html.reduce-motion .card-filter-hidden {
+  transform: none !important;
+}
+
+/* --------------------------------------------------------------------
+   减少动效（系统偏好）：CSS 侧统一入口
+   ────────────────────────────────────────────────────────────────────
+   此前 animation-enhancements.css 用 `*` 通配把全站 animation/transition
+   压成 0.01ms，选择器代价高且会把「必要的状态过渡」也一起干掉。这里改为
+   按令牌归零 + 定向停掉常驻动画，语义更可控。
+   -------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* 26.11.04：不再把时长压到 1ms —— 那会让「所有过渡」一起消失，
+       用户会以为动效坏了（反馈里的「大量过渡动画失效」）。减少动效应当去掉**位移**，
+       而不是去掉**反馈**：时长收到很短、位移与级联归零，颜色/透明度仍然平滑。 */
+    --mo-fast: 90ms;
+    --mo-base: 120ms;
+    --mo-slow: 120ms;
+    --mo-hero: 120ms;
+    --mo-stagger: 0ms;
+    --mo-stagger-max: 0ms;
+    --mo-shift: 0px;
+    --mo-lift: 0px;
+  }
+
+  body.page-rise #content-wrapper > *,
+  body.page-rise #post-list-container > .card-base,
+  body.page-rise #sidebar-swup-container > *,
+  body.page-rise #main-grid > .footer {
+    animation: none !important;
+  }
+
+  /* 常驻无限动画（横幅水波）直接停掉，保留静态形态 */
+  .waves > .parallax use {
+    animation: none !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* 可选：用户级「减少动画」开关（html.reduce-motion）与系统偏好同义。
+   批 4 的显示设置开关会写这个类；现在先留好样式入口。 */
+html.reduce-motion {
+  --mo-fast: 90ms;
+  --mo-base: 120ms;
+  --mo-slow: 120ms;
+  --mo-hero: 120ms;
+  --mo-stagger: 0ms;
+  --mo-stagger-max: 0ms;
+  --mo-shift: 0px;
+  --mo-lift: 0px;
+}
+
+html.reduce-motion body.page-rise #content-wrapper > *,
+html.reduce-motion body.page-rise #post-list-container > .card-base,
+html.reduce-motion body.page-rise #sidebar-swup-container > *,
+html.reduce-motion body.page-rise #main-grid > .footer {
+  animation: none !important;
+}
+
+html.reduce-motion .waves > .parallax use {
+  animation: none !important;
+}

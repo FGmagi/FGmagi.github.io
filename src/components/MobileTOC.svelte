@@ -282,8 +282,9 @@ onMount(() => {
 	// 延迟初始化，确保页面内容已加载
 	setTimeout(init, 100);
 
-	// 监听滚动事件作为备用
-	window.addEventListener("scroll", updateActiveHeading);
+	// 监听滚动事件作为备用（26.11.03：补 passive —— 原监听是阻塞式，
+	// 会和页面滚动竞争主线程，是移动端下拉发涩的原因之一）
+	window.addEventListener("scroll", updateActiveHeading, { passive: true });
 
 	return () => {
 		if (observer) {

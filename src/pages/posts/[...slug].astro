@@ -8,6 +8,11 @@ import SharePoster from "@components/misc/SharePoster.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+// 26.11.03：公式样式改为「本页 head 里显式挂一条 <link>」。
+// 直接 `import "katex/dist/katex.css"` 会被 Vite 并进全站共用的 CSS chunk
+// （实测被并进 _permalink_ 那个 chunk，反而让每个页面都下载 29KB）；
+// `?url` 只取到产物地址，既不进 CSS chunk，也能让本页仍然是一次阻塞加载、不闪公式。
+import katexStyleUrl from "katex/dist/katex.css?url";
 import { getSortedPosts } from "@utils/content-utils";
 import {
 	getFileDirFromPath,
@@ -190,6 +195,8 @@ const jsonLd = {
     headings={headings}
 >
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {/* 26.11.03：公式样式（仅本页）——见文件头 katexStyleUrl 注释 */}
+    <link slot="head" rel="stylesheet" href={katexStyleUrl} />
     <!-- 引入右侧边栏布局管理器 -->
   <script>
     import('../../scripts/right-sidebar-layout.js');

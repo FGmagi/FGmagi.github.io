@@ -119,10 +119,20 @@ body #navbar > div {
   backdrop-filter: var(--panel-blur);
   box-shadow: var(--shadow-lg);
   border: none;
+}
 
-  /* 优化过渡 */
+/* 26.11.03/04：过渡清单的归属划分。
+   ────────────────────────────────────────────────────────────────────
+   原来把 `transition: background .3s, backdrop-filter .3s` 直接写在上面那条 :is() 里，
+   由于 :is() 含 ID 选择器、优先级高于 panel-animations.css 的 `.float-panel`，
+   会把浮层的过渡清单整体替换 —— 面板开合时长被钉死成 0.3s、reduced-motion 归零也失效。
+   现在：浮层（.float-panel / 带 float-panel-closed 的面板）的过渡由 panel-animations.css 统一拥有
+   （其中已包含 background-color / backdrop-filter）；这里只给**非浮层**子组件补回它们原有的过渡，
+   否则这些元素的过渡会因为原规则被删而退化成 `all 0s`（实测 .dropdown-content 就是这样）。
+   ⚠ 不要在这里重新给 .float-panel 写 transition，否则又会顶掉面板动效。 */
+:is(.dropdown-content, .music-player .mini-player) {
   transition:
-    background 0.3s ease,
+    background-color 0.3s ease,
     backdrop-filter 0.3s ease;
 }
 

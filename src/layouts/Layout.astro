@@ -8,7 +8,7 @@ import {
 	profileConfig,
 	siteConfig,
 } from "@/config";
-import { umamiConfig } from "../config";
+import { cardFilterAnimationConfig, umamiConfig } from "../config";
 
 const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
@@ -420,6 +420,39 @@ if (fontFaces.length > 0) {
 		></style>
 
 		{fontFaceCss && <Fragment set:html={`<style>${fontFaceCss}</style>`} />}
+
+		<!-- 26.11.05：卡片「筛选显隐」动效配置下发（解析期执行，早于任何筛选脚本）
+		     · window.__cardFilterAnim：给 TagFilter 与 /js/friends-page-handler.js 读；
+		     · --card-filter-duration / --card-filter-offset：给 motion.css 的
+		       .card-filter-anim / .card-filter-hidden 用。
+		     ⚠ 只写一次、幂等；swup 换页重放本脚本也只是重复写入同样的值。 -->
+		<script
+			is:inline
+			define:vars={{
+				cardFilterAnimation: cardFilterAnimationConfig,
+			}}
+		>
+			(function () {
+				var cfg = cardFilterAnimation || {};
+				var duration = Number(cfg.duration);
+				var offset = Number(cfg.offset);
+				if (!isFinite(duration) || duration < 0) duration = 200;
+				if (!isFinite(offset)) offset = 10;
+				window.__cardFilterAnim = {
+					enable: cfg.enable !== false,
+					duration: duration,
+					offset: offset,
+				};
+				document.documentElement.style.setProperty(
+					"--card-filter-duration",
+					duration + "ms",
+				);
+				document.documentElement.style.setProperty(
+					"--card-filter-offset",
+					offset + "px",
+				);
+			})();
+		</script>
 
 		<!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 		<slot name="head" />
@@ -936,11 +969,47 @@ function disableAnimation() {
 	let fancyboxSelectors: string[] = [];
 	let Fancybox: any;
 
-	// 数学公式按需加载
+	// 26.11.03：katex.css 不再由这里动态 import。
+	// 原因：即便写在条件分支里，Vite 仍会把它抽成一个 CSS chunk 并由 Astro 写进**每个**页面的
+	// <head>（渲染阻塞，实测 29KB），包括根本不含公式的首页/友链页。
+	// 现在改为在真正会用公式的页面（posts/[...slug] 与 [permalink]）静态引入，
+	// 其余页面彻底不再下载。
 	function checkKatex() {
-		if (document.querySelector(".katex")) {
-			import("katex/dist/katex.css");
-		}
+		if (!document.querySelector(".katex")) return;
+		// 公式的横向滚动容器仍需在客户端补一层（与 katex.css 的加载解耦；
+		// 容器用 data-scrollbar-initialized 做幂等标记，重复调用安全）
+		initCustomScrollbar();
+	}
+
+	// 26.11.03：fancybox 的样式改为「首次需要时注入」——把 CSS 用 ?url 取到地址后
+	// 自己 append <link>，这样它不会出现在任何页面的 <head> 里（旧实现每页阻塞 33KB）。
+	let fancyboxCssPromise: Promise<void> | null = null;
+	function ensureFancyboxCss(): Promise<void> {
+		if (fancyboxCssPromise) return fancyboxCssPromise;
+		fancyboxCssPromise = (async () => {
+			try {
+				const { default: href } = await import(
+					"@fancyapps/ui/dist/fancybox/fancybox.css?url"
+				);
+				if (!href) return;
+				await new Promise<void>((resolve) => {
+					if (document.querySelector("link[data-fancybox-css]")) {
+						resolve();
+						return;
+					}
+					const link = document.createElement("link");
+					link.rel = "stylesheet";
+					link.href = href;
+					link.setAttribute("data-fancybox-css", "true");
+					link.addEventListener("load", () => resolve(), { once: true });
+					link.addEventListener("error", () => resolve(), { once: true });
+					document.head.appendChild(link);
+				});
+			} catch (error) {
+				console.warn("[fancybox] 样式加载失败：", error);
+			}
+		})();
+		return fancyboxCssPromise;
 	}
 
 	// 图片灯箱按需加载
@@ -960,7 +1029,7 @@ function disableAnimation() {
 		if (!Fancybox) {
 			const mod = await import("@fancyapps/ui");
 			Fancybox = mod.Fancybox;
-			await import("@fancyapps/ui/dist/fancybox/fancybox.css");
+			await ensureFancyboxCss();
 		}
 
 		if (fancyboxSelectors.length > 0) {
@@ -1494,19 +1563,8 @@ function disableAnimation() {
 	let toc = document.getElementById("toc-wrapper");
 	// 26.09.06：原 navbar 变量仅服务于已移除的滚动隐藏逻辑；导航栏现由 #top-row fixed 常驻吸顶
 
-	// 节流函数
-	function throttle(func: Function, limit: number) {
-		let inThrottle: boolean;
-		return function (this: any) {
-			const args = arguments;
-			const context = this;
-			if (!inThrottle) {
-				func.apply(context, args);
-				inThrottle = true;
-				setTimeout(() => (inThrottle = false), limit);
-			}
-		};
-	}
+	// 26.11.03：throttle 已随 window.onscroll 赋值一起移除（滚动改用 rAF 合并），
+	// 不再需要这个基于 setTimeout 的节流器。
 
 	function scrollFunction() {
 		const scrollTop = document.documentElement.scrollTop;
@@ -1557,10 +1615,22 @@ function disableAnimation() {
 		});
 	}
 
-	// 使用节流优化滚动性能
-	window.onscroll = throttle(scrollFunction, 16); // 约60fps
+	// 26.11.03：改用 addEventListener（原来用 window.onscroll/onresize 赋值，
+	// 会与 Navbar/TOC/navbar-card-separator 等处的监听互相覆盖，且无法声明 passive）。
+	// 这里用 rAF 合并同一帧的多次 scroll 事件（不再用 16ms throttle 定时器）。
+	let scrollTicking = false;
+	const runScroll = () => {
+		scrollTicking = false;
+		scrollFunction();
+	};
+	const onWindowScroll = () => {
+		if (scrollTicking) return;
+		scrollTicking = true;
+		window.requestAnimationFrame(runScroll);
+	};
+	window.addEventListener("scroll", onWindowScroll, { passive: true });
 
-	window.onresize = () => {
+	window.addEventListener("resize", () => {
 		// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 		let offset = Math.floor(
 			window.innerHeight * (BANNER_HEIGHT_EXTEND / 100),
@@ -1570,7 +1640,7 @@ function disableAnimation() {
 			"--banner-height-extend",
 			`${offset}px`,
 		);
-	};
+	}, { passive: true });
 
 	// 页面加载完成后初始化banner和轮播图
 	if (document.readyState === "loading") {

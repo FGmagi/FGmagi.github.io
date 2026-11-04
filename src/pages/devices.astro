@@ -59,7 +59,7 @@ const brands = Object.keys(devices);
             href={device.link}
             target="_blank"
             rel="noopener noreferrer"
-            class="device-card group relative overflow-hidden rounded-xl border border-[var(--line-divider)] bg-[var(--card-bg)] transition-all duration-300 hover:border-[var(--primary)]/50 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 hover:scale-[1.02] hover:-translate-y-0.5 block cursor-pointer"
+            class="device-card group relative overflow-hidden rounded-xl border border-[var(--line-divider)] bg-[var(--card-bg)] transition-all duration-300 hover:border-[var(--primary)]/50 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 hover:scale-[1.02] block cursor-pointer"
             style={`animation-delay: ${index * 100}ms`}
           >
 
@@ -132,7 +132,7 @@ const brands = Object.keys(devices);
             href="${device.link}"
             target="_blank"
             rel="noopener noreferrer"
-            class="device-card group relative overflow-hidden rounded-xl border border-[var(--line-divider)] bg-[var(--card-bg)] transition-all duration-300 hover:border-[var(--primary)]/50 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 hover:scale-[1.02] hover:-translate-y-0.5 block cursor-pointer"
+            class="device-card group relative overflow-hidden rounded-xl border border-[var(--line-divider)] bg-[var(--card-bg)] transition-all duration-300 hover:border-[var(--primary)]/50 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-white/5 hover:scale-[1.02] block cursor-pointer"
             style="animation-delay: ${index * 100}ms; animation: fadeInUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards; opacity: 0;"
           >
             <!-- 设备图片区域 -->
@@ -229,7 +229,6 @@ const brands = Object.keys(devices);
     .filter-tag:hover:not(.active) {
       background: var(--btn-hover-bg);
       border-color: var(--primary);
-      transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
@@ -237,12 +236,10 @@ const brands = Object.keys(devices);
       background: var(--primary);
       color: white;
       border-color: var(--primary);
-      transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
     }
 
     .filter-tag.active:hover {
-      transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
     }
 

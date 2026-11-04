@@ -15,6 +15,9 @@ import PasswordProtection from "@components/PasswordProtection.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+// 26.11.03：同 posts/[...slug].astro —— 公式样式用 `?url` 取地址、只在本页 head 挂载，
+// 避免被并进全站共用 CSS chunk。
+import katexStyleUrl from "katex/dist/katex.css?url";
 import { getSortedPosts } from "@utils/content-utils";
 import { getFileDirFromPath, getPostUrlBySlug } from "@utils/url-utils";
 import { initPostIdMap, hasCustomPermalink, generatePermalinkSlug } from "@utils/permalink-utils";
@@ -118,6 +121,8 @@ const jsonLd = {
     headings={headings}
 >
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {/* 26.11.03：公式样式（仅本页）——见文件头 katexStyleUrl 注释 */}
+    <link slot="head" rel="stylesheet" href={katexStyleUrl} />
     <script>
     import('../scripts/right-sidebar-layout.js');
     // 26.09.18：纸质分页（display_mode: single/double；正文里 <!-- model:xxx --> 指令可临时切换）

@@ -1,6 +1,14 @@
 /**
  * 统一的浮窗管理器
  * 确保同一时间只有一个浮窗处于打开状态，并提供统一的动画效果
+ *
+ * 26.11.03（动效整体修缮 · 批 3）：
+ * 旧实现在这里用内联 `transition: all 100ms ease-out` + `panel.offsetHeight` 强制重排
+ * 自己播动画，与 src/styles/panel-animations.css 的关闭态声明互相覆盖，观感只有 100ms
+ * 且会过渡无关属性。现在：
+ *   · 表现全部交给 CSS（opacity/transform/visibility，时长与曲线取 motion.css 令牌）；
+ *   · 本类只负责「切类 + 等这一次过渡结束」，返回值/await 语义保持不变；
+ *   · 主题切换期间（.is-theme-transitioning 会全站禁过渡）直接切类，不做等待。
  */
 
 type PanelId =
@@ -10,87 +18,53 @@ type PanelId =
 	| "search-panel"
 	| "wallpaper-mode-panel";
 
+const CLASS_CLOSED = "float-panel-closed";
+/** 与 motion.css 的 --mo-base 对齐；transitionend 正常会先到，这里只是兜底 */
+const FALLBACK_MS = 300;
+
 class PanelManager {
 	private activePanels: Set<PanelId> = new Set();
 	private panelStack: PanelId[] = [];
-	private readonly duration = 100;
 
-	/**
-	 * 应用动画打开浮窗
-	 */
-	private animateIn(panel: HTMLElement): Promise<void> {
+	private isThemeTransitioning(): boolean {
+		return document.documentElement.classList.contains(
+			"is-theme-transitioning",
+		);
+	}
+
+	/** 等这次过渡结束（transitionend 优先，超时兜底），不读也不写任何几何属性 */
+	private waitForTransition(panel: HTMLElement): Promise<void> {
 		return new Promise((resolve) => {
-			// 检查是否正在主题切换，如果是则跳过动画
-			const isThemeTransitioning =
-				document.documentElement.classList.contains(
-					"is-theme-transitioning",
-				);
-
-			if (isThemeTransitioning) {
-				// 主题切换期间，直接显示面板，不设置pointer-events: none
-				panel.classList.remove("float-panel-closed");
-				panel.style.opacity = "1";
-				panel.style.transform = "scale(1) translateY(0)";
+			let settled = false;
+			let timer = 0;
+			const finish = () => {
+				if (settled) return;
+				settled = true;
+				panel.removeEventListener("transitionend", onEnd);
+				window.clearTimeout(timer);
 				resolve();
-				return;
-			}
-
-			panel.classList.remove("float-panel-closed");
-			panel.style.opacity = "0";
-			panel.style.transform = "scale(0.95) translateY(-10px)";
-			panel.style.pointerEvents = "none";
-
-			panel.offsetHeight; // 强制重排
-
-			panel.style.transition = `all ${this.duration}ms ease-out`;
-
-			requestAnimationFrame(() => {
-				panel.style.opacity = "1";
-				panel.style.transform = "scale(1) translateY(0)";
-				panel.style.pointerEvents = "auto";
-
-				setTimeout(() => {
-					panel.style.transition = "";
-					resolve();
-				}, this.duration);
-			});
+			};
+			const onEnd = (event: TransitionEvent) => {
+				// 只认面板自身的过渡，忽略子元素冒泡上来的
+				if (event.target === panel) finish();
+			};
+			panel.addEventListener("transitionend", onEnd);
+			timer = window.setTimeout(finish, FALLBACK_MS);
 		});
 	}
 
-	/**
-	 * 应用动画关闭浮窗
-	 */
-	private animateOut(panel: HTMLElement): Promise<void> {
-		return new Promise((resolve) => {
-			// 检查是否正在主题切换
-			const isThemeTransitioning =
-				document.documentElement.classList.contains(
-					"is-theme-transitioning",
-				);
+	/** 应用动画打开浮窗 */
+	private async animateIn(panel: HTMLElement): Promise<void> {
+		panel.classList.remove(CLASS_CLOSED);
+		if (this.isThemeTransitioning()) return;
+		await this.waitForTransition(panel);
+	}
 
-			if (isThemeTransitioning) {
-				// 主题切换期间，直接关闭面板，不设置pointer-events: none
-				panel.classList.add("float-panel-closed");
-				panel.style.opacity = "";
-				panel.style.transform = "";
-				resolve();
-				return;
-			}
-
-			panel.style.transition = `all ${this.duration}ms ease-out`;
-			panel.style.pointerEvents = "none";
-			panel.style.opacity = "0";
-			panel.style.transform = "scale(0.95) translateY(-10px)";
-
-			setTimeout(() => {
-				panel.classList.add("float-panel-closed");
-				panel.style.transition = "";
-				panel.style.opacity = "";
-				panel.style.transform = "";
-				panel.style.pointerEvents = "";
-				resolve();
-			}, this.duration);
-		});
+	/** 应用动画关闭浮窗 */
+	private async animateOut(panel: HTMLElement): Promise<void> {
+		panel.classList.add(CLASS_CLOSED);
+		if (this.isThemeTransitioning()) return;
+		await this.waitForTransition(panel);
 	}
 
 	/**
@@ -109,7 +83,7 @@ class PanelManager {
 			return false;
 		}
 
-		const isClosed = panel.classList.contains("float-panel-closed");
+		const isClosed = panel.classList.contains(CLASS_CLOSED);
 		const shouldOpen = forceState !== undefined ? forceState : isClosed;
 
 		if (shouldOpen) {
@@ -130,7 +104,7 @@ class PanelManager {
 	 */
 	async closePanel(panelId: PanelId): Promise<void> {
 		const panel = document.getElementById(panelId);
-		if (panel && !panel.classList.contains("float-panel-closed")) {
+		if (panel && !panel.classList.contains(CLASS_CLOSED)) {
 			await this.animateOut(panel);
 			this.activePanels.delete(panelId);
 			this.panelStack = this.panelStack.filter((id) => id !== panelId);

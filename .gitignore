@@ -71,5 +71,5 @@ src/data/bangumi-data.json
 src/data/bilibili-data.json
 
 .tmp-verify/
-
+.tmp-pnpm-home/
 任务书A.md

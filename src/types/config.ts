@@ -74,6 +74,7 @@ export type SiteConfig = {
 		defaultMode: "list" | "grid"; // 默认布局模式：list=列表模式，grid=网格模式
 		allowSwitch: boolean; // 是否允许用户切换布局
 		pageSize?: number; // 每页文章数量，范围 5-10
+		fillLastPage?: boolean; // 末页是否用不可见槽位补齐
 	};
 
 	/**
@@ -155,6 +156,7 @@ export type SiteConfig = {
 	wallpaperMode: {
 		defaultMode: "banner" | "fullscreen" | "none"; // 默认壁纸模式：banner=顶部横幅，fullscreen=全屏壁纸，none=无壁纸
 		showModeSwitchOnMobile?: "off" | "mobile" | "desktop" | "both"; // 整体布局方案切换按钮显示设置：off=隐藏，mobile=仅移动端，desktop=仅桌面端，both=全部显示
+		enableBannerMode?: boolean; // false 时隐藏横幅模式入口，但保留 Banner 实现供恢复
 	};
 
 	banner: {
@@ -206,7 +208,6 @@ export type SiteConfig = {
 		useJapaneseBadge?: boolean; // 使用日语假名标记（あいうえお...）代替数字
 		sidebarRailWidth?: string; // 保留桌面侧栏目录所需的最小单侧空间（CSS 长度，如 "13rem"）
 		sidebarMinContentWidth?: number; // 文章最小内容宽度（rem）；低于该值退化为移动端目录
-		/** 26.09.14：目录（锚点）跳转行为（宽/窄屏目录共用） */
 		navigation?: {
 			offset?: number; // 目标标题与导航栏底边的额外间距（px）
 			smoothDuration?: number; // 平滑滚动时长（ms）
@@ -216,13 +217,10 @@ export type SiteConfig = {
 		};
 	};
 
-	// 26.09.14：页面切换渐变时长（由 src/utils/page-transition.ts 读取并驱动）
 	pageTransition: {
 		fadeOut: number; // 渐变消失时长（毫秒）：点击后当前整页淡出
 		fadeIn: number; // 渐变显示时长（毫秒）：预渲染完成后新页统一淡入
-		prerenderMaxWait?: number; // 预渲染最长等待（毫秒）：等正文字体就绪 + 排版收敛，超时放行
 	};
-	/** 26.09.15：导航栏「悬挂」（吸顶）开关 */
 	navbar?: {
 		pinned?: boolean; // true=固定悬挂在视口顶部（下拉始终可见）| false=随页面滚动
 	};
@@ -249,6 +247,7 @@ export type DataFilesConfig = {
 	postsDir: string; // 文章内容目录（glob base）
 	specDir: string; // 独立页面内容目录（glob base）
 	albumsDir: string; // 相册图片目录（文件系统路径）
+	albumsInfoDir?: string; // 相册 info.json 所在目录（文件系统路径；缺省与 albumsDir 相同）
 	albumsWebDir: string; // 相册网页路径前缀（相对 public/，以 / 开头）
 	albumsCover: string;
 	albumsInfoFile?: string; // 相册顶层清单文件名（albumsDir 下；默认 "info.json"，顶层对象数组）
@@ -410,36 +409,25 @@ export type AnnouncementConfig = {
 	content: string; // 公告栏内容
 	icon?: string; // 公告栏图标
 	type?: "info" | "warning" | "success" | "error"; // 公告类型
-	closable?: boolean; // [死代码]：右侧 X 关闭按钮已取消（26.09.02），字段保留兼容
+	closable?: boolean;
 	link?: {
 		enable: boolean; // 是否启用链接
-		showLearnMore?: boolean; // 是否显示 Learn More 链接（true=显示，false=隐藏；26.09.02 新增 bool 开关）
+		showLearnMore?: boolean;
 		text: string; // 链接文字
 		url: string; // 链接地址
 		external?: boolean; // 是否外部链接
 	};
 };
 
-// 26.09.02 [13]：标签筛选卡片配置（首页左下角卡片，点击标签 DOM 过滤中间文章卡片）
 export type TagFilterConfig = {
 	showCount: boolean; // 是否在标签 chip 内显示文章数（"标签名：N"）；false=仅显示标签名
 };
 
-// 26.09.02：首页中间内容卡片悬停变暗参数（供 PostCard 悬停遮罩使用，百分比暗度按 0-100 取值）
 export type PostCardHoverConfig = {
 	startDuration: number;
 	endDuration:number;
 	hoverDarkness: number; // 悬停时暗度（%，0=不变暗，100=全黑；默认 10）
 	restoredDarkness: number; // 停顿后恢复到的暗度（%，默认 5，即"悬停暗度的一半"）
-};
-
-// 26.11.05：卡片「筛选显隐」动效（标签筛选过滤卡片时使用：
-// 隐藏 = 短暂下滑 + 淡出，显示 = 从下方短暂上滑 + 淡入）
-export type CardFilterAnimationConfig = {
-	enable: boolean; // 是否启用该动效；false = 即时显隐（无动画）
-	duration: number; // 单张卡片的过渡时长（ms），建议 160~260
-	offset: number; // 位移幅度（px），建议 6~16
-	respectReducedMotion?: boolean; // true=遵循系统「减少动效」（只淡入淡出、位移归零）；默认 false=始终播放滑动
 };
 
 export type MusicPlayerConfig = {
@@ -467,7 +455,7 @@ export type WidgetComponentType =
 	| "pio" // 添加 pio 组件类型
 	| "site-stats" // 站点统计组件
 	| "calendar" // 日历组件
-	| "tag-filter" // 26.09.02 [13]：标签筛选卡片组件类型
+	| "tag-filter"
 	| "custom";
 
 export type WidgetComponentConfig = {

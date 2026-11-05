@@ -20,7 +20,6 @@ const textData = Array.isArray(text) ? JSON.stringify(text) : text;
 <span class={`typewriter ${className}`} data-text={textData} data-speed={speed} data-delete-speed={deleteSpeed} data-pause-time={pauseTime}></span>
 
 <script>
-// 26.11.03 重写（动效整体修缮 · 批 3）
 // 旧实现的三处问题：
 //   1. DOMContentLoaded 与 swup 换页各 new 一个实例、旧实例从不 destroy ——
 //      横幅副标题这类「不被 swup 替换」的元素会被多个定时器同时写 textContent
@@ -72,8 +71,15 @@ class TypewriterEffect implements TypewriterInstance {
 		this.pauseTime =
 			Number.parseInt(element.dataset.pauseTime || "2000", 10) || 2000;
 
-		// 减少动效：直接把第一条文本放上去，不留任何定时器
-		if (prefersReducedMotion() || this.texts.length === 0) {
+		// A disabled feature or system reduced-motion preference shows the first
+		// subtitle immediately and creates no timer.
+		if (
+			document.documentElement.dataset.motionTypewriter === "off" ||
+			prefersReducedMotion() ||
+			(element.closest("#banner-wrapper") &&
+				(localStorage.getItem("wallpaperMode") || "banner") !== "banner") ||
+			this.texts.length === 0
+		) {
 			this.element.textContent = this.texts[0] ?? "";
 			return;
 		}
@@ -153,6 +159,8 @@ if (document.readyState === "loading") {
 // swup 换页后重新挂载（新节点）；事件名两种都监听，任一先到都只做一次幂等重挂
 document.addEventListener("swup:page:view", mountTypewriters);
 document.addEventListener("swup:contentReplaced", mountTypewriters);
+window.addEventListener("fgmagi:settings-change", mountTypewriters);
+window.addEventListener("wallpaper-mode-change", mountTypewriters);
 </script>
 
 <style>

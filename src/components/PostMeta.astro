@@ -1,6 +1,4 @@
 ---
-// 26.09.02 [11]修改，内容为：移除"文章分类"渲染（categories 区块、category/hideUncategorized props、getCategoryUrl 引用），全站不再展示分类；日期/字数/标签/访问量等元数据能力与 meta-date 类保持不变
-// 26.09.02修改，内容为：md 阅读页标签链接改跳 /archive/?q= 搜索筛选（原跳标签归档路径），移除 getTagUrl 引用
 import { Icon } from "astro-icon/components";
 import { umamiConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
@@ -24,8 +22,8 @@ export interface Props {
 	className?: string;
 	id?: string;
 	showOnlyBasicMeta?: boolean; // 新增属性，控制是否只显示基本元数据
-	hideTags?: boolean; // 26.08.30修改，内容为：新增 hideTags 属性，标签已移至标题右侧展示时隐藏元数据区的标签
-	hideMetaIcons?: boolean; // 26.08.31修改，内容为：新增 hideMetaIcons 属性，隐藏日期左侧的图标（分类图标随分类展示一并移除，26.09.02 [11]）
+	hideTags?: boolean;
+	hideMetaIcons?: boolean;
 	words?: number; // 字数统计
 	minutes?: number; // 阅读时间（分钟）
 	showWordCount?: boolean; // 是否显示字数统计
@@ -50,9 +48,7 @@ const {
 ---
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
-    <!-- publish date -->
-    <!-- 26.11.05：日期旁的日历图标是纯装饰 —— aria-hidden + pointer-events:none，
-         不参与命中测试、没有 hover/active 反馈，避免与浮层/导航栏抢点击。 -->
+
     <div class="flex items-center meta-date">
         {!hideMetaIcons && (
             <div class="meta-icon" aria-hidden="true">
@@ -105,7 +101,7 @@ const {
             </div>
         </div>
     )}
-    
+
     <!-- 访问量（首页不显示，且umami.enabled为true时显示） -->
     {!isHome && umamiEnabled && id && (
         <div class="flex items-center">
@@ -124,23 +120,23 @@ const {
         function generateStatsText(pageViews, visitors) {
             return `浏览量 ${pageViews} · 访客 ${visitors}`;
         }
-        
+
         // 获取访问量统计
         async function fetchPageViews(isRetry = false) {
             // @ts-ignore
             if (!umamiConfig.enabled || !umamiWebsiteId || !id || !isRetry) return;
-            
+
             try {
                 // 构造文章页面的URL路径
                 const pageUrl = `/posts/${id}/`;
-                
+
                 // 调用全局工具获取特定页面的 Umami 统计数据
                 const stats = await getUmamiPageStats(umamiBaseUrl, umamiApiKey, umamiWebsiteId, pageUrl);
-                
+
                 // 从返回的数据中提取页面浏览量和访客数
                 const pageViews = stats.pageviews || 0;
                 const visitors = stats.visitors || 0;
-                
+
                 const displayElement = document.getElementById('page-views-display');
                 if (displayElement) {
                     displayElement.textContent = generateStatsText(pageViews, visitors);

@@ -3,15 +3,6 @@
 @import "./variables.styl";
 /* 导入相册样式 */
 @import "./albums.css";
-/* 26.09.06：anime.css 不在此引入——它只服务 /anime 页，由 pages/anime.astro 单独 import。
-   来源：恢复 main.css 入口后，此处 @import 会把 anime.css 内联进**每个**页面的 CSS 包，
-   并与 /anime 页自身的 JS import 形成同一份样式双份打包（Vite 只对 JS 模块去重，
-   对「内联副本」不去重）。 */
-/* 导入动画样式
-   26.11.03：拆成两层——motion.css 是令牌 + 通用动效层（入场级联、悬浮/按压、
-   链接下划线、减少动效策略），transition.css 只保留切页渐变机制。
-   旧 animation-enhancements.css 的类全站无人引用，已删除（其 reduced-motion
-   通配规则迁入 motion.css，改为按令牌归零）。 */
 @import "./motion.css";
 @import "./transition.css";
 /* 导入渐变按钮样式 */
@@ -24,7 +15,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 26.09.02 [6]：恢复页面原生滚动条并定制细样式——WebKit 6px 圆角滑块（半透明，悬停/按下加深），Firefox thin；颜色经 --scrollbar-bg* 变量随浅色/深色主题自适应；scrollbar-gutter: stable 预留槽位，避免滚动条出现/消失引起布局偏移 */
 /* 确保平滑滚动 */
 html {
   scroll-behavior: smooth;
@@ -64,9 +54,6 @@ html::-webkit-scrollbar-thumb:active {
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.15) 60%, rgba(255, 255, 255, 0.05) 80%, transparent 100%);
   pointer-events: none;
   z-index: 20;
-  /* 26.11.03：原来写 `transition: all 0.3s`，但这条高光只会在主题/壁纸切换时改
-     background 与 opacity —— background 不可过渡，`all` 纯属让浏览器多检查一堆属性。
-     现在只过渡真正会变的那一个。 */
   transition: opacity var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1));
 }
 
@@ -271,7 +258,6 @@ html::-webkit-scrollbar-thumb:active {
     -webkit-backdrop-filter: blur(8px) !important;
   }
 
-  /* 26.09.01 [5]：常规模式主页文章列表容器背景统一为右侧小部件卡片背景——容器改透明，避免与文章卡片 .card-base 的 0.8 半透明叠加成近似不透明（实测叠加后纯白、右侧为毛玻璃透壁纸）；容器透明后文章卡片单层玻璃效果与右侧一致；仅主页、不影响简洁模式/其他页面/移动端规则 */
   body[class~="lg:is-home"]:not(.simple-mode) #post-list-container {
     background: transparent !important;
     background-color: transparent !important;
@@ -279,7 +265,6 @@ html::-webkit-scrollbar-thumb:active {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* 26.08.30修改，内容为：新增简洁模式下卡片样式——除导航栏区域（最上方主页/全部等背景卡片）外，其余卡片变为透明背景、圆角矩形边框，左/下边框有向左下的阴影效果（3px，悬停9px） */
   body.simple-mode .card-base {
     background: transparent !important;
     backdrop-filter: none !important;
@@ -305,7 +290,6 @@ html::-webkit-scrollbar-thumb:active {
     box-shadow: none;
   }
 
-  /* 26.08.31修改，内容为：明确恢复全屏壁纸常规模式 28% 透明度，简洁模式由覆盖规则降为 14% */
   [data-fullscreen-wallpaper] {
     opacity: 0.28;
     transition: opacity 0.6s ease;
@@ -314,16 +298,11 @@ html::-webkit-scrollbar-thumb:active {
     opacity: 0.14 !important;
   }
 
-  /* 26.09.02 [14]：全屏↔隐藏壁纸模式切换的背景渐变——脚本以 important 内联透明度驱动淡出/淡入，
-     沿用本容器既有 opacity 0.6s 过渡；隐藏模式下 display:none 与 body 类切换均在淡出结束后执行，
-     避免瞬时显隐造成生硬跳变 */
   body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
     transition: opacity 0.6s ease !important;
   }
-  @media (prefers-reduced-motion: reduce) {
-    body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
-      transition: none !important;
-    }
+  html[data-reduced-motion="true"] body.wallpaper-mode-transition [data-fullscreen-wallpaper] {
+    transition: none !important;
   }
 
   .wallpaper-transparent .float-panel {
@@ -493,7 +472,6 @@ html::-webkit-scrollbar-thumb:active {
     @apply overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0;
   }
 
-  /* 26.08.30修改，内容为：下拉菜单由 hover/focus-within 展开改为点击触发（aria-expanded 属性控制），与导航栏点击切换逻辑保持一致 */
   /* 下拉菜单样式 */
   .dropdown-container {
     @apply relative;
@@ -558,9 +536,6 @@ html::-webkit-scrollbar-thumb:active {
   .meta-icon {
     @apply w-8 h-8 transition-colors duration-150 rounded-md flex items-center justify-center bg-[var(--btn-regular-bg)]
         text-[var(--btn-content)] mr-2;
-    /* 26.11.05：文章元信息里的图标（日期/字数/标签/浏览量）是**纯装饰**：
-       不接收 hover / 点击 / 触摸（pointer-events:none）、不可被选中，避免和覆盖在页面上的
-       浮层/导航栏抢命中，也避免用户误以为它是可点按钮。 */
     pointer-events: none;
     -webkit-user-select: none;
     user-select: none;
@@ -612,7 +587,7 @@ html::-webkit-scrollbar-thumb:active {
   left: calc(50% - 1px);
   border-left: 2px dashed var(--line-color);
   pointer-events: none;
-  transition: all 0.3s;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   transform: translateY(-50%);
 }
 
@@ -732,7 +707,7 @@ html::-webkit-scrollbar-thumb:active {
 
 /* 确保过渡动画平滑 */
 .post-list-container {
-  transition: all 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 /* 文章列表布局切换样式 */
@@ -790,13 +765,12 @@ html::-webkit-scrollbar-thumb:active {
 
 /* 确保过渡动画平滑 */
 .post-list-container {
-  transition: all 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 :root:not(.dark) .custom-md spoiler {
   --_spoiler-mask: color-mix(in oklch, var(--primary) 55%, white 45%);
 }
 
-/* 26.08.31修改，内容为：简洁模式透明卡片仅覆盖非导航区域，避免顶部工具栏被透明规则误伤 */
 body.simple-mode :is(main, #main-grid, #post-list-container, .home-sidebar, .home-right-sidebar) .card-base,
 body.simple-mode :is(main, #main-grid, #post-list-container, .home-sidebar, .home-right-sidebar) .card-base-transparent,
 body.simple-mode :is(main, #main-grid, #post-list-container, .home-sidebar, .home-right-sidebar) .float-panel {
@@ -834,7 +808,6 @@ body.simple-mode #navbar .card-base {
   box-shadow: none;
 }
 
-/* 26.08.31修改，内容为：简洁模式下主页/全部/友链搜索栏输入框与按钮背景透明 */
 body.simple-mode .home-search-bar input,
 body.simple-mode .home-search-bar button,
 body.simple-mode .archive-search-bar input,
@@ -844,7 +817,6 @@ body.simple-mode #friend-search {
   background-color: transparent !important;
 }
 
-/* 26.08.31修改，内容为：简洁模式切换时只淡出主网格，布局更新在不可见状态完成后再统一淡入 */
 body.simple-mode-switching #main-grid,
 body.simple-mode-switching-in #main-grid {
   animation: none !important;

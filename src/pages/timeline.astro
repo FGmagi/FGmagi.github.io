@@ -95,7 +95,6 @@ const title = i18n(I18nKey.timeline);
 const subtitle = i18n(I18nKey.timelineSubtitle);
 ---
 
-
 <MainGridLayout title={title} description={subtitle}>
   <!-- 引入右侧边栏布局管理器 -->
   <script>
@@ -151,9 +150,9 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
               <div class="bg-transparent rounded-xl border border-black/10 dark:border-white/10 p-6 hover:shadow-lg transition-shadow duration-300">
                 <div class="flex flex-col md:flex-row md:items-start gap-5">
                   <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={`background-color: ${item.color || 'rgb(99 102 241)'}20`}>
-                    <Icon 
-                      icon={item.icon || getTypeIcon(item.type)} 
-                      class="text-2xl" 
+                    <Icon
+                      icon={item.icon || getTypeIcon(item.type)}
+                      class="text-2xl"
                       color={item.color || 'rgb(99 102 241)'}
                       fallback={item.title.charAt(0)}
                       loading="eager"
@@ -175,18 +174,18 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
                         {i18n(I18nKey.timelineCurrent)}
                       </span>
                     </div>
-                    
+
                     {item.location && (
                       <div class="flex items-center text-sm text-black/60 dark:text-white/60 mb-3">
                         <span class="mr-2">📍</span>
                         <span>{item.location}</span>
                       </div>
                     )}
-                    
+
                     <p class="text-black/70 dark:text-white/70 mb-4">
                       {item.description}
                     </p>
-                    
+
                     <div class="flex flex-wrap items-center gap-4 mb-4">
                       <div class="text-sm text-black/70 dark:text-white/70">
                         <span class="font-medium">{i18n(I18nKey.timelineStartDate)}:</span> {formatDate(item.startDate)}
@@ -195,7 +194,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
                         <span class="font-medium">{i18n(I18nKey.timelineDuration)}:</span> {getDuration(item.startDate)}
                       </div>
                     </div>
-                    
+
                     {item.skills && item.skills.length > 0 && (
                       <div class="flex flex-wrap gap-2 mb-4">
                         {item.skills.map((skill) => (
@@ -205,13 +204,13 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
                         ))}
                       </div>
                     )}
-                    
+
                     {item.links && item.links.length > 0 && (
                       <div class="flex flex-wrap gap-4 pt-2">
                         {item.links.map((link) => (
-                          <a 
-                            href={link.url} 
-                            target="_blank" 
+                          <a
+                            href={link.url}
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-medium flex items-center gap-1"
                           >
@@ -237,20 +236,20 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
           <span class="w-3 h-3 rounded-full bg-indigo-500 mr-3"></span>
           {i18n(I18nKey.timelineHistory)}
         </h2>
-        
+
         <!-- 横向时间线容器 -->
         <div class="relative overflow-hidden rounded-xl bg-transparent border border-black/10 dark:border-white/10 p-6 hover:shadow-lg transition-shadow duration-300">
           <!-- 水平滚动区域 -->
           <div class="flex overflow-x-auto pb-6 -mx-2 px-2 timeline-horizontal-scroll" id="timeline-scrollbar">
-            
+
             <div class="flex space-x-8 min-w-max">
               {allTimelineItems.map((item, index) => (
                 <div class="flex flex-col items-center flex-shrink-0 w-72" data-key={index}>
                   {/* 时间线节点 */}
                   <div class="relative z-10 w-16 h-16 rounded-xl flex items-center justify-center mb-6" style={`background-color: ${item.color || 'rgb(99 102 241)'}`}>
-                    <Icon 
-                      icon={item.icon || getTypeIcon(item.type)} 
-                      class="text-2xl text-white" 
+                    <Icon
+                      icon={item.icon || getTypeIcon(item.type)}
+                      class="text-2xl text-white"
                       color="white"
                       fallback={item.title.charAt(0)}
                       loading="eager"
@@ -258,12 +257,12 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
                     {/* 节点外圈装饰 */}
                     <div class="absolute inset-0 rounded-xl border-2 border-white/30"></div>
                   </div>
-                  
+
                   {/* 时间点 */}
                   <div class="text-xs text-black/50 dark:text-white/50 mb-2">
                     {formatDate(item.startDate)}
                   </div>
-                  
+
                   {/* 内容卡片 */}
                   <div class="flex-1 bg-transparent rounded-xl border border-black/10 dark:border-white/10 p-5 w-full">
                     <div class="flex flex-col gap-3">
@@ -277,7 +276,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
                           </div>
                         )}
                       </div>
-                      
+
                       <span class={`px-2 py-1 text-xs rounded-full self-start ${
                         item.type === 'education' ? 'bg-blue-600/20 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                         item.type === 'work' ? 'bg-green-600/20 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
@@ -289,11 +288,11 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
                               item.type === 'project' ? I18nKey.timelineProject :
                               I18nKey.timelineAchievement)}
                       </span>
-                      
+
                       <p class="text-sm text-black/70 dark:text-white/70 line-clamp-3">
                         {item.description}
                       </p>
-                      
+
                       <div class="flex items-center justify-between text-xs text-black/60 dark:text-white/60 mt-2">
                         <div>
                           {getDuration(item.startDate, item.endDate)}
@@ -311,7 +310,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
               ))}
             </div>
           </div>
-          
+
           {/* 滚动指示器 */}
           <div class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-transparent to-transparent pointer-events-none hidden md:block"></div>
         </div>
@@ -328,38 +327,33 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
-  /* 时间线节点动画
-     26.11.05：关键帧改名 timeline-pulse —— 全站原有两个同名 @keyframes pulse
-     （另一个在 MusicPlayer.svelte），同页/同包加载时会互相覆盖。 */
+
+
   @keyframes timeline-pulse {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
     70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
   }
-  
+
   .timeline-node {
     animation: timeline-pulse 2s infinite;
   }
-  
+
   /* 优化夜间模式下的原生滚动条样式 */
 
   .timeline-horizontal-scroll::-webkit-scrollbar {
     height: 8px;
   }
-  
+
   .timeline-horizontal-scroll::-webkit-scrollbar-track {
     background: #e5e7eb;
     border-radius: 4px;
   }
-  
+
   .timeline-horizontal-scroll::-webkit-scrollbar-thumb {
     background: hsl(var(--hue), 70%, 60%); /* 使用动态主题色 */
     border-radius: 4px;
   }
-  
-
-
 
 
 </style>
@@ -379,7 +373,7 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
         console.error('Failed to load icons on timeline page:', error);
       });
     }
-    
+
     // 添加时间线节点动画效果
     var timelineNodes = document.querySelectorAll('.timeline-node');
     timelineNodes.forEach(function(node, index) {
@@ -387,12 +381,12 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
       (node as HTMLElement).style.animationDelay = (index * 0.2) + 's';
     });
   }
-  
+
   // 页面加载完成后初始化
   document.addEventListener('DOMContentLoaded', function() {
     initTimelinePage();
   });
-  
+
   // 处理页面导航时的图标重新加载
   if (typeof window !== 'undefined') {
     // 监听页面显示事件（包括前进/后退导航）
@@ -404,24 +398,23 @@ const subtitle = i18n(I18nKey.timelineSubtitle);
         }, 100);
       }
     });
-    
+
     // 增强对 Astro 导航的支持
     document.addEventListener('astro:page-load', function() {
       setTimeout(initTimelinePage, 100);
     });
-    
+
     document.addEventListener('astro:after-swap', function() {
       setTimeout(initTimelinePage, 100);
     });
-    
+
     // 监听 SWUP 事件
     document.addEventListener('swup:contentReplaced', function() {
       setTimeout(initTimelinePage, 100);
     });
-    
+
     document.addEventListener('swup:pageView', function() {
       setTimeout(initTimelinePage, 100);
     });
   }
 </script>
-

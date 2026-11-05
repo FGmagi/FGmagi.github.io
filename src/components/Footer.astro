@@ -7,7 +7,6 @@ import { url } from "../utils/url-utils";
 
 const currentYear = new Date().getFullYear();
 
-// 26.08.31修改，内容为：页脚仅在“关于”（/posts/about/）与“我的”（/posts/myself/）页面显示
 const currentPath = Astro.url.pathname;
 const isAboutOrMyPage =
 	currentPath.startsWith("/posts/about/") ||
@@ -59,7 +58,6 @@ if (footerConfig.enable) {
 
 			<div>
 				Powered by
-				<!-- 26.08.30修改，内容为：移除 Mizuki 框架版权链接与版本号，仅保留 Astro 链接 -->
 				<a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://astro.build">Astro</a>
 			</div>
 

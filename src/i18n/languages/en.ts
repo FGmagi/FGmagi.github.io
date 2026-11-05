@@ -4,7 +4,7 @@ import type { Translation } from "../translation";
 export const en: Translation = {
 	[Key.home]: "Home",
 	[Key.about]: "About",
-	[Key.archive]: "All", // 26.08.30修改，内容为：归档页文案由 Archive 改为 All
+	[Key.archive]: "All",
 	[Key.search]: "Search",
 	[Key.other]: "Other",
 
@@ -15,7 +15,6 @@ export const en: Translation = {
 	[Key.navOthers]: "Others",
 
 	[Key.tags]: "Tags",
-	// 26.09.02 [13]: Tag filter card title
 	[Key.tagFilter]: "Tag Filter",
 	[Key.categories]: "Categories",
 	[Key.recentPosts]: "Recent Posts",
@@ -34,7 +33,6 @@ export const en: Translation = {
 	[Key.friendsFilterAll]: "All",
 	[Key.friendsNoResults]: "No matching friends found",
 	[Key.friendsVisit]: "Visit",
-	// 26.11.03: dual-site friend link buttons (left / right)
 	[Key.friendsVisitMain]: "Main",
 	[Key.friendsVisitBackup]: "Backup",
 	[Key.friendsCopyLink]: "Copy Link",
@@ -347,8 +345,6 @@ export const en: Translation = {
 	[Key.profileStatsVisits]: "Visits",
 	[Key.profileStatsUnavailable]: "Stats unavailable",
 
-	// 26.08.30修改，内容为：新增布局/主题模式显示文案与简洁模式文案
-	// Layout Switch Button
 	[Key.switchToGridMode]: "Switch to Grid Mode",
 	[Key.switchToListMode]: "Switch to List Mode",
 	[Key.listMode]: "List Mode",

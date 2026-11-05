@@ -67,28 +67,13 @@
 
 		var currentTag = "all";
 		var searchTerm = "";
-
-		// 26.11.05：卡片「筛选显隐」动效统一走 src/scripts/card-filter-visibility.js
-		// 暴露的 window.CardFilter（与首页标签筛选共用同一份实现与配置）。
-		// 脚本尚未执行（极早期交互）时退化为即时显隐。
-		function applyCardVisibility(card, visible) {
-			if (window.CardFilter) {
-				window.CardFilter.apply(card, visible);
-				return;
-			}
-			card.style.display = visible ? "" : "none";
-		}
-
-		function currentAnimDuration() {
-			var cfg = window.CardFilter
-				? window.CardFilter.config()
-				: { enable: false, duration: 0 };
-			return cfg.enable ? cfg.duration : 0;
-		}
+		var filterRun = 0;
 
 		// 过滤函数
 		function filterFriends() {
+			var run = ++filterRun;
 			var visibleCount = 0;
+			var desired = new Map();
 			for (var i = 0; i < friendCards.length; i++) {
 				var card = friendCards[i];
 				var title = (card.getAttribute("data-title") || "").toLowerCase();
@@ -103,32 +88,52 @@
 					currentTag === "all" || tags.split(",").indexOf(currentTag) >= 0;
 
 				var visible = matchesSearch && matchesTag;
-				applyCardVisibility(card, visible);
+				desired.set(card, visible);
 				if (visible) visibleCount++;
 			}
 
-			if (visibleCount === 0) {
-				noResults.classList.remove("hidden");
-				friendsGrid.classList.add("hidden");
-			} else {
+			if (visibleCount > 0) {
 				noResults.classList.add("hidden");
 				friendsGrid.classList.remove("hidden");
 			}
 
-			// 26.11.03：筛选会改变可见卡片，显示状态变化后重新判定 desc 滚动链与按钮图标
-			// 26.11.05：动画期间隐藏卡仍占位，动画结束后再量一次，避免把正在淡出的卡片算进去
-			updateDynamicLayout();
-			var animDuration = currentAnimDuration();
-			if (animDuration > 0) {
-				window.clearTimeout(window.__friendsLayoutTimer);
-				window.__friendsLayoutTimer = window.setTimeout(
-					updateDynamicLayout,
-					animDuration + 40,
+			var transition = window.CardFilter
+				? window.CardFilter.applyGroup(friendCards, function (card) {
+						return desired.get(card) === true;
+					}, {
+						group: friendsGrid,
+						layoutContainer: document.querySelector(
+							"[data-filter-layout-container]",
+						),
+						animateLayoutHeight: true,
+					})
+				: Promise.resolve().then(function () {
+						friendCards.forEach(function (card) {
+							card.style.display = desired.get(card) ? "" : "none";
+						});
+					});
+
+			transition.then(function () {
+				if (run !== filterRun) return;
+				updateDynamicLayout();
+				if (visibleCount === 0) {
+					noResults.classList.remove("hidden");
+					friendsGrid.classList.add("hidden");
+				}
+			});
+			Promise.resolve().then(updateDynamicLayout);
+			window.clearTimeout(window.__friendsLayoutTimer);
+			window.__friendsLayoutTimer = window.setTimeout(
+				updateDynamicLayout,
+				window.CardFilter
+					? window.CardFilter.config().hide +
+							window.CardFilter.config().move +
+							window.CardFilter.config().show +
+							40
+					: 40,
 				);
-			}
 		}
 
-		// 26.11.03：desc 滚动链控制——只有「电脑端（≥768px）且 desc 内容超过两行、确实能滚动」时，
 		// 才给该 desc 加 .friend-desc--scroll-lock（overscroll-behavior: contain），
 		// 避免滚到 desc 边界后带动整页；移动端与两行内不滚动的卡片不加，滚动仍按默认传递给页面。
 		function updateDescScrollLock() {
@@ -148,7 +153,6 @@
 			}
 		}
 
-		// 26.11.03：跳转按钮名称过长时自动去掉外链图标——带图标时名称被截断（scrollWidth > clientWidth），
 		// 就给按钮加 .is-text-only 隐藏图标，把宽度让给名称（e.g. z-library 的自定义名称「推特发布页」）。
 		function updateVisitIconVisibility() {
 			var links = document.querySelectorAll(".friend-visit-link");
@@ -165,7 +169,6 @@
 			}
 		}
 
-		// 26.11.03：随布局变化（初始化 / 窗口尺寸 / 字体加载 / 筛选）统一刷新两类自适应样式
 		function updateDynamicLayout() {
 			updateDescScrollLock();
 			updateVisitIconVisibility();
@@ -183,7 +186,6 @@
 			searchHandler,
 		]);
 
-		// 26.08.31修改，内容为：右键清空友链搜索栏并重置筛选
 		var contextMenuHandler = (e) => {
 			e.preventDefault();
 			searchInput.value = "";
@@ -198,7 +200,6 @@
 		]);
 
 		// 标签筛选
-		// 26.11.03：「全部」按钮（模板里 data-tag="all"），用于「再次点击已点亮标签 → 回到全部」
 		var allTagButton = null;
 		for (var t = 0; t < tagFilters.length; t++) {
 			if ((tagFilters[t].getAttribute("data-tag") || "all") === "all") {
@@ -211,7 +212,6 @@
 			((button) => {
 				var clickHandler = () => {
 					var tag = button.getAttribute("data-tag") || "all";
-					// 26.11.03：再次单击已点亮的标签 → 该标签自动熄灭并点亮「全部」（回到不筛选状态）
 					var target =
 						tag !== "all" && button.classList.contains("active")
 							? allTagButton || button
@@ -272,7 +272,6 @@
 			})(copyButtons[i]);
 		}
 
-		// 26.11.03：初始化自适应样式；窗口尺寸变化（换行列数变化）或字体加载完成（换行位置变化）后复查
 		updateDynamicLayout();
 		var layoutResizeTimer = null;
 		var layoutResizeHandler = () => {

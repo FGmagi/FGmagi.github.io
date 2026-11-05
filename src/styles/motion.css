@@ -1,23 +1,16 @@
-/* ====================================================================
-   统一动效令牌层（26.11.03「动效整体修缮」批 1 引入）
-   ────────────────────────────────────────────────────────────────────
-   目的：把此前散落在 20+ 文件里的时长/曲线/位移收敛成一套令牌，后续所有
-   动效只引用变量，改观感只改这一处。
-
-   分工（勿混淆）：
-     · 本文件的 --mo-*  → 组件级动效（入场、悬浮、面板、按钮、链接）
-     · 切页时长 --page-fade-out / --page-fade-in 仍由 siteConfig.pageTransition
-       经 MainGridLayout.astro 的 <style define:vars> 写入，是切页淡入淡出的
-       唯一来源，**不在本文件定义、也不得被本文件覆盖**。
-
-   动画纪律：
-     · 只动画 transform / opacity（不触发布局与重绘）；
-     · 不写死毫秒值（除非本文件顶部的令牌定义本身）；
-     · 尊重 prefers-reduced-motion（见文件末尾），JS 侧统一读
-       src/utils/motion-preference.ts。
-   ==================================================================== */
 
 :root {
+  --effect1-full-alpha: 1;
+  --effect1-sim-alpha: 0;
+  --effect1-content-alpha: 1;
+  --effect1-offer: 20px;
+  --effect1-offer2: 20px;
+  --effect1-duration-show: 420ms;
+  --effect1-duration-hide: 260ms;
+  --effect2-duration-hide: 180ms;
+  --effect2-duration-move: 320ms;
+  --effect2-duration-show: 240ms;
+
   /* 时长 */
   --mo-fast: 140ms; /* 悬浮 / 按压 / 颜色 */
   --mo-base: 220ms; /* 面板 / 卡片状态切换 */
@@ -36,6 +29,184 @@
   --mo-ease-out: cubic-bezier(0.22, 0.8, 0.32, 1); /* 默认：快起慢收 */
   --mo-ease-in-out: cubic-bezier(0.6, 0.04, 0.28, 1);
   --mo-ease-emphasis: cubic-bezier(0.2, 0.9, 0.25, 1.05); /* 轻微过冲，不做弹跳 */
+}
+
+/* --------------------------------------------------------------------
+   Effect1：卡片背景、内容与位移统一入场/退场。
+   data-effect1-card 由页面结构静态声明，因此 Swup 插入新 DOM 时会自动重播，
+   不依赖某个页面脚本是否重新执行。
+   -------------------------------------------------------------------- */
+@keyframes Effect1_show {
+  from {
+    opacity: var(--effect1-keyframe-opacity-from, 0);
+    transform: translate3d(0, var(--effect1-keyframe-y-from, 0), 0);
+  }
+  to {
+    opacity: var(--effect1-keyframe-opacity-to, 1);
+    transform: translate3d(0, var(--effect1-keyframe-y-to, 0), 0);
+  }
+}
+
+@keyframes Effect1_hide {
+  from {
+    opacity: var(--effect1-keyframe-opacity-from, 1);
+    transform: translate3d(0, var(--effect1-keyframe-y-from, 0), 0);
+  }
+  to {
+    opacity: var(--effect1-keyframe-opacity-to, 0);
+    transform: translate3d(0, var(--effect1-keyframe-y-to, 0), 0);
+  }
+}
+
+@keyframes Effect2_show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+[data-effect1-card] {
+  --effect1-bg-target: var(--effect1-full-alpha);
+  --effect1-content-target: var(--effect1-content-alpha);
+  --effect1-keyframe-opacity-from: 1;
+  --effect1-keyframe-opacity-to: 1;
+  --effect1-keyframe-y-from: var(--effect1-offer);
+  --effect1-keyframe-y-to: 0px;
+  position: relative;
+  isolation: isolate;
+  animation: Effect1_show var(--effect1-duration-show) linear backwards;
+}
+
+html body [data-effect1-card],
+html body [data-effect1-card].card-base,
+html body.simple-mode [data-effect1-card],
+html body.simple-mode [data-effect1-card].card-base,
+html body.wallpaper-transparent [data-effect1-card].card-base,
+html body #main-grid [data-effect1-card],
+html body #main-grid [data-effect1-card].card-base {
+  background: transparent !important;
+}
+
+body.simple-mode [data-effect1-card] {
+  --effect1-bg-target: var(--effect1-sim-alpha);
+}
+
+[data-effect1-card]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--effect1-surface, var(--card-bg));
+  opacity: var(--effect1-bg-target);
+  animation: Effect1_show var(--effect1-duration-show) linear backwards;
+  --effect1-keyframe-opacity-from: 0;
+  --effect1-keyframe-opacity-to: var(--effect1-bg-target);
+  --effect1-keyframe-y-from: 0px;
+  --effect1-keyframe-y-to: 0px;
+}
+
+body.wallpaper-transparent [data-effect1-card] {
+  --effect1-surface: var(--card-bg-transparent);
+}
+
+[data-effect1-card] > * {
+  animation: Effect1_show var(--effect1-duration-show) linear backwards;
+  --effect1-keyframe-opacity-from: 0;
+  --effect1-keyframe-opacity-to: var(--effect1-content-target);
+  --effect1-keyframe-y-from: 0px;
+  --effect1-keyframe-y-to: 0px;
+}
+
+[data-effect1-card] > .post-card-hover-dim {
+  animation: none !important;
+}
+
+[data-effect1-card].effect1-hiding {
+  pointer-events: none;
+  animation: Effect1_hide var(--effect1-duration-hide) linear both !important;
+  --effect1-keyframe-opacity-from: 1;
+  --effect1-keyframe-opacity-to: 1;
+  --effect1-keyframe-y-from: 0px;
+  --effect1-keyframe-y-to: var(--effect1-offer2);
+}
+
+[data-effect1-card].effect1-hiding::before,
+[data-effect1-card].effect1-hiding > * {
+  animation: Effect1_hide var(--effect1-duration-hide) linear both !important;
+  --effect1-keyframe-opacity-from: var(--effect1-bg-target);
+  --effect1-keyframe-opacity-to: 0;
+  --effect1-keyframe-y-from: 0px;
+  --effect1-keyframe-y-to: 0px;
+}
+
+[data-effect1-card].effect1-hiding > * {
+  --effect1-keyframe-opacity-from: var(--effect1-content-target);
+}
+
+/* 悬停变暗层不是卡片内容：离场时保持透明，避免它被通用子元素动画重新点亮成黑块。 */
+[data-effect1-card].effect1-hiding > .post-card-hover-dim {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+/* 显式重播：先停在 Effect1 的初始帧，再重新挂回动画，确保 Swup 缓存页也能播放。 */
+[data-effect1-card].effect1-reset {
+  animation: none !important;
+  transform: translate3d(0, var(--effect1-offer), 0) !important;
+}
+
+[data-effect1-card].effect1-reset::before,
+[data-effect1-card].effect1-reset > * {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+/* Effect2 is orchestrated by src/utils/card-effects.ts. */
+.effect2-card,
+.effect2-card::before,
+.effect2-card > * {
+  animation: none !important;
+}
+
+.effect2-card {
+  transition: opacity var(--effect2-duration-hide) linear !important;
+}
+
+.effect2-card.effect2-measuring,
+.effect2-card.effect2-measuring::before,
+.effect2-card.effect2-measuring > * {
+  transition: none !important;
+}
+
+.effect2-hidden {
+  display: none !important;
+}
+
+.effect2-hiding,
+.effect2-entering {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.effect2-keeping {
+  opacity: var(--effect2-keep-opacity, 1) !important;
+}
+
+.effect2-revealing {
+  /* One shared CSS animation starts the whole reveal batch on the same frame. */
+  animation: Effect2_show var(--effect2-duration-show) linear both !important;
+  pointer-events: auto;
+  transition: none !important;
+}
+
+.effect2-moving {
+  /* Cards that remain visible must only move. Including opacity in this
+     transition lets unrelated state cleanup briefly fade them out. */
+  transition: transform var(--effect2-duration-move) linear !important;
 }
 
 /* --------------------------------------------------------------------
@@ -84,82 +255,12 @@
    #main-grid 的整体渐变相乘成二次淡入，切页控制器不得不在每个预渲染帧里
    把它摘掉（page-transition.ts 的 clearRegionEnterAnimations）——于是子元素
    实际上从来没有入场动效，观感就是「整块淡入」。
-   现在：淡入仍由父区域统一负责，子元素改用下面的 page-rise 级联（只动
-   transform），本类保留为空标记，老模板无需改动即可继续工作。
+   现在：本类只保留为空标记，卡片显隐统一由 Effect1 / Effect2 接管。
    -------------------------------------------------------------------- */
 .onload-animation {
   opacity: 1;
 }
 
-/* --------------------------------------------------------------------
-   切页 / 首载的「上升级联」
-   ────────────────────────────────────────────────────────────────────
-   由 page-transition.ts 在 armEnter() 的同一帧挂上 body.page-rise，
-   一个完整级联播完后摘掉（见该文件 RISE_TOTAL_MS）。
-   与 transition.css 的分工：父级 opacity 过渡管「整体渐显」，本段只管
-   「各区块错峰落位」，两者同帧起跑、互不叠加透明度。
-
-   · #content-wrapper 的直接子块：页面级卡片（排除首页的文章列表容器，
-     它的子卡片由下面更精确的规则接管，避免两级位移叠成 12px）；
-   · #post-list-container 内的文章卡片：--i 由 PostPage.astro 的内联 style
-     按索引写出，天然错峰；
-   · 侧栏两列与页脚：单块轻抬，不逐组件错峰（避免整片抖动）。
-   -------------------------------------------------------------------- */
-body.page-rise #content-wrapper > :nth-child(-n + 6):not(#post-list-container),
-body.page-rise #post-list-container > .card-base,
-body.page-rise #sidebar-swup-container > *,
-body.page-rise #main-grid > .footer {
-  /* 26.11.04：改为「淡入 + 升起」。上一版只动 transform，切页时子块完全没有淡入，
-     用户反馈「大量过渡动画失效」——父级 #main-grid 的 250ms 渐变在视觉上很短，
-     没有子块淡入就近似硬切。这里与改动前的实现对齐：子块自带淡入（HEAD 里友链卡片
-     本来就是 fadeInUp + 父级渐变同时进行，观感正常），父级渐变仍保留为整体兜底。 */
-  animation: mo-fade-rise var(--mo-slow) var(--mo-ease-out) backwards;
-  animation-delay: min(
-    calc(var(--i, 0) * var(--mo-stagger)),
-    var(--mo-stagger-max)
-  );
-}
-
-/* 页面级块的序号（首块 --i 取默认 0，无需声明） */
-body.page-rise #content-wrapper > :nth-child(2) {
-  --i: 1;
-}
-body.page-rise #content-wrapper > :nth-child(3) {
-  --i: 2;
-}
-body.page-rise #content-wrapper > :nth-child(4) {
-  --i: 3;
-}
-body.page-rise #content-wrapper > :nth-child(5) {
-  --i: 4;
-}
-body.page-rise #content-wrapper > :nth-child(6) {
-  --i: 5;
-}
-
-/* --------------------------------------------------------------------
-   关于「悬浮抬升」类（.u-lift）—— 26.11.04 已移除，勿再加回
-   ────────────────────────────────────────────────────────────────────
-   曾给文章卡片加过 hover 抬升（translateY -2px + 阴影），实测有两个坑：
-   1) 位移会让「指针贴住卡片底边」时 hover 反复进出 ⇒ 卡片高频抖动；
-   2) PostPage 有一条作用域规则
-        #post-list-container[data-astro-cid-…] > * { transition: opacity .3s }
-      优先级（ID + 属性）高于任何普通工具类，卡片根节点上的 transition 会被它接管 ——
-      hover 的 transform 不会过渡、只会瞬跳，抖动更明显（这也是「过渡动画失效」的来源之一）。
-   结论：卡片悬停反馈只用「不改变几何」的方式（变暗层 / 阴影 / 变色），
-   需要过渡的属性必须写进**能赢过那条 scoped 规则**的选择器里，否则不会生效。
-   -------------------------------------------------------------------- */
-/* --------------------------------------------------------------------
-   快速划过时的悬停响应（26.11.05）
-   ────────────────────────────────────────────────────────────────────
-   问题（用户反馈）：快速挥动鼠标时，只有指针停住的那张卡片看得出悬停效果，
-   轨迹经过的卡片「没反应」。真因是入场渐变太长：指针在每张卡片上只停留几十毫秒，
-   200~300ms 的过渡连一小段都走不完，视觉上等于没变。
-   做法：进入 hover 立即生效（transition-duration: 0），离开仍走各自原有的平滑过渡 ——
-   扫过一串卡片会依次点亮、并在身后留下短暂淡出，正是期望的「依次响应」。
-   仅收紧进入时长，不改颜色/阴影本身。
-   ⚠ 选择器带 :hover，优先级高于同名基类与 Tailwind 单类工具，能稳定生效。
-   -------------------------------------------------------------------- */
 @media (hover: hover) and (pointer: fine) {
   .album-card:hover,
   .device-card:hover,
@@ -170,79 +271,30 @@ body.page-rise #content-wrapper > :nth-child(6) {
 }
 
 /* --------------------------------------------------------------------
-   卡片「筛选显隐」动效（26.11.05，配置见 config.ts 的 cardFilterAnimationConfig）
-   ────────────────────────────────────────────────────────────────────
-   语义：隐藏 = 短暂下滑 + 透明度递减到 0；显示 = 从下方上滑到原位 + 透明度递增到 1。
-   做法：把卡片标成 .card-filter-anim（过渡清单），隐藏态由 .card-filter-hidden 提供；
-   由脚本在隐藏前加类、在显示时「先加类→强制重排→摘类」，从而每次都播放一遍。
-   ⚠ 必须 !important：PostPage 有一条作用域规则
-     `#post-list-container[data-astro-cid-…] > * { transition: opacity .3s }`，
-     优先级（ID+属性）高于普通类，不加 !important 的话过渡清单会被它接管；
-     友链卡片的入场 animation（fill）也会抢走 opacity/transform，同样需要 !important 压住。
-   ⚠ 时长与位移由 <html> 上的 --card-filter-duration / --card-filter-offset 提供，
-     由 Layout.astro 按 config 写入；这里只给兜底值。
-   -------------------------------------------------------------------- */
-.card-filter-anim {
-  /* animation: none 很关键：卡片入场用的是 `body.page-rise … { animation: mo-fade-rise }`，
-     动画会抢走 opacity/transform 的控制权，导致「筛选过渡」只剩透明度、位移不生效
-     （用户反馈：有淡入淡出但没有上下滑动）。这里一旦进入筛选动效就停掉入场动画，
-     让 transition 独占这两个属性。 */
-  animation: none !important;
-  transition:
-    opacity var(--card-filter-duration, 200ms)
-      var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
-    transform var(--card-filter-duration, 200ms)
-      var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) !important;
-}
-
-.card-filter-hidden {
-  /* 隐藏态：向下位移 + 透明 */
-  opacity: 0 !important;
-  transform: translateY(var(--card-filter-offset, 10px)) !important;
-  pointer-events: none;
-}
-
-/* 减少动效：是否去掉位移由 JS 决定（config.cardFilterAnimationConfig.respectReducedMotion），
-   这里不再用媒体查询把 transform 写死为 none —— 否则即使站点明确要求播放滑动，
-   reduce 环境也会被 CSS 拦掉（用户反馈「只有淡入淡出、没有上下滑动」的原因之一）。 */
-
-/* --------------------------------------------------------------------
    减少动效（系统偏好）：CSS 侧统一入口
    ────────────────────────────────────────────────────────────────────
    此前 animation-enhancements.css 用 `*` 通配把全站 animation/transition
    压成 0.01ms，选择器代价高且会把「必要的状态过渡」也一起干掉。这里改为
    按令牌归零 + 定向停掉常驻动画，语义更可控。
    -------------------------------------------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    /* 26.11.04：不再把时长压到 1ms —— 那会让「所有过渡」一起消失，
-       用户会以为动效坏了（反馈里的「大量过渡动画失效」）。减少动效应当去掉**位移**，
-       而不是去掉**反馈**：时长收到很短、位移与级联归零，颜色/透明度仍然平滑。 */
-    --mo-fast: 90ms;
-    --mo-base: 120ms;
-    --mo-slow: 120ms;
-    --mo-hero: 120ms;
-    --mo-stagger: 0ms;
-    --mo-stagger-max: 0ms;
-    --mo-shift: 0px;
-    --mo-lift: 0px;
-  }
+html[data-reduced-motion="true"] {
+  --mo-fast: 90ms;
+  --mo-base: 120ms;
+  --mo-slow: 120ms;
+  --mo-hero: 120ms;
+  --mo-stagger: 0ms;
+  --mo-stagger-max: 0ms;
+  --mo-shift: 0px;
+  --mo-lift: 0px;
+}
 
-  body.page-rise #content-wrapper > *,
-  body.page-rise #post-list-container > .card-base,
-  body.page-rise #sidebar-swup-container > *,
-  body.page-rise #main-grid > .footer {
-    animation: none !important;
-  }
+/* 常驻无限动画（横幅水波）直接停掉，保留静态形态 */
+html[data-reduced-motion="true"] .waves > .parallax use {
+  animation: none !important;
+}
 
-  /* 常驻无限动画（横幅水波）直接停掉，保留静态形态 */
-  .waves > .parallax use {
-    animation: none !important;
-  }
-
-  html {
-    scroll-behavior: auto;
-  }
+html[data-reduced-motion="true"] {
+  scroll-behavior: auto;
 }
 
 /* 可选：用户级「减少动画」开关（html.reduce-motion）与系统偏好同义。
@@ -258,13 +310,35 @@ html.reduce-motion {
   --mo-lift: 0px;
 }
 
-html.reduce-motion body.page-rise #content-wrapper > *,
-html.reduce-motion body.page-rise #post-list-container > .card-base,
-html.reduce-motion body.page-rise #sidebar-swup-container > *,
-html.reduce-motion body.page-rise #main-grid > .footer {
+html.reduce-motion .waves > .parallax use {
   animation: none !important;
 }
 
-html.reduce-motion .waves > .parallax use {
+/* Per-feature settings. The first-frame bootstrap writes these attributes. */
+html[data-motion-hover-feedback="off"] .album-card:hover,
+html[data-motion-hover-feedback="off"] .device-card:hover,
+html[data-motion-hover-feedback="off"] .friend-card:hover,
+html[data-motion-hover-feedback="off"] .group:hover .post-card-hover-dim,
+html[data-motion-hover-feedback="off"] .album-card:hover img,
+html[data-motion-hover-feedback="off"] .photo-link:hover .photo-image {
+  transform: none !important;
+}
+
+html[data-motion-hover-feedback="off"] .post-card-hover-dim {
+  opacity: 0 !important;
+}
+
+html[data-motion-panel-motion="off"] .float-panel,
+html[data-motion-panel-motion="off"] .float-panel-closed,
+html[data-motion-panel-motion="off"] .wallpaper-cycle-host,
+html[data-motion-panel-motion="off"] .wallpaper-cycle-host .wallpaper-cycle-inner {
+  transition: none !important;
+}
+
+html[data-motion-banner-waves="off"] .waves > .parallax use {
+  animation: none !important;
+}
+
+html[data-motion-wallpaper-ken-burns="off"] [data-fg-ken-burns] {
   animation: none !important;
 }

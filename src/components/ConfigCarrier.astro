@@ -16,14 +16,11 @@ import { expressiveCodeConfig, siteConfig } from "../config";
     useJapaneseBadge: tocUseJapaneseBadge
   };
 
-  // 26.09.14：页面切换渐变时长传递到前端（唯一来源 src/config.ts 的 siteConfig.pageTransition）。
   // 由 src/utils/page-transition.ts 读取作为状态机计时；CSS 侧的同名变量由
   // MainGridLayout.astro 的 <style define:vars> 写到 :root（--page-fade-out / --page-fade-in），
   // 因此本桥接只服务于 JS，不参与 CSS。
   window.siteConfig.pageTransition = pageTransition;
 
-  // 添加调试信息
-  console.log('TOC Config:', window.siteConfig.toc);
 </script>
 
 <!-- 引入Umami Share工具脚本 -->

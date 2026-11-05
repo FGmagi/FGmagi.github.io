@@ -1,24 +1,4 @@
-/**
- * 友链卡片「双站点跳转」数据归一化（26.11.03 新增）。
- *
- * friends.json 单条可选的额外字段（全部可选，缺省时行为与原「访问」按钮完全一致）：
- *   imgurl                     : 站点图标；为空（缺失 / 空串 / 纯空白）时按第一个网页链接自动生成
- *                                Google favicon 地址：https://www.google.com/s2/favicons?domain=<第一个链接>/&sz=128
- *   siteurl                    : 站点链接；也支持「数组语法糖」——
- *                                ["第一个网页", "第二个网页"] 依次作为 first_siteurl / second_siteurl 的缺省值，
- *                                ["第一个网页"] 只作为 first_siteurl 的缺省值；
- *                                first_siteurl / second_siteurl 非空时覆盖对应缺省值（为空则仍用缺省值）
- *   first / second             : 按钮名称（仅 zh_CN / zh_TW 会采用，非简中繁中语言按 i18n 固定文案）
- *   first_color / second_color : 相对当前主题色（--hue）的色相偏移，默认 first=0、second=180；
- *                                超出 0–360 按 360 取余（负数归一到 0–359）
- *   first_siteurl              : 第一个网页链接；非空时覆盖 siteurl（数组取第一个元素）缺省值
- *   second_siteurl             : 第二个网页链接；非空时覆盖 siteurl 数组第二个元素缺省值
- *   first_active / second_active  : 是否启用该网页，默认 true（first_actived / second_actived 为兼容别名）
- *
- * 「启用」判定：链接存在且不为空，并且对应 active !== false。
- * 所有链接（含 siteurl 缺省值与覆盖值）解析后都为空的友链不渲染（hasUrl=false，由页面过滤掉）。
- * 本模块只做纯数据决策，不依赖 DOM / 浏览器 API，便于用 node 直接断言。
- */
+
 
 /** friends.json 中与友链跳转相关的可选字段（unknown 兼容手写 JSON 的类型漂移） */
 export interface FriendRawItem {

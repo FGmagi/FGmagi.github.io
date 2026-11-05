@@ -1,0 +1,19 @@
+/**
+ * Layout width rails aligned with the reference site:
+ * 90rem by default, then wider only on genuinely large canvases.
+ */
+:root {
+  --layout-page-width: var(--page-width);
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --layout-page-width: clamp(104rem, 82vw, 132rem);
+  }
+}
+
+@media (min-width: 3200px) {
+  :root {
+    --layout-page-width: clamp(132rem, 64vw, 152rem);
+  }
+}

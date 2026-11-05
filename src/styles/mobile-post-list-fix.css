@@ -6,14 +6,8 @@
 
 /* 关键：页面加载时立即应用正确的移动端样式 */
 @media (max-width: 768px) {
-  /* 强制在初始化前隐藏内容，避免闪烁 */
-  #post-list-container:not(.js-initialized) {
-    opacity: 0;
-    transition: opacity 0.1s ease-in-out;
-  }
-
-  /* JavaScript初始化完成后显示内容 */
-  #post-list-container.js-initialized {
+  /* SSR list content is always readable. No initialization gate. */
+  #post-list-container {
     opacity: 1;
   }
 
@@ -168,7 +162,6 @@ body.wallpaper-transparent #post-list-container {
   }
 }
 
-/* 26.08.31修改，内容为：简洁模式下卡片透明优先于壁纸半透明（与上方壁纸规则同特异性且位于本文件末尾，确保胜出） */
 body.simple-mode .card-base,
 body.simple-mode .card-base-transparent,
 body.simple-mode .float-panel,
@@ -185,7 +178,6 @@ body.simple-mode .card-base .card-base {
   box-shadow: -3px 3px 3px rgba(0, 0, 0, 0.12);
 }
 
-/* 26.08.31修改，内容为：导航栏工具卡片保持不透明背景，覆盖移动端透明补丁 */
 body.simple-mode #navbar > div,
 body.wallpaper-transparent #navbar > div {
   background: var(--card-bg) !important;
@@ -228,13 +220,11 @@ body.simple-mode .card-base .card-base:hover {
   box-shadow: -9px 9px 9px rgba(0, 0, 0, 0.35);
 }
 
-/* 26.08.31修改，内容为：常规模式下内容卡片白色背景延伸至页面底部（覆盖上方壁纸透明规则，同特异性且位于本文件末尾） */
 body:not(.simple-mode) #post-list-container {
   background: var(--card-bg) !important;
   background-color: var(--card-bg) !important;
 }
 
-/* 26.08.31修改，内容为：页面和模式切换时解除移动端初始化隐藏，避免列表自身比主网格晚一拍显示 */
 body.swup-leaving #post-list-container,
 body.page-entering #post-list-container,
 body.simple-mode-switching #post-list-container,

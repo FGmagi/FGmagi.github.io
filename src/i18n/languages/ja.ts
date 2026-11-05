@@ -4,7 +4,7 @@ import type { Translation } from "../translation";
 export const ja: Translation = {
 	[Key.home]: "ホーム",
 	[Key.about]: "このブログについて",
-	[Key.archive]: "すべて", // 26.08.30修改，内容为：归档页文案由 アーカイブ 改为 すべて
+	[Key.archive]: "すべて",
 	[Key.search]: "検索",
 	[Key.other]: "その他",
 
@@ -15,7 +15,6 @@ export const ja: Translation = {
 	[Key.navOthers]: "その他",
 
 	[Key.tags]: "タグ",
-	// 26.09.02 [13]：タグ絞り込みカードのタイトル
 	[Key.tagFilter]: "タグ絞り込み",
 	[Key.categories]: "カテゴリー",
 	[Key.recentPosts]: "最近の投稿",
@@ -34,7 +33,6 @@ export const ja: Translation = {
 	[Key.friendsFilterAll]: "すべて",
 	[Key.friendsNoResults]: "一致する友達が見つかりません",
 	[Key.friendsVisit]: "訪問",
-	// 26.11.03：友達リンクの 2 サイトボタン文言（左／右）
 	[Key.friendsVisitMain]: "訪問",
 	[Key.friendsVisitBackup]: "予備",
 	[Key.friendsCopyLink]: "リンク",
@@ -350,8 +348,6 @@ export const ja: Translation = {
 	[Key.profileStatsVisits]: "訪問",
 	[Key.profileStatsUnavailable]: "統計は利用できません",
 
-	// 26.08.30修改，内容为：新增布局/主题模式显示文案与简洁模式文案
-	// レイアウト切り替えボタン
 	[Key.switchToGridMode]: "グリッドビュー切り替え",
 	[Key.switchToListMode]: "リストビューに切り替え",
 	[Key.listMode]: "リスト表示",

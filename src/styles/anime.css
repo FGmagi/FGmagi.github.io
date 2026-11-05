@@ -1,35 +1,11 @@
-.anime-card-base {
-  container-type: inline-size;
+.anime-card {
+  min-width: 0;
 }
 
 .anime-grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
-  transition: gap 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* === Grid Mode === */
-.anime-grid-container.anime-grid-mode {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-@container (min-width: 30rem) {
-  .anime-grid-container.anime-grid-mode {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@container (min-width: 48rem) {
-  .anime-grid-container.anime-grid-mode {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@container (min-width: 64rem) {
-  .anime-grid-container.anime-grid-mode {
-    grid-template-columns: repeat(5, 1fr);
-  }
 }
 
 /* === List Mode === */
@@ -95,13 +71,12 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
 }
 .anime-filter-tag:hover:not(.anime-active) {
   background: var(--btn-hover-bg);
   border-color: var(--primary);
-  /* 26.11.04：去掉 hover 位移（贴边时 hover 反复进出会抖），反馈由变色承担 */
 }
 .anime-filter-tag.anime-active {
   background: var(--primary);
@@ -109,9 +84,6 @@
   border-color: var(--primary);
 }
 
-/* 26.09.02 [8] + [12]：常规/紧凑 切换控件——12 起由两个独立按钮改为分段滑动条：
-   圆角轨道（随 --btn-regular-bg/--line-divider 适配深/浅主题）+ 绝对定位滑块 thumb（宽约 50%、translateX(0%/100%) 0.25s 滑动、底色 --primary、可点击切向另一布局）
-   + 两个等宽透明点击段（flex:1 1 0；激活段文字白色 z-index:3 且 pointer-events:none，点击穿透到下层 thumb；未激活段 z-index:1 正常接收点击） */
 .anime-layout-switch {
   position: relative;
   display: flex;
@@ -177,10 +149,6 @@
   pointer-events: none;
 }
 
-/* === Compact Mode（紧凑模式，26.09.02 [8] 新增）===
-   仅展示 封面 + 右上评分 + 左上追番状态 + 整卡跳转 + 封面正下方标题；
-   隐藏 说明/年份/制作/类型/追番进度条；封面 8.5rem 移动 / 11rem 桌面，宽高比 2:3；
-   列数由 JS 按容器宽度计算写入 --anime-cols（2~6），窗口 resize 实时重算。 */
 .anime-grid-container.anime-compact-mode {
   grid-template-columns: repeat(var(--anime-cols, 6), 1fr);
 }
@@ -226,34 +194,6 @@
 .anime-grid-container.anime-compact-mode .group .space-y-1,
 .anime-grid-container.anime-compact-mode .anime-progress {
   display: none;
-}
-
-.anime-grid-container [data-anime-status].anime-hidden {
-  display: none !important;
-}
-
-.anime-grid-container [data-anime-status] {
-  transition:
-    opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.15s ease-out;
-  /* 26.08.31修改，内容为：移除 content-visibility，避免追番卡片按滚动从上到下依次出现 */
-}
-
-.anime-grid-container [data-anime-status].anime-fade-out {
-  opacity: 0;
-  transform: scale(0.9);
-  pointer-events: none;
-}
-
-.anime-grid-container [data-anime-status].anime-fade-in {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
-.anime-grid-container [data-anime-status].anime-fade-in-active {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .anime-loading-spinner {

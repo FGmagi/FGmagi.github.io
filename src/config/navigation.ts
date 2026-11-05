@@ -1,0 +1,2 @@
+export { navBarConfig } from "../config";
+

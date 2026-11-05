@@ -1,4 +1,3 @@
-# 26.08.30修改，内容为：CI 工作流名称由 Fuwari-yCENzh CI 改为 FGmagi Blog CI，触发分支由 master 改为 main
 name: FGmagi Blog CI
 
 on:
@@ -36,8 +35,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Run Contract Tests
+        run: pnpm test
+        env:
+          ENABLE_CONTENT_SYNC: false
+
       - name: Run Astro Check
-        run: pnpm astro check
+        run: pnpm check
         env:
           ENABLE_CONTENT_SYNC: false
 
@@ -61,16 +65,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run Astro Build
-        run: pnpm astro build
-        env:
-          ENABLE_CONTENT_SYNC: false
-
-      # 26.11.03：搜索索引原本只存在于本地 `pnpm build` 的链路里（astro build && pagefind），
-      # CI 直接调 `pnpm astro build` ⇒ 线上 dist 没有 /pagefind/，导航栏搜索会退化为空结果。
-      # 这里补上同一份索引生成；与本地脚本使用同一 pagefind 默认配置（读取 pagefind.yml）。
-      - name: Build Pagefind index
-        run: pnpm exec pagefind --site dist
+      - name: Run Offline Production Build
+        run: pnpm build
         env:
           ENABLE_CONTENT_SYNC: false
 

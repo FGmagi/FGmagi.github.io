@@ -10,7 +10,6 @@ const CONFIG_PATH = path.join(
 	"../src/config.ts",
 );
 
-// 26.09.02 [7]：输出路径改读 config（dataFiles.bilibiliDataJson，相对项目根）
 async function getOutputFile() {
 	const configContent = await fs.readFile(CONFIG_PATH, "utf-8");
 	const match = configContent.match(/bilibiliDataJson:\s*["']([^"']+)["']/);
@@ -116,7 +115,6 @@ async function getAnimeModeFromConfig() {
 	}
 }
 
-// 26.09.01 [4]：修改返回值为接口真实 total（原为按 PAGE_SIZE=30 计算的页数），页数改由 processData 按实际返回条数循环推算
 async function getDataPage(vmid, status, typeNum = 1) {
 	const response = await withRetry(() =>
 		axios.get(
@@ -298,7 +296,6 @@ async function getData(
 	});
 }
 
-// 26.09.01 [4]：修复分页不足——原按 Math.ceil(total/PAGE_SIZE) 计算页数，若接口单页实际返回 < PAGE_SIZE（历史上限 15/20 条）会翻页不足漏采；现逐页拉取直到收集数达到接口 total 或返回空页，确保采集全部番剧
 async function processData(
 	vmid,
 	status,

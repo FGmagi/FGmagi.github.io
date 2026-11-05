@@ -1,6 +1,5 @@
 import type {
 	AnnouncementConfig,
-	CardFilterAnimationConfig,
 	CommentConfig,
 	DataFilesConfig,
 	ExpressiveCodeConfig,
@@ -19,6 +18,7 @@ import type {
 	TagFilterConfig,
 } from "./types/config";
 import { LinkPreset } from "./types/config";
+import { bannerManifest } from "./generated/banner-manifest";
 
 // 注意：不要在此导入 i18n（会造成循环依赖）
 
@@ -27,14 +27,194 @@ const SITE_LANG = "zh_CN"; // 语言代码：'en' | 'zh_CN' | 'zh_TW' | 'ja' | '
 const SITE_TIMEZONE = 8; // 站点时区（UTC 偏移小时，范围 -12 ~ 12，默认 UTC+8）
 
 // 导航栏标题 Logo/图标兜底路径（相对 public/ 的网页路径，供 Navbar.astro 在配置留空时使用）
-// 26.11.03：由 PNG 换成 WebP（default-logo 273KB→13KB、home 790KB→4.4KB），
 // 渲染尺寸分别只有 36px 高 / 28px 见方，原图纯属浪费首屏带宽。
 export const navbarLogoFallback = "/assets/home/default-logo.webp";
 export const navbarIconFallback = "/assets/home/home.webp";
 
 // ================================================================
+// 动效与显示设置（motionSettingsConfig）
+// 这是动效开关、等级、时长和位移的唯一手工配置入口。
+// 组件只读取这里派生出的运行时状态，不再自行维护第二套开关。
+// ================================================================
+export const MOTION_FEATURES = [
+	"pageTransition",
+	"hoverFeedback",
+	"panelMotion",
+	"themeTransition",
+	"imageReveal",
+	"wallpaperCrossfade",
+	"wallpaperKenBurns",
+	"bannerAutoPlay",
+	"bannerWaves",
+	"typewriter",
+	"sakura",
+] as const;
+
+export type MotionFeature = (typeof MOTION_FEATURES)[number];
+export type MotionLevel = "subtle" | "normal" | "expressive";
+
+export const Effect1 = {
+	// 卡片显隐共用参数（时长单位：毫秒，位移单位：像素）。
+	FullAlpha: 1,
+	SimAlpha: 0,
+	ContentAlpha: 1,
+	offer: 20,
+	offer2: 20,
+	duration_show: 420,
+	duration_hide: 260,
+} as const;
+
+export const Effect2 = {
+	// 筛选编排：先淡出，再 FLIP 移动，最后淡入。
+	duration_hide: 180,
+	duration_move: 320,
+	duration_show: 240,
+} as const;
+
+export type MotionFeatureDefinition = {
+	enabled: boolean;
+	label: string;
+	group: "page" | "wallpaper" | "banner" | "ambient";
+	duration: number;
+	offset?: number;
+	fadeOut?: number;
+	fadeIn?: number;
+};
+
+export const themeColorPanelConfig = {
+	showHueSlider: true,
+	showHueValue: true,
+	showResetButton: true,
+	showMotionControls: false,
+	showBulkMotionActions: false,
+	showReducedMotionOverride: false,
+} as const;
+
+export const motionSettingsConfig = {
+	version: 2,
+	storageKey: "fgmagi:settings:v2",
+
+	// 站点默认覆盖浏览器的 prefers-reduced-motion。设为 true 才跟随 Windows/浏览器。
+	respectSystemReducedMotion: false,
+
+	// 主题色面板已隐藏全部动效开关；因此默认只使用本文件中的站点配置。
+	// 未来若重新开放逐项开关，可改为 true 并恢复 DisplaySettings 中的控件。
+	allowUserOverrides: false,
+
+	// 全局动效等级会同时缩放时长与位移，具体动效仍可用下方 duration/offset 微调。
+	level: "normal" as MotionLevel,
+	levelProfiles: {
+		subtle: { durationScale: 0.8, distanceScale: 0.7 },
+		normal: { durationScale: 1, distanceScale: 1 },
+		expressive: { durationScale: 1.2, distanceScale: 1.3 },
+	},
+	tokens: {
+		fast: 140,
+		base: 220,
+		slow: 320,
+		hero: 560,
+		stagger: 45,
+		staggerMax: 180,
+		shift: 6,
+		lift: 2,
+	},
+	features: {
+		pageTransition: {
+			enabled: true,
+			label: "页转场",
+			group: "page",
+			duration: 180,
+			fadeOut: 180,
+			fadeIn: 220,
+		},
+		hoverFeedback: {
+			enabled: true,
+			label: "悬停反馈",
+			group: "page",
+			duration: 150,
+		},
+		panelMotion: {
+			enabled: true,
+			label: "浮层面板",
+			group: "page",
+			duration: 200,
+		},
+		themeTransition: {
+			enabled: true,
+			label: "主题切换",
+			group: "page",
+			duration: 180,
+		},
+		imageReveal: {
+			enabled: true,
+			label: "图片揭示",
+			group: "page",
+			duration: 240,
+		},
+		wallpaperCrossfade: {
+			enabled: true,
+			label: "壁纸交叉淡化",
+			group: "wallpaper",
+			duration: 1050,
+		},
+		wallpaperKenBurns: {
+			enabled: true,
+			label: "壁纸缓慢缩放",
+			group: "wallpaper",
+			duration: 18000,
+		},
+		bannerAutoPlay: {
+			enabled: true,
+			label: "自动轮播",
+			group: "wallpaper",
+			duration: 300000,
+		},
+		bannerWaves: {
+			enabled: true,
+			label: "横幅水波",
+			group: "banner",
+			duration: 12000,
+		},
+		typewriter: {
+			enabled: true,
+			label: "标题打字机",
+			group: "banner",
+			duration: 100,
+		},
+		sakura: {
+			enabled: false,
+			label: "樱花",
+			group: "ambient",
+			duration: 0,
+		},
+	},
+} satisfies {
+	version: number;
+	storageKey: string;
+	respectSystemReducedMotion: boolean;
+	allowUserOverrides: boolean;
+	level: MotionLevel;
+	levelProfiles: Record<
+		MotionLevel,
+		{ durationScale: number; distanceScale: number }
+	>;
+	tokens: Record<string, number>;
+	features: Record<MotionFeature, MotionFeatureDefinition>;
+};
+
+const activeMotionLevel =
+	motionSettingsConfig.levelProfiles[motionSettingsConfig.level];
+
+export function scaleMotionDuration(duration: number): number {
+	return Math.max(0, Math.round(duration * activeMotionLevel.durationScale));
+}
+
+export function scaleMotionDistance(distance: number): number {
+	return Math.max(0, Math.round(distance * activeMotionLevel.distanceScale));
+}
+
+// ================================================================
 // 数据与资源路径（dataFiles）
-// 26.09.02 [7]：新增 dataFiles 配置组，统一收口散落在各页面/脚本中的数据路径。
 // 语义：文件系统路径 = 相对项目根目录（供 fs 读取 / glob base / 脚本输出）；
 //       网页路径 = 以 "/" 开头、相对 public/ 的 URL（供 <img>/<link> 使用）。
 // ================================================================
@@ -46,8 +226,9 @@ export const dataFiles: DataFilesConfig = {
 	friendsJson: "public/data/friends.json", // 友链数据（网页路径 /data/friends.json）
 	postsDir: "./public/data/posts", // 文章内容目录（content 集合 glob base）
 	specDir: "./public/data/spec", // 独立页面内容目录（content 集合 glob base）
-	albumsDir: "public/images", // 相册图片目录（文件系统路径）
-	albumsWebDir: "/images", // 相册网页路径前缀（相对 public/）
+	albumsDir: "images", // 相册原图目录（文件系统路径；构建期生成响应式副本）
+	albumsInfoDir: "public/images", // info.json 与壁纸等静态相册元数据目录
+	albumsWebDir: "/_media/albums", // 生成后的相册响应式网页路径前缀
 	albumsCover: "cover.webp",
 	albumsInfoFile: "info.json", // 相册顶层清单文件名（albumsDir 下，顶层对象数组，每对象一个相册）
 	// ---- 两上限可在此修改 ----
@@ -60,25 +241,18 @@ export const dataFiles: DataFilesConfig = {
 	black_webp: "public/images/black_webp",
 };
 
-// 横幅图片来源：fullBanner 用于全屏壁纸，wideBanner 用于顶部横幅
-const banner_dir = dataFiles.albumsDir;
+// 横幅图片来源：fullBanner 用于全屏壁纸，wideBanner 用于顶部横幅。
+// 清单由 scripts/build-media.mjs 自动扫描 banner_dir 下同名文件夹生成。
+export const banner_dir = dataFiles.albumsInfoDir;
+const fullBannerImages = [...bannerManifest.fullBanner];
+const wideBannerImages = [...bannerManifest.wideBanner];
 const fullBanner = {
-	desktop: [
-		"/芙兰朵露-光.webp",
-		"/阿罗娜-普拉娜.webp",
-		"/伊尔莎.webp",
-		"/芙兰朵露-黑.webp",
-	].map((s) => banner_dir + s), // 桌面横幅图片
-	mobile: ["/C-SK-0.webp", "/C-SK-1.webp", "/C-SK-2.webp"].map(
-		(s) => banner_dir + s,
-	), // 移动横幅图片
+	desktop: fullBannerImages,
+	mobile: fullBannerImages,
 };
 const wideBanner = {
-	// [死代码]：桌面横幅图源已清空（首帧闪现修复），保留结构供后续启用
-	desktop: [],
-	mobile: ["/C-SK-0.webp", "/C-SK-1.webp", "/C-SK-2.webp"].map(
-		(s) => banner_dir + s,
-	),
+	desktop: wideBannerImages,
+	mobile: wideBannerImages,
 };
 
 export const siteConfig: SiteConfig = {
@@ -108,7 +282,6 @@ export const siteConfig: SiteConfig = {
 		devices: false, // 设备
 	},
 
-	// 相册瀑布流：超宽横图跨列（26.09.21 新增）
 	// 原理：layout=masonry 的相册改由脚本用 CSS Grid + 行跨排版（方案 B），
 	//       宽高比 ≥ minAspect 的照片最多跨 maxSpan 列，其余仍是一列一张；
 	//       gapAdaptive 把跨列「必须等两列都空出来」留下的空白就近摊进相片间距，
@@ -147,7 +320,6 @@ export const siteConfig: SiteConfig = {
 		vmid: "403250481", // Bilibili 用户ID（vmid）
 		fetchOnDev: false, // 是否在开发环境抓取 Bilibili 数据
 		SESSDATA: "", // SESSDATA（可选，用于获取观看进度，从浏览器 cookie 获取）
-		coverMirror: "", // 封面镜像源（可选，如 "https://images.weserv.nl/?url="）
 		useWebp: true, // 是否使用 WebP 格式封面
 	},
 
@@ -167,7 +339,6 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 
-	// 26.09.02 [12]：新增友链卡片布局组——同一行卡片数量随窗口宽度变化：breakpoints 数组按 minWidth（浏览器宽度临界值，单位 px）升序排列，
 	// 达到某临界值后每行显示 columns 张卡片（friends.astro 生成 CSS 时会夹紧到 1-4，小于最小临界值的窗口以 1 列兜底）
 	friendCardLayout: {
 		breakpoints: [
@@ -183,8 +354,9 @@ export const siteConfig: SiteConfig = {
 	postListLayout: {
 		defaultMode: "list", // 默认布局："list" 单列 | "grid" 双列（双侧边栏 "both" 时无法使用 grid）
 		// [死代码]：布局切换按钮已隐藏，保留字段不影响现有行为
-		allowSwitch: true,
+		allowSwitch: false,
 		pageSize: 10, // 每页文章数量（范围 5-10）
+		fillLastPage: false, // 不制造固定五槽/像素空白卡
 	},
 
 	// 标签样式
@@ -196,6 +368,7 @@ export const siteConfig: SiteConfig = {
 	wallpaperMode: {
 		defaultMode: "fullscreen", // 默认壁纸模式：banner=顶部横幅 | fullscreen=全屏壁纸 | none=无壁纸
 		showModeSwitchOnMobile: "desktop", // 布局切换按钮显示设备：off | mobile | desktop | both
+		enableBannerMode: false, // 暂时隐藏横幅模式的用户入口；组件与实现保留
 	},
 
 	banner: {
@@ -207,11 +380,14 @@ export const siteConfig: SiteConfig = {
 		position: "center", // 图片位置：top | center | bottom（object-position）
 		// [死代码]：轮播未启用（enable=false 时从数组中随机显示一张），保留供后续启用
 		carousel: {
-			enable: false, // true=轮播，false=随机显示一张
-			interval: 300, // 轮播间隔（秒）
+			// 派生值：请修改 motionSettingsConfig.features.bannerAutoPlay
+			enable: motionSettingsConfig.features.bannerAutoPlay.enabled,
+			interval:
+				motionSettingsConfig.features.bannerAutoPlay.duration / 1000,
 		},
 		waves: {
-			enable: true, // 水波纹效果（性能开销较大）
+			// 派生值：请修改 motionSettingsConfig.features.bannerWaves
+			enable: motionSettingsConfig.features.bannerWaves.enabled,
 			performanceMode: false, // 性能模式：减少动画复杂度（性能提升约 40%）
 			mobileDisable: false, // 移动端禁用
 		},
@@ -229,8 +405,11 @@ export const siteConfig: SiteConfig = {
 				"祈祷明天对你来说，也是美好的一天",
 			], // 副标题（支持数组）
 			typewriter: {
-				enable: true, // 副标题打字机效果
-				speed: 100, // 打字速度（毫秒）
+				// 派生值：请修改 motionSettingsConfig.features.typewriter
+				enable: motionSettingsConfig.features.typewriter.enabled,
+				speed: scaleMotionDuration(
+					motionSettingsConfig.features.typewriter.duration,
+				),
 				deleteSpeed: 50, // 删除速度（毫秒）
 				pauseTime: 10000, // 完整显示后的暂停时间（毫秒）
 			},
@@ -249,11 +428,9 @@ export const siteConfig: SiteConfig = {
 		mode: "sidebar", // 显示模式：float=悬浮按钮 | sidebar=侧边栏
 		depth: 2, // 目录深度（1-6；2=显示 h1/h2）
 		useJapaneseBadge: false, // 使用日语假名序号（あいうえお...）代替数字
-		// 26.09.06：目录轨道最小宽度与文章最小内容宽度。策略：非主页（文章页）宽度优先与主页一致
 		// （取 min(page-width, 允许的最大宽度)），仅在空间不足时按需收窄；不足文章最小宽度则退化移动端目录。
 		sidebarRailWidth: "15rem", // 保留桌面侧栏目录所需的最小单侧空间（CSS 长度；不再是“首选轨道宽度”）
 		sidebarMinContentWidth: 60, // 文章最小内容宽度（rem）；不足则退化移动端目录
-		// 26.09.14：目录（锚点）跳转行为，宽屏侧栏目录与窄屏浮层目录共用（src/utils/anchor-nav.ts）
 		navigation: {
 			offset: 12, // 目标标题与导航栏底边的额外间距（px）：防止标题被吸顶导航栏挡住
 			smoothDuration: 700, // 平滑滚动时长（ms）：越大越慢越平滑
@@ -263,22 +440,22 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 
-	// 26.09.15：导航栏「悬挂」（吸顶）开关
 	navbar: {
 		pinned: true, // true=固定在视口顶部悬挂（下拉时始终可见，原行为）| false=随页面滚动、不再悬挂
 	},
 
-	// 26.09.14：页面切换渐变时长（唯一时间来源）。
 	// 链路：src/config.ts（本处）→ MainGridLayout.astro 的 <style define:vars> 写入
 	// :root 的 --page-fade-out / --page-fade-in → src/styles/transition.css 只读这两个变量；
 	// src/utils/page-transition.ts 用同一份值做状态机计时，并把它注入 window.siteConfig.pageTransition。
 	// 时序：点击 → 当前整页渐变消失(fadeOut) → 目标页加载与预渲染 → 预渲染完成后统一渐变显示(fadeIn)
+	// 派生值：请修改 motionSettingsConfig.features.pageTransition 的 fadeOut / fadeIn。
 	pageTransition: {
-		fadeOut: 200, // 渐变消失时长（毫秒）
-		fadeIn: 250, // 渐变显示时长（毫秒）
-		// 预渲染最长等待（毫秒）：长文页要等正文字体就绪 + 排版收敛后再统一渐显，
-		// 否则会出现「先出现空白卡片、文字随后才补上」。超时即放行，不会一直等。
-		prerenderMaxWait: 1500,
+		fadeOut: scaleMotionDuration(
+			motionSettingsConfig.features.pageTransition.fadeOut ?? 180,
+		),
+		fadeIn: scaleMotionDuration(
+			motionSettingsConfig.features.pageTransition.fadeIn ?? 220,
+		),
 	},
 	showCoverInContent: true, // 在文章内容页显示封面
 	generateOgImages: false, // 生成 OpenGraph 图片（开启后构建很慢，不建议本地调试开启）
@@ -292,20 +469,19 @@ export const siteConfig: SiteConfig = {
 		// 字体文件目录（网页路径，相对 public/；compress-fonts.js 读取同目录 TTF）
 		webDir: "/assets/font",
 		// @font-face 注册列表（由 Layout.astro 按此注入页面）：files 为 webDir 下文件名，按顺序降级
-		// 26.11.03：每个 face 的 src 必须至少有一个**真实存在**的文件，否则浏览器会先打一个
 		// 404 再回退（萝莉体 ttf 有 10.7MB，一旦真的被用到代价极高）。故：
 		//   · 删掉「思源黑体」face —— public/assets/font 下根本没有它的任何文件；
 		//   · 其余两个把已存在的 .ttf 补进降级链（woff2 子集由 compress-fonts 产出后自动优先）。
 		faces: [
 			{
 				family: "萝莉体 第二版",
-				files: ["萝莉体 第二版.woff2", "萝莉体 第二版.ttf"],
+				files: ["萝莉体 第二版.woff2"],
 				weight: "400",
 				style: "normal",
 			},
 			{
 				family: "ZenMaruGothic-Medium",
-				files: ["ZenMaruGothic-Medium.woff2", "ZenMaruGothic-Medium.ttf"],
+				files: ["ZenMaruGothic-Medium.woff2"],
 				weight: "500",
 				style: "normal",
 			},
@@ -321,8 +497,8 @@ export const siteConfig: SiteConfig = {
 		cjkFont: {
 			fontFamily: "system-ui",
 			fontWeight: "400",
-			localFonts: ["思源黑体.ttf"],
-			enableCompress: true,
+			localFonts: [],
+			enableCompress: false,
 		},
 		// 全局字体栈是否包含 "Segoe UI"（true=包含，false=移除）
 		useSegoeUI: true,
@@ -337,8 +513,9 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	},
 	position: "center", // 壁纸位置（object-position）
 	carousel: {
-		enable: true, // 启用轮播
-		interval: 300, // 轮播间隔（秒）
+		// 派生值：请修改 motionSettingsConfig.features.bannerAutoPlay
+		enable: motionSettingsConfig.features.bannerAutoPlay.enabled,
+		interval: motionSettingsConfig.features.bannerAutoPlay.duration / 1000,
 	},
 	zIndex: -1, // 层级（背景层）
 	opacity: 0.28, // 壁纸透明度（0-1）
@@ -391,8 +568,9 @@ export const profileConfig: ProfileConfig = {
 	name: "FGmagi",
 	bio: "弱水三千，只取一瓢",
 	typewriter: {
-		enable: true, // 简介打字机效果
-		speed: 80, // 打字速度（毫秒）
+		// 派生值：请修改 motionSettingsConfig.features.typewriter
+		enable: motionSettingsConfig.features.typewriter.enabled,
+		speed: scaleMotionDuration(80),
 	},
 	links: [],
 };
@@ -403,6 +581,12 @@ export const licenseConfig: LicenseConfig = {
 	url: "https://creativecommons.org/licenses/by-nc-sa/4.0/",
 };
 
+// Unified post-view controls shared by both `/posts/[slug]` and permalink routes.
+export const postViewConfig = {
+	showLicense: false,
+	showLastModified: false,
+	showPrevNext: false,
+} as const;
 // Permalink 固定链接配置
 export const permalinkConfig: PermalinkConfig = {
 	enable: false, // 是否启用全局 permalink（关闭时使用文件名作为链接）
@@ -436,7 +620,6 @@ export const shareConfig: ShareConfig = {
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题（留空使用 i18n 默认）
 	content: "个人博客，图片挺多的，加载不出来纯粹是外链太慢了，我也没招哇——", // 公告内容
-	closable: true, // [死代码]：右侧 X 关闭按钮已取消（26.09.02），字段保留兼容
 	link: {
 		enable: true, // 启用链接
 		showLearnMore: true, // 是否显示 Learn More 链接（bool 开关：false 时不渲染 Learn More，仅保留公告内容）
@@ -446,36 +629,21 @@ export const announcementConfig: AnnouncementConfig = {
 	},
 };
 
-// 26.09.02 [13]：标签筛选卡片配置——首页左下角卡片（原分类卡片空位），点击标签激活并 DOM 过滤中间文章卡片
 export const tagFilterConfig: TagFilterConfig = {
 	showCount: false, // 是否在标签 chip 内显示文章数（"标签名：N"）；false=仅显示标签名
 };
 
-// 首页中间内容卡片悬停变暗参数（百分比暗度；数值越大越暗）
+// 首页中间内容卡片悬停变暗参数。
+// 时长派生自 motionSettingsConfig.features.hoverFeedback；这里只保留暗度参数。
 export const postCardHoverConfig: PostCardHoverConfig = {
-	startDuration: 150, // 开始悬停变暗时间
-	endDuration: 150, //离开恢复时间
+	startDuration: scaleMotionDuration(
+		motionSettingsConfig.features.hoverFeedback.duration,
+	),
+	endDuration: scaleMotionDuration(
+		motionSettingsConfig.features.hoverFeedback.duration,
+	),
 	hoverDarkness: 10, // 悬停时暗度 10%
 	restoredDarkness: 0, // 恢复后的暗度
-};
-
-/**
- * 26.11.05：卡片「筛选显隐」动效 —— 标签筛选过滤卡片时的逐卡动画。
- * 隐藏：短暂下滑 + 透明度递减到 0；显示：从下方短暂上滑到原位 + 透明度递增到 1。
- * 同时作用于首页标签筛选卡与 /friends/ 的标签过滤。
- * · enable=false：即时显隐（无动画）；
- * · 系统开启「减少动效」（prefers-reduced-motion: reduce）时**不再整段禁用**：
- *   保留淡入淡出、把位移收成 0（见 src/scripts/card-filter-visibility.js）。
- */
-export const cardFilterAnimationConfig: CardFilterAnimationConfig = {
-	enable: true, // 是否启用（false = 即时显示/隐藏）
-	duration: 200, // 单张卡片过渡时长（ms）
-	offset: 10, // 位移幅度（px）：正值 = 隐藏时向下、显示时从下方上滑
-	// 26.11.05：默认 **不** 遵循系统「减少动效」——
-	// 站点主人明确要求这个滑动效果，而 Windows「动画效果」关闭 / 远程桌面 / 部分浏览器
-	// 会全局置 reduce，之前那版会把位移归零，表现为「只有淡入淡出、没有滑动」。
-	// 需要无障碍优先时改成 true（则只保留淡入淡出）。
-	respectReducedMotion: false,
 };
 
 export const musicPlayerConfig: MusicPlayerConfig = {
@@ -493,11 +661,6 @@ export const footerConfig: FooterConfig = {
 	customHtml: "", // 自定义 HTML（如备案号；留空则使用 FooterConfig.html 文件内容）
 };
 
-/**
- * 侧边栏布局配置：控制组件显示、排序、动画与响应式行为
- * 注意：组件设置在 right 侧时，请确保布局为 "both" 双侧边栏；移动端通常不显示右侧栏
- * 26.09.02 [11]：全站取消分类展示——左栏移除 "categories"，空位由 13 的标签筛选卡接替；properties 中 categories 条目保留为 [死代码]
- */
 export const sidebarLayoutConfig: SidebarLayoutConfig = {
 	// 侧边栏组件属性配置列表
 	properties: [
@@ -513,17 +676,6 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			class: "onload-animation",
 			animationDelay: 0,
 		},
-		{
-			// [死代码]：全站已取消分类展示（26.09.02 [11]），分类卡退出侧栏，左下空位由 13 的标签筛选卡接替；条目保留供后续复用
-			type: "categories", // 组件类型：分类
-			position: "sticky",
-			class: "onload-animation",
-			animationDelay: 0,
-			responsive: {
-				collapseThreshold: 5, // 分类数超过该值自动折叠
-			},
-		},
-		// 26.09.02 [13]：标签筛选卡片——接管左下角空位，点击标签 chip 激活（OR）并 DOM 过滤中间文章卡片
 		{
 			type: "tag-filter", // 组件类型：标签筛选
 			position: "sticky",
@@ -558,7 +710,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
 	// 各侧栏展示的组件
 	components: {
-		left: ["profile", "announcement", "tag-filter"], // 左侧栏（26.09.02 [11]：已移除 categories；[13]：左下加入标签筛选卡）
+		left: ["profile", "announcement", "tag-filter"],
 		right: ["site-stats", "calendar"], // 右侧栏
 		drawer: ["profile", "announcement"], // 抽屉栏
 	},
@@ -581,7 +733,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 };
 
 export const sakuraConfig: SakuraConfig = {
-	enable: false, // 启用樱花特效
+	enable: motionSettingsConfig.features.sakura.enabled,
 	sakuraNum: 21, // 樱花数量
 	limitTimes: -1, // 越界限制次数（-1=无限循环）
 	size: {

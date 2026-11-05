@@ -4,6 +4,7 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { scanAlbums } from "../utils/album-scanner";
+import ResponsiveImage from "../components/misc/ResponsiveImage.astro";
 
 // 检查相册页面是否启用
 if (!siteConfig.featurePages.albums) {
@@ -20,7 +21,7 @@ const albumsData = await scanAlbums();
     import('../scripts/right-sidebar-layout.js');
   </script>
   <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-    <div class="card-base z-10 px-9 py-6 relative w-full">
+    <div class="card-base z-10 px-9 py-6 relative w-full" data-effect1-card>
       
       <!-- 页面标题 -->
       <header class="mb-8">
@@ -43,10 +44,11 @@ const albumsData = await scanAlbums();
             <a href={`/albums/${album.id}/`} class="block">
               <!-- 封面图片 -->
               <div class="aspect-[4/3] overflow-hidden bg-neutral-100 dark:bg-neutral-700">
-                <img 
-                  src={album.cover} 
+                <ResponsiveImage
+                  src={album.cover}
+                  thumb={album.coverThumbnail || album.cover}
                   alt={album.title}
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  class="w-full h-full group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />
               </div>
@@ -128,14 +130,8 @@ const albumsData = await scanAlbums();
     overflow: hidden;
   }
   
-  /* 26.11.04：去掉 hover 位移（元素在指针下方移动会让贴边时 hover 反复进出 ⇒ 抖动），
-     悬浮反馈保留卡片自带的 hover:shadow-md 与封面图内部的 group-hover 放大。 */
   .album-card:hover {
     box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.35);
   }
   
-  /* 26.11.05：keyframes 统一用 motion.css 的 mo-fade-rise（原先本页与 albums.css 各写一份） */
-  .album-card {
-    animation: mo-fade-rise var(--mo-slow, 320ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) both;
-  }
 </style>

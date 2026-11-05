@@ -104,7 +104,6 @@ const brands = Object.keys(devices);
               </div>
             </div>
 
-
           </a>
         ))}
       </div>
@@ -183,7 +182,6 @@ const brands = Object.keys(devices);
               </div>
             </div>
 
-
           </a>
         `).join('');
       });
@@ -207,7 +205,7 @@ const brands = Object.keys(devices);
       font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
       position: relative;
       overflow: hidden;
@@ -243,7 +241,6 @@ const brands = Object.keys(devices);
       box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.4);
     }
 
-    /* 设备卡片动画效果（26.11.05：keyframes 统一用 motion.css 的 mo-fade-rise） */
     .onload-animation {
       animation: mo-fade-rise var(--mo-slow, 320ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) backwards;
     }

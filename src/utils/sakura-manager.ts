@@ -1,4 +1,5 @@
 import type { SakuraConfig } from "../types/config";
+import { prefersReducedMotion } from "./motion-preference";
 
 // 樱花对象类
 class Sakura {
@@ -193,6 +194,7 @@ export class SakuraManager {
 	private animationId: number | null = null;
 	private img: HTMLImageElement | null = null;
 	private isRunning = false;
+	private readonly resizeHandler = () => this.handleResize();
 
 	constructor(config: SakuraConfig) {
 		this.config = config;
@@ -206,15 +208,21 @@ export class SakuraManager {
 
 		// 创建图片对象
 		this.img = new Image();
-		this.img.src = "/sakura.png"; // 使用樱花图片
 
 		// 等待图片加载完成
+		const image = this.img;
 		await new Promise<void>((resolve, reject) => {
-			if (this.img) {
-				this.img.onload = () => resolve();
-				this.img.onerror = () =>
-					reject(new Error("Failed to load sakura image"));
+			const done = () => resolve();
+			const fail = () => reject(new Error("Failed to load sakura image"));
+			image.addEventListener("load", done, { once: true });
+			image.addEventListener("error", fail, { once: true });
+			if (image.complete && image.naturalWidth > 0) {
+				image.removeEventListener("load", done);
+				image.removeEventListener("error", fail);
+				resolve();
+				return;
 			}
+			image.src = "/sakura.png";
 		});
 
 		this.createCanvas();
@@ -237,7 +245,7 @@ export class SakuraManager {
 		this.ctx = this.canvas.getContext("2d");
 
 		// 监听窗口大小变化
-		window.addEventListener("resize", this.handleResize.bind(this));
+		window.addEventListener("resize", this.resizeHandler);
 	}
 
 	// 创建樱花列表
@@ -319,8 +327,9 @@ export class SakuraManager {
 			this.canvas = null;
 		}
 
-		window.removeEventListener("resize", this.handleResize.bind(this));
+		window.removeEventListener("resize", this.resizeHandler);
 		this.isRunning = false;
+		document.documentElement.dataset.motionSakuraState = "off";
 	}
 
 	// 切换樱花特效
@@ -339,8 +348,15 @@ export class SakuraManager {
 			this.stop();
 		}
 		this.config = newConfig;
-		if (wasRunning && newConfig.enable) {
-			this.init();
+		if (newConfig.enable) {
+			void this.init()
+				.then(() => {
+					document.documentElement.dataset.motionSakuraState = "running";
+				})
+				.catch((error) => {
+					document.documentElement.dataset.motionSakuraState = "error";
+					console.warn("[Sakura] initialization failed", error);
+				});
 		}
 	}
 
@@ -355,13 +371,36 @@ let globalSakuraManager: SakuraManager | null = null;
 
 // 初始化樱花特效
 export function initSakura(config: SakuraConfig): void {
-	if (globalSakuraManager) {
-		globalSakuraManager.updateConfig(config);
-	} else {
-		globalSakuraManager = new SakuraManager(config);
-		if (config.enable) {
-			globalSakuraManager.init();
+	const applyRuntimeSettings = () => {
+		if (typeof document === "undefined") return;
+		const runtimeEnabled =
+			document.documentElement.dataset.motionSakura !== "off" &&
+			!prefersReducedMotion();
+		const effective = { ...config, enable: config.enable && runtimeEnabled };
+		if (globalSakuraManager) {
+			globalSakuraManager.updateConfig(effective);
+		} else if (effective.enable) {
+			globalSakuraManager = new SakuraManager(effective);
+			void globalSakuraManager
+				.init()
+				.then(() => {
+					document.documentElement.dataset.motionSakuraState = "running";
+				})
+				.catch((error) => {
+					document.documentElement.dataset.motionSakuraState = "error";
+					console.warn("[Sakura] initialization failed", error);
+				});
 		}
+	};
+	if (globalSakuraManager) {
+		applyRuntimeSettings();
+	} else {
+		globalSakuraManager = new SakuraManager({
+			...config,
+			enable: false,
+		});
+		applyRuntimeSettings();
+		window.addEventListener("fgmagi:settings-change", applyRuntimeSettings);
 	}
 }
 

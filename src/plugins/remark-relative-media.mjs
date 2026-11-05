@@ -1,4 +1,6 @@
 import { visit } from "unist-util-visit";
+import fs from "node:fs";
+import path from "node:path";
 
 /**
  * 让 md 里**用 HTML 写的媒体**也支持相对路径（和 markdown 的 ![]() 一样）。
@@ -16,6 +18,30 @@ import { visit } from "unist-util-visit";
  */
 
 const ATTRS = ["src", "poster"];
+let mediaPosts;
+
+function loadMediaPosts() {
+	if (mediaPosts) return mediaPosts;
+	try {
+		const manifest = JSON.parse(
+			fs.readFileSync(
+				path.join(process.cwd(), "src", "generated", "media-manifest.json"),
+				"utf8",
+			),
+		);
+		mediaPosts = manifest.posts ?? {};
+	} catch {
+		mediaPosts = {};
+	}
+	return mediaPosts;
+}
+
+function escapeAttribute(value) {
+	return String(value)
+		.replaceAll("&", "&amp;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("<", "&lt;");
+}
 
 function isRelative(url) {
 	const v = url.trim();
@@ -26,7 +52,6 @@ function isRelative(url) {
 
 function rewriteTag(tag, base) {
 	let out = tag;
-	// 26.09.16：顺带给原始 HTML 媒体补懒加载——长文档（如 超次元恋人.md，几十张 AVIF + 视频）
 	// 全量 eager 会让文章页加载很久、首页封面也抢不到带宽。
 	if (/^<img\b/i.test(out)) {
 		if (!/\sloading\s*=/i.test(out)) out = out.replace(/^<img/i, '<img loading="lazy"');
@@ -41,6 +66,23 @@ function rewriteTag(tag, base) {
 			if (!isRelative(value)) return whole;
 			return `${prefix}${quote}${base}${value.replace(/^\.\//, "")}${closing}`;
 		});
+	}
+	if (/^<img\b/i.test(out)) {
+		const source = out.match(/\ssrc\s*=\s*(["'])([^"']+)\1/i)?.[2];
+		const record = source ? loadMediaPosts()[source] : null;
+		if (record?.medium) {
+			const srcset = (record.webp ?? [])
+				.map((variant) => `${variant.url} ${variant.width}w`)
+				.join(", ");
+			out = out.replace(
+				/(\ssrc\s*=\s*)(["'])[^"']*\2/i,
+				`$1$2${record.medium}$2`,
+			);
+			out = out.replace(
+				/^<img/i,
+				`<img data-fancybox="post-images" data-src="${escapeAttribute(source)}" aria-label="打开文章图片" data-original-src="${escapeAttribute(source)}" srcset="${escapeAttribute(srcset)}" sizes="(max-width: 767px) calc(100vw - 3rem), min(720px, 70vw)" width="${record.width || ""}" height="${record.height || ""}"`,
+			);
+		}
 	}
 	return out;
 }

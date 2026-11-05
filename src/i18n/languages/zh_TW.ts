@@ -15,7 +15,6 @@ export const zh_TW: Translation = {
 	[Key.navOthers]: "其他",
 
 	[Key.tags]: "標籤",
-	// 26.09.02 [13]：標籤篩選卡片標題
 	[Key.tagFilter]: "標籤篩選",
 	[Key.categories]: "分類",
 	[Key.recentPosts]: "最新文章",
@@ -34,7 +33,6 @@ export const zh_TW: Translation = {
 	[Key.friendsFilterAll]: "全部",
 	[Key.friendsNoResults]: "未找到匹配的友鏈",
 	[Key.friendsVisit]: "訪問",
-	// 26.11.03：友鏈雙站點按鈕文案（左側/右側）
 	[Key.friendsVisitMain]: "訪問",
 	[Key.friendsVisitBackup]: "備用",
 	[Key.friendsCopyLink]: "複製鏈接",
@@ -337,8 +335,6 @@ export const zh_TW: Translation = {
 	[Key.profileStatsVisits]: "造訪次數",
 	[Key.profileStatsUnavailable]: "統計不可用",
 
-	// 26.08.30修改，内容为：新增布局/主题模式显示文案与简洁模式文案
-	// 布局切換按鈕
 	[Key.switchToGridMode]: "切換到網格模式",
 	[Key.switchToListMode]: "切換到列表模式",
 	[Key.listMode]: "列表模式",

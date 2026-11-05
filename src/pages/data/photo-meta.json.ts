@@ -15,8 +15,6 @@ export async function GET() {
 		const albums = await scanAlbums();
 		const manifest = await buildManifestJson(albums);
 
-		// 26.09.14：构建期可见性 —— 直接告知「album-prefetch 还有没有可预取的未知项」，
-		// 免得运行期「无候选即无日志」被误判为功能失效。
 		const allPhotos = manifest.albums.flatMap((album) => album.photos);
 		const total = allPhotos.length;
 		const unknown = allPhotos.filter(

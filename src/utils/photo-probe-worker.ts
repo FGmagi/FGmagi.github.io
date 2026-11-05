@@ -1,24 +1,4 @@
-/**
- * 相册图片「尺寸探测」Worker（26.09.14 新增，任务：图片页外链不可达时卡死）。
- *
- * 为什么独立线程：相册详情页外链动辄几十上百条，逐一 Range 探测头字节 + 解析文件头
- * （JPEG/PNG/WebP/AVIF 的 box 遍历）此前全部跑在主线程上；外链不可达时更要等网络超时。
- * 把「发请求 + 解析头字节」整体搬进 Worker，主线程只接收 {key,w,h} 结果并写缓存，
- * 布局/交互因此不被探测过程占住（UI 线程与探测线程分离）。
- *
- * 硬性约束：
- *  - 只读头部字节（photo-size 的 Range 探测），绝不全量下载图片内容；
- *  - 全局截止 deadlineMs：到点立即收工（同时断掉在途请求，避免被单请求超时拖住），
- *    未探测出来的项由主线程按默认宽高比占位，保证相册一定能在有限时间内进入
- *    「已排版占位 + 逐张懒加载」阶段（不会卡在尺寸期）；
- *  - 可取消：主线程 abort 时发 cancel，Worker 终止在途请求并停止取新任务。
- *
- * 协议（postMessage）：
- *   主→W  { type:"probe", batchId, jobs:[{key,src}], concurrency, timeoutMs, deadlineMs }
- *   主→W  { type:"cancel", batchId }
- *   W→主  { type:"result", batchId, key, w, h }
- *   W→主  { type:"done", batchId }
- */
+
 
 import { fetchHeaderSize } from "./photo-size.js";
 

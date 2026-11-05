@@ -18,11 +18,6 @@ for (const heading of headings) {
 
 const className = Astro.props.class;
 
-/* 26.09.06：SSR 预生成目录条目。
-   此前 <table-of-contents> 恒为空壳，条目完全依赖客户端 regenerateTOC()，
-   再叠加 connectedCallback 里的 animationend / setTimeout 延迟，
-   导致目录比文章卡片晚一大拍淡入。现在改为服务端直接输出与 regenerateTOC()
-   完全同构的 HTML，客户端只在内容不一致时才重建。 */
 const maxDepth = siteConfig.toc.depth;
 const useJapaneseBadge = siteConfig.toc.useJapaneseBadge;
 
@@ -113,8 +108,8 @@ const hasTocEntries = tocEntries.length > 0;
 </table-of-contents>
 
 <script>
-  // 26.09.14：目录跳转统一实现（导航栏避让 + 可配平滑时长 + 长距离渐变过渡）
   import { jumpToHeading, anchorScrollTopClamped, activeHeadingLinePx, maxScrollY } from "../../utils/anchor-nav";
+  import { prefersReducedMotion } from "../../utils/motion-preference";
 class TableOfContents extends HTMLElement {
     tocEl: HTMLElement | null = null;
     visibleClass = "visible";
@@ -125,11 +120,8 @@ class TableOfContents extends HTMLElement {
     tocEntries: HTMLAnchorElement[] = [];
     active: boolean[] = [];
     activeIndicator: HTMLElement | null = null;
-    // 26.09.06：窗口/文档级监听是否已注册（#toc 跨页存活，init() 会被反复调用）
     bound = false;
 
-    // 26.09.06：resize / toc:relayout（toc-layout.js 重算 TOC 高度后派发）→
-    // 重新计算高亮指示条并让高亮项重新居中，避免目录高度变化后高亮错位
     relayoutHandler = () => {
         this.update();
     };
@@ -143,9 +135,6 @@ class TableOfContents extends HTMLElement {
 
     markVisibleSection = (entries: IntersectionObserverEntry[]) => {
         entries.forEach((entry) => {
-            // 26.09.20：观察对象改成标题本身（原来是标题的父元素）。
-            // 父元素不一定是「一章」（纸质分页会把正文搬进 .paper-page__body，
-            // 一章一个 <section> 的结构不保证还在），标题自身的几何永远可靠。
             const id = entry.target.getAttribute("id")
                 || entry.target.children[0]?.getAttribute("id");
             const idx = id ? this.headingIdxMap.get(id) : undefined;
@@ -200,8 +189,6 @@ class TableOfContents extends HTMLElement {
         }
     };
 
-    // 26.09.06（T4·改动 2）：判断某个目录条目当前是否已完整落在 #toc 可视区内。
-    // 用于「只在必要时滚动」——否则 scroll 事件每帧都会发起一次平滑滚动，抖动且不收敛。
     isEntryVisibleInToc = (entry: HTMLAnchorElement) => {
         if (!this.tocEl) return false;
         const rect = entry.getBoundingClientRect();
@@ -213,10 +200,6 @@ class TableOfContents extends HTMLElement {
         );
     };
 
-    // 26.09.14（需求：目录滚动跟随 + 当前项居中锁定 + 边界约束）：
-    // 把高亮项尽量锁在 #toc 可视区垂直中心（打字机模式）；容器已滚到顶/底、
-    // 无法再让目标居中时自然贴边（clamp 的必然结果）。注意：这里只动
-    // this.tocEl.scrollTop，与「点击条目后的页面滚动补偿」是两个独立滚动。
     centerActiveHeadingInToc = () => {
         if (this.anchorNavTarget || !this.tocEl) return;
         const entry = this.tocEl.querySelector<HTMLAnchorElement>(
@@ -237,7 +220,7 @@ class TableOfContents extends HTMLElement {
         container.scrollTo({
             top,
             left: 0,
-            behavior: this.reduceMotionQuery.matches ? "auto" : "smooth",
+            behavior: prefersReducedMotion() ? "auto" : "smooth",
         });
     };
 
@@ -245,24 +228,10 @@ class TableOfContents extends HTMLElement {
         this.centerActiveHeadingInToc();
     };
 
-    // 26.09.06（任务三·需求②）：只高亮「当前页面上方最近的那个标题」。
-    // 以吸顶导航栏底边为判定线，取最后一个 top ≤ 判定线的 section；
-    // 滚到最顶部（无 section 越过判定线）时回落到第 0 条。
-    // 判定线优先读真实导航栏底边（toc-layout.js 的几何也用它），
-    // 读不到时回退到 96px（≈ 3.5rem 顶部偏移 + 3.6rem 导航栏高）。
     NAVBAR_FALLBACK_PX = 96;
-
-    // 26.09.14：用户「减少动态效果」偏好。必须在使用时读 .matches
-    // （而非在此处冻结成布尔值），否则系统偏好切换后不会生效。
-    reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     currentIndex = () => {
         if (!this.headings.length) return -1;
-        // 26.09.20：判定线改用 anchor-nav 的口径（导航栏底边 + 跳转偏移 + 容差）。
-        // 只取导航栏底边时，刚跳转到位、正好停在「底边 + offset」的标题会被判成
-        // 还没越线，高亮就落到上一条标题上——就是「高光显示在前一个标题」的原因。
-        // 26.09.20：已经滚到文档底部时，末尾的标题再怎么点也滚不到判定线（被文档末尾夹住），
-        // 此时直接高亮最后一条，否则最后几章永远点不亮。
         if (window.scrollY >= maxScrollY() - 2) {
             for (let i = this.headings.length - 1; i >= 0; i--) {
                 if (this.headings[i]) return i;
@@ -282,8 +251,6 @@ class TableOfContents extends HTMLElement {
         return idx;
     };
 
-    // 26.09.06（T4·改动 2）：scroll 监听必须走这个无参包装，不能直接把 update 当处理器——
-    // 事件对象会被当成 forceScroll=true 传入，导致每帧仍强制滚动（优化失效）。
     scrollHandler = () => {
         this.update();
     };
@@ -298,11 +265,6 @@ class TableOfContents extends HTMLElement {
                 this.active = this.active.map((_, i) => i === idx);
             }
             this.toggleActiveHeading();
-            // 26.09.06（T4·改动 2）：scroll 已按帧调用本函数，若此处每帧都发起平滑滚动
-            // 会抖动且不收敛。策略：① 高亮索引变化 → 允许一次滚动；② 索引未变
-            // （含滚动中/无变化的 scroll 事件）→ 仅当高亮项已不在 #toc 可视区内才滚动；
-            // ③ 外部（点击/锚点/resize/relayout）可传 forceScroll=true 强制归位。
-            // 平滑滚动本身保留，功能（高亮项自动滚入视野）不丢。
             this.scrollToActiveHeading(forceScroll || changed);
         });
     };
@@ -318,7 +280,7 @@ class TableOfContents extends HTMLElement {
 
             if (this.isInRange(offsetTop, 0, window.innerHeight)
                 || this.isInRange(offsetBottom, 0, window.innerHeight)
-                || (offsetTop < 0 && offsetBottom > window.innerHeight)) {                    
+                || (offsetTop < 0 && offsetBottom > window.innerHeight)) {
                 this.markActiveHeading(i);
             }
             else if (offsetTop > window.innerHeight) break;
@@ -336,23 +298,16 @@ class TableOfContents extends HTMLElement {
 
         if (anchor) {
             event.preventDefault(); // 阻止默认的锚点跳转
-            
+
             const id = decodeURIComponent(anchor.hash?.substring(1));
             const targetElement = document.getElementById(id);
-            // 26.09.20：已经在目标位置时（例如重复点击同一条目）不再滚动 ——
-            // 否则会再补一次平滑滚动，把标题往上顶到导航栏下面，高亮也跟着错位。
             const settled = !!targetElement
                 && Math.abs(window.scrollY - anchorScrollTopClamped(targetElement)) <= 2;
 
             if (targetElement) {
-                // 26.09.14：跳转统一走 src/utils/anchor-nav.ts
-                //   · 目标标题落在「导航栏底边 + config.toc.navigation.offset」之下，不会被吸顶导航栏挡住；
-                //   · 自绘 rAF 平滑滚动（时长/缓动可配，比原生 smooth 更慢更平滑）；
-                //   · 距离超过 longJumpViewports 个视口高度时，改为
-                //     「文章卡片 + 目录一起渐变消失 → 瞬移 → 预渲染 → 统一渐显」。
                 if (!settled) jumpToHeading(id);
             }
-            
+
             const idx = this.headingIdxMap.get(id);
             if (idx !== undefined) {
                 this.anchorNavTarget = this.headings[idx];
@@ -368,10 +323,6 @@ class TableOfContents extends HTMLElement {
         return min < value && value < max;
     };
 
-    // 26.09.06（任务三·需求③）：SSR 已输出目录条目 → 立刻初始化，
-    // 不再等 .custom-md 的 animationend（约 150+500ms）或 setTimeout(300)，
-    // 使目录与文章卡片在同一动画时基内一起出现。
-    // 26.09.06：click 用稳定引用（capture 版包装），使 #toc 跨页存活时也能被精准移除
     clickHandler = (event: Event) => {
         this.handleAnchorClick(event);
     };
@@ -408,9 +359,9 @@ class TableOfContents extends HTMLElement {
         const tocHTML = headings
             .filter(heading => heading.depth < minDepth + maxLevel)
             .map(heading => {
-                const depthClass = heading.depth === minDepth ? '' : 
+                const depthClass = heading.depth === minDepth ? '' :
                     heading.depth === minDepth + 1 ? 'ml-4' : 'ml-8';
-                
+
                 let badgeContent = '';
                 if (heading.depth === minDepth) {
                     if (useJapaneseBadge && heading1Count - 1 < japaneseKatakana.length) {
@@ -424,7 +375,7 @@ class TableOfContents extends HTMLElement {
                 } else {
                     badgeContent = '<div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>';
                 }
-                
+
                 return `<a href="#${heading.slug}" class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl overflow-hidden hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2">
                     <div class="transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold ${depthClass} ${heading.depth === minDepth ? 'bg-[var(--toc-badge-bg)] text-[var(--btn-content)]' : ''}">
                         ${badgeContent}
@@ -437,12 +388,6 @@ class TableOfContents extends HTMLElement {
     };
 
     // SSR 条目与当前文档标题一一对应？（条数/顺序/文本全等）→ 是则跳过重建，避免闪动
-    // ⚠ 26.09.06 已知事实（T4 登记，暂不修）：本比对用 innerHTML.trim() 字符串全等，
-    // 而 Astro 编译 SSR 模板时会剥离「含换行的空白文本节点」，buildTOCHtml() 则显式输出
-    // '\n'+缩进 ⇒ 两者恒不相等，本函数实际**恒返回 false**，即「仅在必要时重建」的优化
-    // 从未生效（每次都走 regenerateTOC()）。
-    // 方向是安全的（只会多重建、不会漏建，不会把已错的条目误判为一致），
-    // 故本轮仅登记；若将来要真正生效，应改为结构化比对（条数 + slug/文本序列）。
     tocHtmlMatchesDocument(headings: { depth: number; slug: string; text: string }[]) {
         const html = this.buildTOCHtml(headings);
         if (!html) return false;
@@ -474,18 +419,12 @@ class TableOfContents extends HTMLElement {
 
         this.tocEl = this;
 
-        // 26.09.06：先断掉对上一页 section 的观察，否则旧节点持续被观察、高亮判定串页。
-        // 放在早退之前，保证「新页无目录条目」时也能清干净。
         this.observer.disconnect();
 
-        // 26.09.06：#toc 元素跨页存活（swup 只替换内容区），disconnectedCallback 不会执行，
-        // 若每次 init() 都注册一遍，N 次导航后会累积 N 份监听 → 用布尔守卫只注册一次。
         if (!this.bound) {
             // 尺寸/位置变化后重新居中高亮项（配合 toc-layout.js 的 --toc-max-h 重算）
             window.addEventListener("resize", this.relayoutHandler, { passive: true });
             document.addEventListener("toc:relayout", this.relayoutHandler);
-            // 26.09.06（任务三·需求②）：IntersectionObserver 只在 section 穿越视口时回调，
-            // 判定线（导航栏底边）被越过不一定触发，故补 scroll 监听
             window.addEventListener("scroll", this.scrollHandler, { passive: true });
             this.tocEl.addEventListener("click", this.clickHandler, {
                 capture: true,
@@ -501,8 +440,6 @@ class TableOfContents extends HTMLElement {
 
         if (this.tocEntries.length === 0) return;
 
-        // 26.09.06：observer 已在 init() 开头 disconnect，此处仅重新挂载当前页 section
-        // swup 换页后防残留
         this.headingIdxMap.clear();
         this.headings = new Array(this.tocEntries.length);
         for (let i = 0; i < this.tocEntries.length; i++) {
@@ -526,7 +463,7 @@ class TableOfContents extends HTMLElement {
     // 仅在条目与文档不一致时被 init() 调用（swup 换页 / 无 SSR 条目时）
     regenerateTOC() {
         // 检查是否为文章页面
-        const isPostPage = window.location.pathname.includes('/posts/') || 
+        const isPostPage = window.location.pathname.includes('/posts/') ||
                           document.querySelector('.custom-md, .markdown-content') !== null;
         if (!isPostPage) {
             // 如果不是文章页面，隐藏TOC
@@ -564,8 +501,6 @@ class TableOfContents extends HTMLElement {
         );
         this.observer.disconnect();
         this.tocEl?.removeEventListener("click", this.clickHandler, true);
-        // 26.09.06：清理布局重算与 scroll 监听，避免组件卸载后残留
-        // （与 init() 的 this.bound 守卫对称：解绑后允许重新注册）
         window.removeEventListener("resize", this.relayoutHandler);
         document.removeEventListener("toc:relayout", this.relayoutHandler);
         window.removeEventListener("scroll", this.scrollHandler);
@@ -579,9 +514,7 @@ if (!customElements.get("table-of-contents")) {
 </script>
 
 <style>
-  /* 26.09.06：TOC 自身即滚动容器（平时隐藏滚动条、hover/focus 显现细条）。
-     高度上限来自 toc-layout.js 写入的 --toc-max-h（已为回顶按钮预留间距），
-     与导航栏底部/按钮位置联动，保证目录溢出时内部滚动、绝不与按钮重叠。 */
+
   table-of-contents#toc {
       /* 扣掉卡片内边距（全屏毛玻璃卡片有 0.5rem padding），
          否则最后一个条目会溢出卡片下边缘 */
@@ -621,18 +554,7 @@ if (!customElements.get("table-of-contents")) {
       background: var(--scrollbar-bg-hover);
   }
 
-  /* 26.09.14：条目文字「单行放不下就换行」（宽屏侧栏目录；窄屏浮层见 MobileTOC.svelte）。
-     旧版是单行硬裁切（white-space:nowrap + overflow:hidden），长标题直接看不到后半截。
-     现在只负责换行；**裁切交给卡片自身**：
-       · 卡片（玻璃毛玻璃背景、圆角）＝ #toc-inner-wrapper，它已有 overflow:hidden
-         （见 MainGridLayout.astro 的 #toc-inner-wrapper 规则），超出卡片的渲染一律被裁掉；
-       · 滚动容器＝ table-of-contents#toc，max-height 已扣掉卡片内边距（--toc-inner-pad），
-         行数变多时在卡片内部滚动，最后一行只会被卡片/滚动区裁切，不会画到背景之外。
 
-     注意：条目 HTML 由 JS 动态生成，元素不带 Astro 作用域类；Astro 会给复合选择器
-     逐段追加 :where(.astro-xxx)，因此这里的后代选择器必须用 :global() 包住才会生效
-     （否则规则匹配不到动态节点 —— 这正是此前文字仍溢出卡片的原因）。
-     #toc 在页面内唯一，按 id 限定不会外泄。 */
   :global(table-of-contents#toc a) {
       overflow: hidden;
   }
@@ -649,9 +571,6 @@ if (!customElements.get("table-of-contents")) {
   }
 </style>
 
-<!-- 26.09.14：悬停竖条（与阅读段指示条并存，不互斥）。
-     <a> 由 SSR 与客户端 init() 两处生成，作用域属性不一定存在，
-     故用 is:global 保证两条路径都命中；只命中目录条目，无副作用。 -->
 <style is:global>
   table-of-contents#toc > a::before {
     content: "";

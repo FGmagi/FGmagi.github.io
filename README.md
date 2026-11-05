@@ -24,6 +24,9 @@ pnpm build
 pnpm preview
 ```
 
+`pnpm build` 使用本地媒体、图标和字体锁文件，不主动更新远程番剧数据。需要刷新远程数据时运行
+`pnpm build:online`。重构行为契约与回归矩阵位于 `docs/`。
+
 ## 部署
 
 托管于 Cloudflare Pages，推送 `main` 分支后自动构建部署。

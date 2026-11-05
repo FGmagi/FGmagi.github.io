@@ -9,7 +9,6 @@ export interface FriendItem {
 	desc: string;
 	siteurl: string | string[];
 	tags: string[];
-	// 26.11.03：可选的第二个跳转网页字段（与 utils/friend-links.ts 的 FriendRawItem 保持一致）
 	first?: string;
 	first_color?: number | string;
 	first_siteurl?: string;
@@ -22,7 +21,6 @@ export interface FriendItem {
 	second_actived?: boolean | number | string;
 }
 
-// 26.09.02 [7]：friendsData 路径改读 config（dataFiles.friendsJson，基于 process.cwd()，与 anime.astro 一致）
 const friendsJsonPath = path.join(process.cwd(), dataFiles.friendsJson);
 export const friendsData: FriendItem[] = JSON.parse(
 	fs.readFileSync(friendsJsonPath, "utf-8"),

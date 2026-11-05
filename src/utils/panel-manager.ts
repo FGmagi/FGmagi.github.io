@@ -1,15 +1,4 @@
-/**
- * 统一的浮窗管理器
- * 确保同一时间只有一个浮窗处于打开状态，并提供统一的动画效果
- *
- * 26.11.03（动效整体修缮 · 批 3）：
- * 旧实现在这里用内联 `transition: all 100ms ease-out` + `panel.offsetHeight` 强制重排
- * 自己播动画，与 src/styles/panel-animations.css 的关闭态声明互相覆盖，观感只有 100ms
- * 且会过渡无关属性。现在：
- *   · 表现全部交给 CSS（opacity/transform/visibility，时长与曲线取 motion.css 令牌）；
- *   · 本类只负责「切类 + 等这一次过渡结束」，返回值/await 语义保持不变；
- *   · 主题切换期间（.is-theme-transitioning 会全站禁过渡）直接切类，不做等待。
- */
+
 
 type PanelId =
 	| "mobile-toc-panel"

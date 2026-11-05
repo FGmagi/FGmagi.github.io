@@ -1,29 +1,4 @@
-/**
- * 目录（TOC）侧栏布局控制器（客户端，仅浏览器）。任务二 B + C 的实现载体。
- *
- * 26.11.05：`prefers-reduced-motion` 判定改为复用 src/utils/motion-preference.ts，
- * 不再在本文件里各写一份（此前全站有 4 处重复实现，口径容易漂移）。
- *
- * 职责一（宽度模式 C）：写入 `--viewport-w`（clientWidth，排除滚动条），并判定
- *   `html[data-toc-layout="desktop" | "narrow"]`：
- *   - 仅「含 TOC 的桌面文章页」参与收窄；首页/列表/相册等页面不参与（≥1024 时移除属性，
- *     <1024 时置 narrow 以保留移动端目录入口）；
- *   - desktop 条件：innerWidth ≥ 1024 且 clientWidth − 2*(railPx + gutterPx) ≥ articleMinPx，
- *     且右轨可用宽度 ≥ MIN_TOC_W（避免“显示但 0 宽”）；
- *   - desktop 时 `--content-width` 由 CSS 规则覆盖为 `--article-width`（见 variables.styl）。
- *
- * 职责二（TOC 溢出滚动 B）：写入 `--toc-top` / `--toc-max-h`（px）：
- *   - navbarBottom = #navbar 的 getBoundingClientRect().bottom（常驻吸顶导航栏底部必须纳入）；
- *   - tocTop = max(BASE_TOC_TOP, navbarBottom + NAV_GAP)；
- *   - bottomReserve = innerHeight − #back-to-top-btn rect.top + BTN_GAP
- *     （按钮 .hide 时仅透明度/位移变化，rect 仍有效 → 始终预留；移动端按钮 display:none 时不计）；
- *   - maxH = max(MIN_TOC_H, innerHeight − tocTop − bottomReserve)；
- *   滚动容器为 <table-of-contents> 自身（CSS 读 --toc-max-h）。
- *
- * 重算时机：load / rAF 防抖 resize / orientationchange / swup:page:view / content:replace /
- * 模式翻转（wallpaper-mode-change、simple-mode-change）/ TOC 初始化后 300ms。**不监听 scroll**。
- * 计算完成后派发 `toc:relayout`，供 TOC 组件重新居中高亮项。
- */
+
 
 import { prefersReducedMotion } from "../utils/motion-preference";
 
@@ -143,9 +118,6 @@ function applyLayoutMode() {
 		mode = "none";
 	}
 
-	// 26.09.14：只有「视口尺寸变化导致的宽窄模式切换」才播收放动画
-	//（layoutAnimArmed 只在 resize / orientationchange 后为真，且一次性）；
-	// 首帧、换页、模式切换等其它原因导致的差异都不播，避免与页面渐变叠加。
 	const armed = layoutAnimArmed;
 	layoutAnimArmed = false;
 	if (lastLayoutMode !== null && lastLayoutMode !== mode && armed) {
@@ -326,16 +298,6 @@ function recompute() {
 	document.dispatchEvent(new CustomEvent("toc:relayout"));
 }
 
-/**
- * 锚点落点补偿（26.09.20）：
- * 把「导航栏底边 + config.toc.navigation.offset」写进 CSS 变量 --anchor-offset，
- * 正文标题用 scroll-margin-top 读它。
- *
- * 这样**浏览器原生**的锚点滚动（重复点击同一条目录、直接改 URL 的 hash、
- * 手机目录按钮等）也会落在与自定义跳转完全相同的位置 ——
- * 否则原生滚动会把标题正好顶到导航栏下面（高亮还停在标题上，看起来就是
- * 「再点一次标题反而被导航栏挡住」）。
- */
 function applyAnchorOffset() {
 	const root = document.documentElement;
 	const navbar = document.getElementById("navbar");
@@ -360,9 +322,6 @@ function install() {
 	if (typeof window === "undefined" || typeof document === "undefined")
 		return;
 
-	// 26.09.14：暴露同步重算入口。MainGridLayout 的预渲染帧要在同一帧内量出目录几何
-	// （--toc-top/--toc-max-h、html[data-toc-layout]）后再开始渐变；本模块自身的重算走 rAF，
-	// 赶不上那一帧，故必须提供同步调用点。
 	window.__tocLayoutRecompute = recompute;
 
 	// 首载

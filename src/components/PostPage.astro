@@ -1,8 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import type { Page } from "astro";
-import { siteConfig } from "../config";
-import { widgetManager } from "../utils/widget-manager";
 import PostCard from "./PostCard.astro";
 
 interface Props {
@@ -10,322 +8,34 @@ interface Props {
 }
 
 const { page } = Astro.props;
-
-// 26.09.01修改，内容为：本页真实文章不足5篇时，追加空白占位卡补齐到5张，首帧即固定容器高度，消除“先显示文档、再补空白”的卡顿
-const blankCount = Math.max(0, 5 - page.data.length);
-
-// 检查是否启用右侧边栏（通过检查右侧是否有组件）
-const hasRightSidebars =
-	widgetManager.getComponentsByPosition("top", "right", "desktop").length > 0 ||
-	widgetManager.getComponentsByPosition("sticky", "right", "desktop").length > 0;
-
-// 根据配置设置初始布局模式
-const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
-const initialLayoutClass = defaultLayout === "grid" ? "grid-mode" : "list-mode";
 ---
 
 <div
 	id="post-list-container"
-	class={`transition-opacity duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] overflow-hidden mb-4 ${initialLayoutClass}`}
-	data-default-layout={defaultLayout}
-	data-both-sidebars={hasRightSidebars}
+	class="list-mode rounded-[var(--radius-large)] bg-[var(--card-bg)] overflow-hidden mb-4"
+	data-default-layout="list"
 >
 	{
 		page.data.map((entry, index) => (
 			<PostCard
 				entry={entry}
-				class:list="onload-animation"
-				style={`--i: ${index}; --interval: 50ms;`}
+				class="onload-animation"
+				style={`--i: ${index};`}
 			/>
-		))
-	}
-	{
-		// 26.09.01修改，内容为：空白卡只占高度、不可交互（无链接、无焦点、aria-hidden），常规/简洁模式下均不可见
-		Array.from({ length: blankCount }, () => (
-			<div class="blank-post-card" aria-hidden="true"></div>
 		))
 	}
 </div>
 
-<script is:inline>
-// 26.09.01修改，内容为：解析期（首帧前）按卡片实际高度计算封面宽度，避免封面先按 28% 宽渲染、首帧后再收窄的闪烁
-(function() {
-	var ratio = Math.min(16 / 9, Math.max(1, window.innerWidth / window.innerHeight));
-	document.querySelectorAll('.post-cover-link').forEach(function(link) {
-		var height = link.offsetHeight;
-		if (!height) return;
-		var width = Math.round(height * ratio);
-		link.style.width = width + 'px';
-		var card = link.closest('.card-base');
-		if (card) {
-			var content = card.querySelector('.post-card-content');
-			if (content) {
-				content.style.width = 'calc(100% - ' + width + 'px - 0.75rem)';
-			}
-		}
-	});
-})();
-</script>
-
-<script>
-	// 动态布局切换脚本
-	function initLayout() {
-		requestAnimationFrame(() => {
-			const postListContainer = document.getElementById(
-				"post-list-container",
-			);
-			if (!postListContainer) return;
-
-			// 读取偏好
-			const savedLayout = localStorage.getItem("postListLayout");
-			const defaultLayout =
-				postListContainer.getAttribute("data-default-layout") || "list";
-			const currentLayout = savedLayout || defaultLayout;
-
-			// 检查现有状态是否一致，避免重复初始化
-			const hasGridClass =
-				postListContainer.classList.contains("grid-mode");
-			const isClassCorrect =
-				(currentLayout === "grid" && hasGridClass) ||
-				(currentLayout === "list" && !hasGridClass);
-
-			if (isClassCorrect) {
-				postListContainer.classList.add("js-initialized");
-				publishLayoutInit();
-				return;
-			}
-
-			// 桌面端执行布局更新，移动端由 CSS 处理
-			if (window.innerWidth >= 769) {
-				updatePostListLayout(currentLayout);
-			} else {
-				postListContainer.classList.add("js-initialized");
-			}
-
-			publishLayoutInit();
-		});
-	}
-
-	function updatePostListLayout(layout: string) {
-		const container = document.getElementById("post-list-container");
-		if (!container) return;
-
-		container.classList.add("layout-switching");
-
-		// 切换布局模式类名
-		if (layout === "grid") {
-			container.classList.remove("list-mode");
-			container.classList.add("grid-mode");
-
-			// Grid 模式下隐藏右侧栏
-			const rightSidebar = document.querySelector(
-				".right-sidebar-container",
-			);
-			if (rightSidebar) rightSidebar.classList.add("hidden-in-grid-mode");
-
-			const mainGrid = document.getElementById("main-grid");
-			if (mainGrid) mainGrid.setAttribute("data-layout-mode", "grid");
-		} else {
-			container.classList.remove("grid-mode");
-			container.classList.add("list-mode");
-
-			// List 模式下显示右侧栏
-			const rightSidebar = document.querySelector(
-				".right-sidebar-container",
-			);
-			if (rightSidebar)
-				rightSidebar.classList.remove("hidden-in-grid-mode");
-
-			const mainGrid = document.getElementById("main-grid");
-			if (mainGrid) mainGrid.setAttribute("data-layout-mode", "list");
-		}
-
-		container.classList.add("js-initialized");
-
-		// 移除切换动画类
-		setTimeout(() => {
-			container.classList.remove("layout-switching");
-		}, 500);
-	}
-
-	// 监听布局变化
-	window.addEventListener("layoutChange", (event: any) => {
-		if (event.detail?.layout) updatePostListLayout(event.detail.layout);
-	});
-
-	// Resize 防抖
-	let resizeTimeout: number | undefined;
-	window.addEventListener("resize", () => {
-		clearTimeout(resizeTimeout);
-		resizeTimeout = window.setTimeout(() => {
-			if (window.innerWidth >= 769) {
-				const savedLayout = localStorage.getItem("postListLayout");
-				const defaultLayout =
-					document
-						.getElementById("post-list-container")
-						?.getAttribute("data-default-layout") || "list";
-				updatePostListLayout(savedLayout || defaultLayout);
-			}
-		}, 100);
-	});
-
-	// 初始化
-	document.addEventListener("DOMContentLoaded", initLayout);
-	if (document.readyState !== "loading") initLayout();
-
-	// Swup 集成
-	function setupSwupListeners() {
-		if ((window as any)._postListSwupListenerAttached) return;
-
-		function trySetupSwup() {
-			if (typeof window !== "undefined" && (window as any).swup) {
-				(window as any).swup.hooks.on("content:replace", initLayout);
-				(window as any)._postListSwupListenerAttached = true;
-				return true;
-			}
-			return false;
-		}
-
-		if (!trySetupSwup()) {
-			let retryCount = 0;
-			const retryInterval = setInterval(() => {
-				if (trySetupSwup() || ++retryCount >= 10) {
-					clearInterval(retryInterval);
-					if (retryCount >= 10) {
-						window.addEventListener("popstate", () =>
-							requestAnimationFrame(initLayout),
-						);
-					}
-				}
-			}, 100);
-		}
-	}
-	setTimeout(setupSwupListeners, 200);
-
-	function publishLayoutInit() {
-		const container = document.getElementById("post-list-container");
-		if (container) {
-			const layout = container.classList.contains("grid-mode")
-				? "grid"
-				: "list";
-			window.dispatchEvent(
-				new CustomEvent("layoutInit", { detail: { layout } }),
-			);
-		}
-	}
-	setTimeout(publishLayoutInit, 150);
-
-	// 26.08.31修改，内容为：常规模式封面宽高比按窗口动态调整（1:1~16:9，封面高度与卡片等高），竖图居中 contain、横图填满；监听图片加载/resize/scroll/swup
-	function getClampedCoverRatio() {
-		return Math.min(16 / 9, Math.max(1, window.innerWidth / window.innerHeight));
-	}
-	function applyCoverOrientation(img: HTMLImageElement) {
-		if (img.naturalWidth > 0 && img.naturalWidth < img.naturalHeight) {
-			img.classList.add("cover-portrait");
-			img.classList.remove("cover-landscape");
-		} else {
-			img.classList.add("cover-landscape");
-			img.classList.remove("cover-portrait");
-		}
-	}
-	function sizePostCovers() {
-		const links = document.querySelectorAll<HTMLElement>(".post-cover-link");
-		links.forEach((link) => {
-			const height = link.offsetHeight;
-			if (!height) return;
-			const width = Math.round(height * getClampedCoverRatio());
-			link.style.width = `${width}px`;
-			const card = link.closest<HTMLElement>(".card-base");
-			// 26.08.31修改，内容为：define:vars 会把 --coverWidth 内联到每个元素，仅更新根节点无效；改为直接设置内容区宽度（与封面左缘对齐），保证日期/分类随封面同步移动
-			if (card) {
-				const content = card.querySelector<HTMLElement>(".post-card-content");
-				if (content) {
-					content.style.width = `calc(100% - ${width}px - 0.75rem)`;
-				}
-			}
-		});
-	}
-	// 26.09.01修改，内容为：封面尺寸初始化（竖图/横图类与宽度计算）；不再调用已弃用的 syncPanelHeight/observeSidebars
-	function initPostCoverLayout() {
-		document
-			.querySelectorAll<HTMLImageElement>(".post-cover-link img")
-			.forEach((img) => {
-				if (img.complete && img.naturalWidth > 0) {
-					applyCoverOrientation(img);
-				} else {
-					img.addEventListener(
-						"load",
-						() => applyCoverOrientation(img),
-						{ once: true },
-					);
-				}
-			});
-		sizePostCovers();
-	}
-	// 26.09.01移除 syncPanelHeight：原用于主页内容不足时面板底部对齐磁贴，已弃用且无任何调用点
-	// 26.09.01修改，内容为：resize/scroll 防抖重算封面宽度；移除已弃用的面板高度同步
-	let coverResizeRaf = 0;
-	function scheduleCoverResize() {
-		if (coverResizeRaf) return;
-		coverResizeRaf = window.requestAnimationFrame(() => {
-			coverResizeRaf = 0;
-			sizePostCovers();
-		});
-	}
-	window.addEventListener("resize", scheduleCoverResize);
-	window.addEventListener("scroll", scheduleCoverResize, { passive: true });
-	document.addEventListener("DOMContentLoaded", initPostCoverLayout);
-	if (document.readyState !== "loading") initPostCoverLayout();
-	document.addEventListener("swup:page:view", () =>
-		setTimeout(initPostCoverLayout, 0),
-	);
-</script>
-
 <style>
-	/* 基础容器 */
 	#post-list-container {
-		/* 26.09.01修改，内容为：卡片槽位高度 = 真实卡渲染高度减 1rem 后（内容区 pt-4 md:pt-5 pb-4 时实测 117.19px ≈ 7.324rem），用于不足 5 篇时面板底部恒为 5 张卡高度 */
-		--post-card-slot-height: 7.324rem;
-		min-height: 200px;
-		transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		display: flex;
+		flex-direction: column;
+		min-height: min(200px, 45vh);
 	}
-
-	/* 布局模式 - 列表模式 */
-	/* 26.09.01修改，内容为：桌面端列表模式卡片间距由 1rem 改为 0（真实卡之间、真实与空白卡之间均不留间距）；面板最小高度固定为 5 张卡槽位高度，不足 5 篇时空白卡拉伸填满 */
-	#post-list-container.list-mode {
-		@apply flex flex-col gap-0;
-		min-height: calc(var(--post-card-slot-height) * 5);
-	}
-
-	/* 布局模式 - 网格模式 (仅在桌面端生效，移动端强制单列) */
-	#post-list-container.grid-mode {
-		@apply grid grid-cols-1 md:grid-cols-2 gap-6;
-	}
-
-	/* 26.08.31修改，内容为：文章卡片交由主网格统一过渡，不再单独渐入，避免中间内容晚于侧栏且封面反复闪烁 */
 	#post-list-container > :global(*) {
-		transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		min-width: 0;
 	}
-
-	/* 布局切换时保持卡片稳定，避免宽度和透明度动画叠加 */
-	#post-list-container.layout-switching {
-		opacity: 1;
-	}
-
-	#post-list-container.layout-switching > :global(*) {
-		animation: none;
-		opacity: 1;
-		transform: none;
-	}
-
-	/* 26.09.01修改，内容为：空白占位卡——flex 拉伸填满容器剩余空间（min-height 0，不再固定 12rem），透明、无边框阴影、不可交互，常规/简洁模式下均不可见 */
-	#post-list-container .blank-post-card {
-		flex: 1 1 0;
-		min-height: 0;
-		background: transparent;
-		border: none;
-		box-shadow: none;
-		pointer-events: none;
-		opacity: 0;
+	#post-list-container > :global([data-search-match="false"]) {
+		display: none !important;
 	}
 </style>

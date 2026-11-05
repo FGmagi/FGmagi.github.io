@@ -8,7 +8,12 @@ import {
 	profileConfig,
 	siteConfig,
 } from "@/config";
-import { cardFilterAnimationConfig, umamiConfig } from "../config";
+import {
+	Effect1,
+	Effect2,
+	motionSettingsConfig,
+	umamiConfig,
+} from "../config";
 
 const BANNER_HEIGHT = 35;
 const BANNER_HEIGHT_EXTEND = 30;
@@ -25,6 +30,7 @@ import type { Favicon } from "../types/config";
 import { pathsEqual, url } from "../utils/url-utils";
 import "../styles/mobile-navbar.css";
 import "../styles/main.css";
+import "../styles/layout-responsive.css";
 import "../styles/wallpaper-navbar-transparent.css";
 import "../styles/fancybox-custom.css";
 import "../styles/expressive-code.css";
@@ -95,9 +101,10 @@ if (!banner || typeof banner !== "string" || banner.trim() === "") {
 // TODO don't use post cover as banner for now
 banner = getDefaultBanner();
 
-// 26.08.31修改，内容为：SSR 初始横幅类按默认壁纸模式判断（默认 fullscreen 时首帧直接全屏渲染，避免先显示横幅再切换造成卡片上移/壁纸刷新）
 const enableBanner =
-	siteConfig.wallpaperMode.defaultMode === "banner" && !!siteConfig.banner.src;
+	siteConfig.wallpaperMode.enableBannerMode !== false &&
+	siteConfig.wallpaperMode.defaultMode === "banner" &&
+	!!siteConfig.banner.src;
 
 let pageTitle: string;
 if (title) {
@@ -132,6 +139,7 @@ const bannerOffset =
 
 const umamiEnabled = umamiConfig.enabled || false;
 const umamiScripts = umamiConfig.scripts || ""; // 获取Umami scripts配置
+const motionSettings = motionSettingsConfig;
 
 // 构建字体配置的 CSS 变量
 // ASCII 字体优先级最高（用于英文、数字等），CJK 字体作为回退
@@ -143,7 +151,6 @@ if (siteConfig.font) {
 		const asciiFont = siteConfig.font.asciiFont.fontFamily;
 		// 如果字体名包含空格，需要用引号包围
 		const asciiFontFamily = asciiFont.includes(" ") ? `"${asciiFont}"` : asciiFont;
-		// 26.09.01 [2]：asciiFont 与 cjkFont 现同名（思源黑体），去重仅入队一次避免重复
 		if (!fonts.includes(asciiFontFamily)) fonts.push(asciiFontFamily);
 	}
 	// 再添加 CJK 字体（作为回退）
@@ -154,7 +161,6 @@ if (siteConfig.font) {
 		if (!fonts.includes(cjkFontFamily)) fonts.push(cjkFontFamily);
 	}
 	// 添加系统字体作为最终回退
-	// 26.09.01 [2]新增，内容为：全局字体栈是否使用 Segoe UI，由 siteConfig.font.useSegoeUI 控制（未配置默认启用）
 	fonts.push(
 		"system-ui",
 		"-apple-system",
@@ -172,7 +178,6 @@ if (siteConfig.font) {
 	bodyFontFamily = fonts.join(", ");
 }
 
-// 26.09.02 [7]：@font-face 由 config 驱动——按 siteConfig.font.faces/webDir 生成 CSS 注入 head（原硬编码于 main.css）
 let fontFaceCss = "";
 const fontFaces = siteConfig.font?.faces || [];
 if (fontFaces.length > 0) {
@@ -203,71 +208,6 @@ if (fontFaces.length > 0) {
 	class="bg-[var(--page-bg)] text-[14px] md:text-[16px]"
 >
 	<head>
-		<!-- 第三方分析脚本 - 延迟加载优化 -->
-		<script is:inline>
-			// 使用 requestIdleCallback 延迟加载第三方脚本
-			function loadAnalytics() {
-				// Google Tag Manager
-				(function (w, d, s, l, i) {
-					w[l] = w[l] || [];
-					w[l].push({
-						"gtm.start": new Date().getTime(),
-						event: "gtm.js",
-					});
-					var f = d.getElementsByTagName(s)[0],
-						j = d.createElement(s),
-						dl = l != "dataLayer" ? "&l=" + l : "";
-					j.async = true;
-					j.src =
-						"https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-					f.parentNode.insertBefore(j, f);
-				})(window, document, "script", "dataLayer", "GTM-KRX3XGVH");
-
-				// Clarity
-				(function (c, l, a, r, i, t, y) {
-					c[a] =
-						c[a] ||
-						function () {
-							(c[a].q = c[a].q || []).push(arguments);
-						};
-					t = l.createElement(r);
-					t.async = 1;
-					t.src = "https://www.clarity.ms/tag/" + i;
-					y = l.getElementsByTagName(r)[0];
-					y.parentNode.insertBefore(t, y);
-				})(window, document, "clarity", "script", "tjr3vkhj8i");
-			}
-
-			// 在浏览器空闲时加载，或者在 3 秒后加载
-			if ("requestIdleCallback" in window) {
-				requestIdleCallback(loadAnalytics, { timeout: 3000 });
-			} else {
-				setTimeout(loadAnalytics, 3000);
-			}
-		</script>
-
-		<!-- 26.09.14：首帧预渲染门 —— 首次打开网页或刷新时必须「先完成预渲染，再渐变显示」。
-		     ⚠ 类的挂载必须发生在「模块脚本开始执行、@swup/astro 可能已派发 swup:enable」之前，
-		     所以挂载动作放在 MainGridLayout 里 body 顶部的那段解析期脚本（见该文件 <body> 开头）。
-		     本样式块位于 <head>，早于所有页面内容 ⇒ 类名先于元素生效，不存在「未样式化首帧」。
-		     ⚠ 这里保留一份与 src/styles/transition.css 同义的「不可见」规则，属于**刻意冗余**：
-		     该样式表由 Vite 作为 bundle 注入，dev 下注入位置可能晚于首帧；本内联块保证无论
-		     样式表何时到位，「首载不可见」都成立。两处必须保持同义（都是 opacity:0 + 无过渡），
-		     改一处请同步另一处。 -->
-		<style is:global>
-			body.page-prerender #main-grid,
-			body.page-prerender #banner-wrapper,
-			/* 目录取 #toc-inner-wrapper（背景/圆角画在它身上），与 transition.css 同源 */
-			body.page-prerender #toc-inner-wrapper,
-			body.page-prerender #main-grid .footer,
-			body.page-prerender .page-transition-region {
-				opacity: 0 !important;
-				animation: none !important;
-				transition: none !important;
-				pointer-events: none;
-			}
-		</style>
-
 		<title>{pageTitle}</title>
 		<meta charset="UTF-8" />
 		<meta name="description" content={description || pageTitle} />
@@ -327,6 +267,7 @@ if (fontFaces.length > 0) {
 				PAGE_WIDTH,
 				configHue,
 				pageScaling: siteConfig.pageScaling,
+				motionSettings,
 			}}
 		>
 			// Load the theme from local storage
@@ -358,6 +299,82 @@ if (fontFaces.length > 0) {
 			// Load the hue from local storage
 			const hue = localStorage.getItem("hue") || configHue;
 			document.documentElement.style.setProperty("--hue", hue);
+
+			// Motion is site-owned by default. Applying it here prevents a stale
+			// localStorage toggle or the OS preference from flashing first.
+			const reduceSystem =
+				motionSettings.respectSystemReducedMotion &&
+				window.matchMedia &&
+				window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			for (const feature of Object.keys(motionSettings.features)) {
+				const preferred = motionSettings.features[feature].enabled;
+				const effective = preferred && !reduceSystem;
+				const key = `motion${feature.charAt(0).toUpperCase()}${feature.slice(1)}`;
+				document.documentElement.dataset[key] = effective ? "on" : "off";
+				document.documentElement.dataset[`${key}Setting`] =
+					preferred ? "on" : "off";
+			}
+			const motionProfile =
+				motionSettings.levelProfiles[motionSettings.level];
+			const motionTokens = reduceSystem
+				? {
+						fast: 90,
+						base: 120,
+						slow: 120,
+						hero: 120,
+						stagger: 0,
+						staggerMax: 0,
+						shift: 0,
+						lift: 0,
+					}
+				: {
+						fast: Math.round(
+							motionSettings.tokens.fast * motionProfile.durationScale,
+						),
+						base: Math.round(
+							motionSettings.tokens.base * motionProfile.durationScale,
+						),
+						slow: Math.round(
+							motionSettings.tokens.slow * motionProfile.durationScale,
+						),
+						hero: Math.round(
+							motionSettings.tokens.hero * motionProfile.durationScale,
+						),
+						stagger: Math.round(
+							motionSettings.tokens.stagger * motionProfile.durationScale,
+						),
+						staggerMax: Math.round(
+							motionSettings.tokens.staggerMax * motionProfile.durationScale,
+						),
+						shift: Math.round(
+							motionSettings.tokens.shift * motionProfile.distanceScale,
+						),
+						lift: Math.round(
+							motionSettings.tokens.lift * motionProfile.distanceScale,
+						),
+					};
+			const motionRoot = document.documentElement;
+			motionRoot.dataset.motionLevel = motionSettings.level;
+			motionRoot.style.setProperty("--mo-fast", `${motionTokens.fast}ms`);
+			motionRoot.style.setProperty("--mo-base", `${motionTokens.base}ms`);
+			motionRoot.style.setProperty("--mo-slow", `${motionTokens.slow}ms`);
+			motionRoot.style.setProperty("--mo-hero", `${motionTokens.hero}ms`);
+			motionRoot.style.setProperty(
+				"--mo-stagger",
+				`${motionTokens.stagger}ms`,
+			);
+			motionRoot.style.setProperty(
+				"--mo-stagger-max",
+				`${motionTokens.staggerMax}ms`,
+			);
+			motionRoot.style.setProperty("--mo-shift", `${motionTokens.shift}px`);
+			motionRoot.style.setProperty("--mo-lift", `${motionTokens.lift}px`);
+			document.documentElement.classList.toggle(
+				"reduce-motion",
+				!!reduceSystem,
+			);
+			document.documentElement.dataset.reducedMotion =
+				reduceSystem ? "true" : "false";
 
 			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
 			let offset = Math.floor(
@@ -410,7 +427,6 @@ if (fontFaces.length > 0) {
 			define:vars={{
 				configHue,
 				"page-width": `${PAGE_WIDTH}rem`,
-				// 26.09.06：目录侧栏轨道宽度 / 文章最小内容宽度（供 variables.styl 的
 				// --article-width / --toc-width / --content-width 计算，以及 toc-layout.js 判定桌面/退化）
 				"toc-rail-width":
 					siteConfig.toc.sidebarRailWidth ||
@@ -419,42 +435,12 @@ if (fontFaces.length > 0) {
 			}}
 		></style>
 
-		{fontFaceCss && <Fragment set:html={`<style>${fontFaceCss}</style>`} />}
-
-		<!-- 26.11.05：卡片「筛选显隐」动效配置下发（解析期执行，早于任何筛选脚本）
-		     · window.__cardFilterAnim：给 TagFilter 与 /js/friends-page-handler.js 读；
-		     · --card-filter-duration / --card-filter-offset：给 motion.css 的
-		       .card-filter-anim / .card-filter-hidden 用。
-		     ⚠ 只写一次、幂等；swup 换页重放本脚本也只是重复写入同样的值。 -->
-		<script
+		<style
 			is:inline
-			define:vars={{
-				cardFilterAnimation: cardFilterAnimationConfig,
-			}}
-		>
-			(function () {
-				var cfg = cardFilterAnimation || {};
-				var duration = Number(cfg.duration);
-				var offset = Number(cfg.offset);
-				if (!isFinite(duration) || duration < 0) duration = 200;
-				if (!isFinite(offset)) offset = 10;
-				window.__cardFilterAnim = {
-					enable: cfg.enable !== false,
-					duration: duration,
-					offset: offset,
-					// 26.11.05：默认 false（始终播放滑动）；置 true 才在 reduce 环境去掉位移
-					respectReducedMotion: cfg.respectReducedMotion === true,
-				};
-				document.documentElement.style.setProperty(
-					"--card-filter-duration",
-					duration + "ms",
-				);
-				document.documentElement.style.setProperty(
-					"--card-filter-offset",
-					offset + "px",
-				);
-			})();
-		</script>
+			set:html={`:root{--effect1-full-alpha:${Effect1.FullAlpha};--effect1-sim-alpha:${Effect1.SimAlpha};--effect1-content-alpha:${Effect1.ContentAlpha};--effect1-offer:${Effect1.offer}px;--effect1-offer2:${Effect1.offer2}px;--effect1-duration-show:${Effect1.duration_show}ms;--effect1-duration-hide:${Effect1.duration_hide}ms;--effect2-duration-hide:${Effect2.duration_hide}ms;--effect2-duration-move:${Effect2.duration_move}ms;--effect2-duration-show:${Effect2.duration_show}ms}`}
+		></style>
+
+		{fontFaceCss && <Fragment set:html={`<style>${fontFaceCss}</style>`} />}
 
 		<!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
 		<slot name="head" />
@@ -483,13 +469,7 @@ if (fontFaces.length > 0) {
 		]}
 		style={bodyFontFamily ? `font-family: ${bodyFontFamily};` : ""}
 	>
-		<noscript
-			><iframe
-				src="https://www.googletagmanager.com/ns.html?id=GTM-KRX3XGVH"
-				height="0"
-				width="0"
-				style="display:none;visibility:hidden"></iframe></noscript
-		>
+		<div id="page-progress" aria-hidden="true"><span></span></div>
 		<!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
 		{shouldShowTopHighlight && <div class="top-gradient-highlight" />}
 
@@ -532,12 +512,6 @@ if (fontFaces.length > 0) {
 		.enable-banner.is-home #main-grid {
 			@apply translate-y-[var(--banner-height-extend)];
 		}
-		/* 26.09.14修改，内容为：导航栏「始终位于顶部、下拉不消失」——
-		   移除 .enable-banner #top-row 的高度撑开（原 h-[calc(--banner-height-home_-_4.5rem)]）。
-		   该规则曾把吸顶条自身撑到 ≈30vh 高，粘性元素的吸附位置因此在视口上方，
-		   滚动后导航栏整条滚出屏幕（表现为「下拉时导航栏消失」），各页面表现还不一致。
-		   现在 #top-row 恒为「导航栏自然高度 + 上下对称内边距」，并按模式跟随 banner 高度：
-		   顶部（未滚动）时导航栏仍落在既定视觉位置，滚动后固定在视口顶部不消失。 */
 		:root {
 			--top-row-h: 3.6rem;
 		}
@@ -546,17 +520,6 @@ if (fontFaces.length > 0) {
 		}
 		#top-row {
 			height: var(--top-row-h, 3.6rem);
-			/* 26.09.14 回溯修复（用户要求「通过回溯该部分代码恢复」）：
-			   基线（6cc9fba:471-473）中 #top-row 只有 .enable-banner 下的高度声明，
-			   从不是 flex 容器 ⇒ 它是 block，其子元素按「块级 width:auto 撑满包含块」
-			   自动获得宽度，内层 Navbar.astro:42 的 ml-auto 才有空间把右组推到最右。
-			   本轮新增的无层级 display:flex 压过 @layer，使唯一 flex 子项主尺寸
-			   退化为 fit-content ⇒ 导航栏塌成内容宽、贴左、中间空白消失。
-			   故改用 grid：justify-items 缺省 stretch 让子项横向撑满（等价基线 block
-			   行为），align-items:center 保留 banner 模式下的垂直居中，
-			   无需任何 width:100% / justify-content 补丁。
-			   ⚠ 禁止改成 place-items:center 或 justify-items:center —— 那会把子项
-			   内联尺寸变回 fit-content，塌陷立刻复发。 */
 			display: grid;
 			align-items: center;
 		}
@@ -582,9 +545,44 @@ if (fontFaces.length > 0) {
 	}
 </style>
 
+<style is:global>
+	#page-progress {
+		position: fixed;
+		inset: 0 0 auto;
+		z-index: 2147483647;
+		height: 3px;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 140ms ease;
+	}
+
+	#page-progress.is-active {
+		opacity: 1;
+	}
+
+	#page-progress > span {
+		display: block;
+		width: 100%;
+		height: 100%;
+		transform: scaleX(0);
+		transform-origin: left center;
+		background: linear-gradient(
+			90deg,
+			var(--primary) 0%,
+			var(--primary) 68%,
+			color-mix(in srgb, var(--primary), white 38%) 100%
+		);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--primary), transparent 35%);
+		transition: transform 220ms ease-out;
+	}
+
+	#page-progress.is-finishing > span {
+		transition-duration: 120ms;
+	}
+</style>
+
 <script>
 	// import { animationManager } from '../utils/animation-utils';
-	// 26.09.02 [6]：OverlayScrollbars 已彻底停用——移除其 CSS import 与 html/body 上的 data-overlayscrollbars-initialize，恢复页面原生滚动条（无任何 JS 初始化调用、无 .os-* 运行时元素依赖）
 	// import {
 	//  OverlayScrollbars,
 	//  // ScrollbarsHidingPlugin,
@@ -604,12 +602,69 @@ if (fontFaces.length > 0) {
 
 	const BANNER_HEIGHT = 35;
 	const BANNER_HEIGHT_EXTEND = 30;
-	// 26.09.06：BANNER_HEIGHT_HOME 曾用于已移除的滚动隐藏阈值；banner 高度由 CSS 变量承担
 
 	// const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
 	import { siteConfig } from "../config";
 	import { widgetConfigs } from "../config";
 	import { initSakura } from "../utils/sakura-manager";
+	import { initializeSettingsV2 } from "../utils/settings-v2";
+
+	initializeSettingsV2();
+
+	function markImageShell(
+		image: HTMLImageElement,
+		state: "loaded" | "error",
+	): void {
+		const shell = image.closest<HTMLElement>("[data-image-shell]");
+		if (!shell) return;
+		shell.dataset.imageState = state;
+		shell.classList.toggle("is-loaded", state === "loaded");
+		shell.classList.toggle("is-error", state === "error");
+		if (state === "error" && image.dataset.errorReported !== "1") {
+			image.dataset.errorReported = "1";
+			window.dispatchEvent(
+				new CustomEvent("image:error", {
+					detail: {
+						src: image.dataset.originalSrc || image.currentSrc || image.src,
+					},
+				}),
+			);
+		}
+	}
+
+	function hydrateImageShells(root: ParentNode = document): void {
+		root
+			.querySelectorAll<HTMLImageElement>("img[data-image-fallback]")
+			.forEach((image) => {
+				if (image.complete) {
+					markImageShell(image, image.naturalWidth > 0 ? "loaded" : "error");
+				}
+			});
+	}
+
+	window.addEventListener(
+		"load",
+		(event) => {
+			const target = event.target;
+			if (target instanceof HTMLImageElement && target.dataset.imageFallback === "1") {
+				markImageShell(target, "loaded");
+			}
+		},
+		true,
+	);
+	window.addEventListener(
+		"error",
+		(event) => {
+			const target = event.target;
+			if (target instanceof HTMLImageElement && target.dataset.imageFallback === "1") {
+				markImageShell(target, "error");
+			}
+		},
+		true,
+	);
+	document.addEventListener("astro:page-load", () => hydrateImageShells());
+	document.addEventListener("swup:page:view", () => hydrateImageShells());
+	hydrateImageShells();
 
 	// const setTimeout = window.setTimeout;
 	// @ts-ignore
@@ -970,8 +1025,8 @@ function disableAnimation() {
 
 	let fancyboxSelectors: string[] = [];
 	let Fancybox: any;
+	let fancyboxInitPromise: Promise<void> | null = null;
 
-	// 26.11.03：katex.css 不再由这里动态 import。
 	// 原因：即便写在条件分支里，Vite 仍会把它抽成一个 CSS chunk 并由 Astro 写进**每个**页面的
 	// <head>（渲染阻塞，实测 29KB），包括根本不含公式的首页/友链页。
 	// 现在改为在真正会用公式的页面（posts/[...slug] 与 [permalink]）静态引入，
@@ -983,7 +1038,6 @@ function disableAnimation() {
 		initCustomScrollbar();
 	}
 
-	// 26.11.03：fancybox 的样式改为「首次需要时注入」——把 CSS 用 ?url 取到地址后
 	// 自己 append <link>，这样它不会出现在任何页面的 <head> 里（旧实现每页阻塞 33KB）。
 	let fancyboxCssPromise: Promise<void> | null = null;
 	function ensureFancyboxCss(): Promise<void> {
@@ -1014,16 +1068,22 @@ function disableAnimation() {
 		return fancyboxCssPromise;
 	}
 
-	// 图片灯箱按需加载
-	async function initFancybox() {
+	// 图片灯箱按需加载。首次进入页面时 initFancybox 可能被首载分支与 Swup
+	// 初始化同时调用；必须共用同一个 Promise，否则第二次调用会在核心 CSS
+	// 尚未 load 时抢先 bind，表现就是首开大图无样式、关闭/缩放图标不可见。
+	async function initFancyboxOnce() {
 		const albumImagesSelector =
 			".custom-md img, #post-cover img, .moment-images img";
 		const albumLinksSelector = ".moment-images a[data-fancybox]";
-		const singleFancyboxSelector = "[data-fancybox]:not(.moment-images a)";
+		const albumGalleryLinksSelector =
+			".photo-gallery .photo-link[data-fancybox]";
+		const singleFancyboxSelector =
+			"[data-fancybox]:not(.moment-images a):not(.photo-gallery .photo-link)";
 
 		const hasImages =
 			document.querySelector(albumImagesSelector) ||
 			document.querySelector(albumLinksSelector) ||
+			document.querySelector(albumGalleryLinksSelector) ||
 			document.querySelector(singleFancyboxSelector);
 
 		if (!hasImages) return;
@@ -1031,8 +1091,8 @@ function disableAnimation() {
 		if (!Fancybox) {
 			const mod = await import("@fancyapps/ui");
 			Fancybox = mod.Fancybox;
-			await ensureFancyboxCss();
 		}
+		await ensureFancyboxCss();
 
 		if (fancyboxSelectors.length > 0) {
 			return; // 已经初始化，直接返回
@@ -1042,17 +1102,9 @@ function disableAnimation() {
 			Thumbs: { autoStart: true, showOnStart: "yes" },
 			Toolbar: {
 				display: {
-					left: ["infobar"],
-					middle: [
-						"zoomIn",
-						"zoomOut",
-						"toggle1to1",
-						"rotateCCW",
-						"rotateCW",
-						"flipX",
-						"flipY",
-					],
-					right: ["slideshow", "thumbs", "close"],
+					left: ["counter"],
+					middle: [],
+					right: ["toggleFull", "autoplay", "fullscreen", "thumbs", "close"],
 				},
 			},
 			animated: true,
@@ -1079,6 +1131,9 @@ function disableAnimation() {
 		Fancybox.bind(albumImagesSelector, {
 			...commonConfig,
 			groupAll: true,
+			source: (el: any) =>
+				el.getAttribute("data-original-src") ||
+				el.getAttribute("src"),
 			Carousel: {
 				transition: "slide",
 				preload: 2,
@@ -1094,9 +1149,35 @@ function disableAnimation() {
 		});
 		fancyboxSelectors.push(albumLinksSelector);
 
+		// 相册使用原图，不能把灯箱图源接到 data-src 的列表缩略图。
+		Fancybox.bind(albumGalleryLinksSelector, {
+			...commonConfig,
+			groupAll: true,
+			source: (el: any) =>
+				el.getAttribute("data-original-src") ||
+				el.getAttribute("href") ||
+				el.getAttribute("data-src"),
+		});
+		fancyboxSelectors.push(albumGalleryLinksSelector);
+
 		// 绑定单独的 fancybox 图片
-		Fancybox.bind(singleFancyboxSelector, commonConfig);
+		Fancybox.bind(singleFancyboxSelector, {
+			...commonConfig,
+			source: (el: any) =>
+				el.getAttribute("data-original-src") ||
+				el.getAttribute("data-src") ||
+				el.getAttribute("href") ||
+				el.getAttribute("src"),
+		});
 		fancyboxSelectors.push(singleFancyboxSelector);
+	}
+
+	function initFancybox(): Promise<void> {
+		if (fancyboxInitPromise) return fancyboxInitPromise;
+		fancyboxInitPromise = initFancyboxOnce().finally(() => {
+			fancyboxInitPromise = null;
+		});
+		return fancyboxInitPromise;
 	}
 
 	// 清理 Fancybox 实例
@@ -1109,11 +1190,9 @@ function disableAnimation() {
 	}
 
 	const setup = () => {
-		// 26.08.30修改，内容为：新增 pendingHomeState 记录目标页面是否为首页（swup 切换时 content:replace 阶段 location 可能尚未更新），供磁贴显隐同步使用
 		// 记录目标页面是否为首页（swup 切换时 content:replace 阶段 location 可能尚未更新）
 		let pendingHomeState: boolean | null = null;
 
-		// 26.08.30修改，内容为：新增 syncMainGrid 函数——swup 只替换容器内部内容，不会更新 #main-grid 等元素上的 Tailwind 网格列类，需手动同步左右磁贴显示与主内容区列位置
 		// 同步 #main-grid 与主内容区的网格列类（swup 只替换容器内部内容，不会更新这些元素上的 Tailwind 类）
 		const syncMainGrid = () => {
 			const mainGrid = document.getElementById("main-grid");
@@ -1188,10 +1267,8 @@ function disableAnimation() {
 				"--content-delay",
 				"0ms",
 			);
-			// 26.09.06：移除滚动隐藏导航栏（navbar-hidden）逻辑——导航栏永远吸顶可见（banner 模式同样）
 		});
 
-		// 26.09.06修改，内容为：统一跳转控制器（替换旧的文档级 click 拦截 + 2000ms 竞态恢复定时器）。
 		// 只拦「站内普通链接」；显式排除以下情形（否则会被误判为导航并触发 leaving 淡出）：
 		//   # 锚点 / http(s) 外链 / // 协议相对 / target=_blank / download /
 		//   javascript: 链接（灯箱锚 href="javascript:void(0)"）
@@ -1202,7 +1279,6 @@ function disableAnimation() {
 			href: string,
 			event: MouseEvent,
 		): boolean => {
-			// 26.09.14：删除 `if (event.defaultPrevented) return true;`。
 			// swup 的委托监听器注册在 documentElement、本监听器在 document（冒泡先内后外），
 			// swup 必然先跑并调用 preventDefault（Swup.ts:297，与是否同 URL 无关），
 			// 导致本守卫恒真、下面全部逻辑（含"点击瞬间加 swup-leaving"）从未执行。
@@ -1278,7 +1354,6 @@ function disableAnimation() {
 				if (targetUrl.hash && targetUrl.hash !== window.location.hash) {
 					return; // 同页锚点滚动：浏览器默认行为
 				}
-				// 26.09.14：同 URL 的「渐变消失 → 强制重新加载 → 重新预渲染 → 渐变显示」
 				// 统一交给 src/utils/page-transition.ts 的 link:self 分支处理
 				// （swup 的 link:self 不产生 visit，也就走不到本监听器后面的流程）。
 				return;
@@ -1305,7 +1380,6 @@ function disableAnimation() {
 				return;
 			}
 
-			// 26.09.14：跨页导航的「渐变消失」由 src/utils/page-transition.ts 的
 			// link:click / visit:start 钩子负责（钩子执行序 = before → 默认 handler → on()，
 			// 本监听器在 document 冒泡末段、必然晚于它）。此处不再插手任何渐变类，
 			// 避免两套时序叠加把幕布提前摘掉。swup 未接管（未 preventDefault）时，
@@ -1313,7 +1387,6 @@ function disableAnimation() {
 		});
 
 		window.swup.hooks.on("content:replace", () => {
-			// 26.08.30修改，内容为：content:replace 阶段再切换 lg:is-home，确保旧页面左中右卡片先同步淡出、再渲染目标布局
 			const bodyElement = document.querySelector("body");
 			if (bodyElement) {
 				if (pendingHomeState) {
@@ -1322,7 +1395,6 @@ function disableAnimation() {
 					bodyElement.classList.remove("lg:is-home");
 				}
 			}
-			// 26.08.30修改，内容为：content:replace 阶段同步磁贴显隐（非首页隐藏）并同步主网格布局，避免过渡期磁贴位置错乱
 			// 同步磁贴显示状态与主网格布局（避免过渡期磁贴位置错乱）
 			const isHomePath = pendingHomeState ?? (window.location.pathname === "/" || window.location.pathname === "");
 			document.querySelectorAll(".home-sidebar, .home-right-sidebar").forEach((el) => {
@@ -1334,7 +1406,6 @@ function disableAnimation() {
 			checkKatex();
 			initCustomScrollbar();
 
-			// 26.09.14：删除原「content:replace +100ms 再 init 目录」的延迟初始化——
 			// 目录区 (#toc-swup-region) 现为 swup 容器，换页时随内容整体替换，
 			// 新 <table-of-contents> 的 connectedCallback 立即重建条目；
 			// 几何与兜底条目由页面切换控制器的预渲染帧同步处理（见 src/utils/page-transition.ts
@@ -1368,9 +1439,7 @@ function disableAnimation() {
 
 				// 处理 Banner class 和显示状态
 				const isHomePage = pathsEqual(visit.to.url, url("/"));
-				// 26.08.30修改，内容为：visit:start 阶段记录目标页面是否为首页，供 content:replace 阶段磁贴显隐同步使用
 				pendingHomeState = isHomePage;
-				// 26.08.30修改，内容为：lg:is-home 切换延后到 content:replace，避免离开动画期间网格提前变宽、磁贴提前消失
 
 				// Control banner text visibility based on page
 				const bannerTextOverlay = document.querySelector(
@@ -1450,7 +1519,6 @@ function disableAnimation() {
 		);
 
 		window.swup.hooks.on("page:view", () => {
-			// 26.08.30修改，内容为：page:view 阶段同步非主页磁贴显隐（sidebar-force-hidden）并同步主网格布局类
 			// 非主页时隐藏侧边栏磁贴（swup 只替换主内容，侧边栏需手动同步）
 			const isHomePath = window.location.pathname === "/" || window.location.pathname === "";
 			document.querySelectorAll(".home-sidebar, .home-right-sidebar").forEach((el) => {
@@ -1563,9 +1631,7 @@ function disableAnimation() {
 
 	let backToTopBtn = document.getElementById("back-to-top-btn");
 	let toc = document.getElementById("toc-wrapper");
-	// 26.09.06：原 navbar 变量仅服务于已移除的滚动隐藏逻辑；导航栏现由 #top-row fixed 常驻吸顶
 
-	// 26.11.03：throttle 已随 window.onscroll 赋值一起移除（滚动改用 rAF 合并），
 	// 不再需要这个基于 setTimeout 的节流器。
 
 	function scrollFunction() {
@@ -1613,11 +1679,9 @@ function disableAnimation() {
 				}
 			}
 
-			// 26.09.06：移除滚动隐藏导航栏（navbar-hidden）逻辑——导航栏永远吸顶可见
 		});
 	}
 
-	// 26.11.03：改用 addEventListener（原来用 window.onscroll/onresize 赋值，
 	// 会与 Navbar/TOC/navbar-card-separator 等处的监听互相覆盖，且无法声明 passive）。
 	// 这里用 rAF 合并同一帧的多次 scroll 事件（不再用 16ms throttle 定时器）。
 	let scrollTicking = false;
@@ -1680,19 +1744,10 @@ function disableAnimation() {
 	import "../scripts/theme-optimizer.js";
 </script>
 
-<!-- 26.09.06 相册图片模块（全局生命周期注册，一次）：
-     album-gallery —— 相册详情页三段式渲染编排（尺寸→占位→懒加载），
-                      顶层注册一次并响应首载 / swup content:replace / page:view，
-                      修复 SPA 跳入相册页脚本不重跑的缺陷；
-     album-prefetch—— 非相册页空闲时预计算全部相册图片尺寸（严禁加载内容，可中止）。
-     模块在浏览器里只被求值一次（Vite 模块缓存），重复 import 无副作用。 -->
 <script>
 	import "../utils/album-gallery.js";
 	import "../scripts/album-prefetch.js";
 	import "../scripts/toc-layout.js";
-	// 26.09.14：导航栏与主卡片重合时的下边界描边（下拉后区分导航栏/主卡片边界）
 	import "../scripts/navbar-card-separator.js";
-	// 26.11.05：卡片「筛选显隐」共享实现（window.CardFilter）——
-	// 首页标签筛选内联脚本与 /js/friends-page-handler.js 共用，避免两份逻辑漂移。
-	import "../scripts/card-filter-visibility.js";
+	import "../utils/card-effects.ts";
 </script>

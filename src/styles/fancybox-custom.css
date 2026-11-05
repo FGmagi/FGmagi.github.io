@@ -6,7 +6,8 @@
   --fancybox-thumbs-border-radius: 4px;
 }
 
-.fancybox__toolbar {
+.fancybox__toolbar,
+.fancybox__container .f-carousel__toolbar {
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent);
   padding: 8px;
   backdrop-filter: blur(4px);
@@ -23,60 +24,71 @@
   margin: 0 1rem 1rem 1rem;
 }
 
-.fancybox__nav {
+.fancybox__nav,
+.fancybox__container .f-carousel__nav {
   --carousel-button-svg-width: 24px;
   --carousel-button-svg-height: 24px;
 }
 
-.fancybox__thumbs {
+.fancybox__thumbs,
+.fancybox__container .f-thumbs {
   background: rgba(0, 0, 0, 0.7);
   padding: 2px;
   border-radius: 8px;
   backdrop-filter: blur(4px);
 }
 
-.fancybox__thumb {
+.fancybox__thumb,
+.fancybox__container .f-thumb {
   border-radius: 4px;
   overflow: hidden;
   border: 2px solid transparent;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
 }
 
-.fancybox__thumb.is-loading {
+.fancybox__thumb.is-loading,
+.fancybox__container .f-thumb.is-loading {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.fancybox__thumb:hover {
+.fancybox__thumb:hover,
+.fancybox__container .f-thumb:hover {
   border-color: rgba(255, 255, 255, 0.5);
   transform: scale(1.05);
 }
 
-.fancybox__thumb.is-active {
+.fancybox__thumb.is-active,
+.fancybox__container .f-thumb.is-active {
   border-color: #fff;
 }
 
 /* 按钮样式 */
-.fancybox__button {
+.fancybox__button,
+.fancybox__container .f-button {
   background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
   width: 44px;
   height: 44px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.fancybox__button:hover {
+.fancybox__button:hover,
+.fancybox__container .f-button:hover {
   background: rgba(0, 0, 0, 0.7);
   transform: scale(1.1);
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.fancybox__button svg {
+.fancybox__button svg,
+.fancybox__container .f-button svg {
+  color: #fff;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
-.fancybox__infobar {
+.fancybox__infobar,
+.fancybox__container .f-counter {
   color: white;
   font-size: 0.9rem;
   padding: 0 8px;
@@ -84,11 +96,13 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .fancybox__toolbar {
+  .fancybox__toolbar,
+  .fancybox__container .f-carousel__toolbar {
     padding: 4px;
   }
 
-  .fancybox__button {
+  .fancybox__button,
+  .fancybox__container .f-button {
     width: 36px;
     height: 36px;
   }
@@ -99,13 +113,15 @@
     margin: 0 0.5rem 0.5rem 0.5rem;
   }
 
-  .fancybox__thumbs {
+  .fancybox__thumbs,
+  .fancybox__container .f-thumbs {
     --fancybox-thumbs-width: 48px;
   }
 }
 
 @media (max-width: 480px) {
-  .fancybox__button {
+  .fancybox__button,
+  .fancybox__container .f-button {
     width: 32px;
     height: 32px;
   }
@@ -115,7 +131,8 @@
     padding: 0.4rem;
   }
 
-  .fancybox__thumbs {
+  .fancybox__thumbs,
+  .fancybox__container .f-thumbs {
     --fancybox-thumbs-width: 40px;
   }
 }

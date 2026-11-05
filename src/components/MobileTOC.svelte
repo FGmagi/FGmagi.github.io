@@ -1,6 +1,6 @@
 <script lang="ts">
-// 26.09.02 [11]修改，内容为：移除目录抽屉对卡片分类链接的解析（a[href*="/categories/"]）与 .post-category 展示，文章列表仅保留标题/置顶信息；分类相关样式一并清理
 import Icon from "@iconify/svelte";
+import "@utils/iconify-local";
 import { onMount } from "svelte";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -140,7 +140,6 @@ const scrollToHeading = (id: string) => {
 	// 关闭面板
 	setPanelVisibility(false);
 
-	// 26.09.14：与宽屏侧栏目录共用 src/utils/anchor-nav.ts
 	//   · 导航栏底边 + config.toc.navigation.offset 避让，标题不会被吸顶导航栏挡住；
 	//   · 自绘 rAF 平滑滚动（更慢更平滑，时长可配）；
 	//   · 距离超过 longJumpViewports 个视口高度时改为「渐变消失 → 瞬移 → 预渲染 → 渐显」。
@@ -282,7 +281,6 @@ onMount(() => {
 	// 延迟初始化，确保页面内容已加载
 	setTimeout(init, 100);
 
-	// 监听滚动事件作为备用（26.11.03：补 passive —— 原监听是阻塞式，
 	// 会和页面滚动竞争主线程，是移动端下拉发涩的原因之一）
 	window.addEventListener("scroll", updateActiveHeading, { passive: true });
 
@@ -390,7 +388,6 @@ if (typeof window !== "undefined") {
 </div>
 
 <style>
-	/* 26.09.06：入口按钮默认隐藏，仅在窄屏/宽度不足（narrow）模式显示 */
 	#mobile-toc-switch {
 		display: none;
 	}
@@ -402,8 +399,6 @@ if (typeof window !== "undefined") {
 	.mobile-toc-panel {
 		/* 与右侧栏目录共用同一高度上限（已为回顶按钮预留间距），避免面板与按钮重叠 */
 		max-height: var(--toc-max-h, calc(100vh - 120px));
-		/* 26.09.14：条目改换行后行数变多 ⇒ 由面板自己滚动 + 裁切，
-		   超出圆角卡片（背景/边框）的部分一律裁掉，不会渲染到卡片外。 */
 		overflow-y: auto;
 		overflow-x: hidden;
 		background: var(--card-bg);
@@ -430,13 +425,12 @@ if (typeof window !== "undefined") {
 
 	.toc-item {
 		display: flex;
-		/* 26.09.14：条目可能换行成多行 ⇒ 徽标/圆点对第一行对齐（原来居中，多行时会飘到中间） */
 		align-items: flex-start;
 		width: 100%;
 		text-align: left;
 		padding: 8px 12px;
 		border-radius: 8px;
-		transition: all 0.2s ease;
+		transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 		border: none;
 		background: transparent;
 		cursor: pointer;
@@ -567,8 +561,6 @@ if (typeof window !== "undefined") {
 		display: block;
 		flex: 1;
 		min-width: 0;
-		/* 26.09.14：单行放不下就换行（与宽屏侧栏目录一致）；长英文/URL 强制断行，
-		   行数变多由外层面板滚动 + 圆角裁切兜住（见 .mobile-toc-panel）。 */
 		white-space: normal;
 		overflow-wrap: anywhere;
 		word-break: break-word;
@@ -581,7 +573,7 @@ if (typeof window !== "undefined") {
 		text-align: left;
 		padding: 12px;
 		border-radius: 8px;
-		transition: all 0.2s ease;
+		transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 		border: none;
 		background: transparent;
 		cursor: pointer;

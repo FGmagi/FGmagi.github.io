@@ -168,7 +168,7 @@ Make the emoji component display correctly when there are too many emoji packs
 .tk-delete,
 .tk-edit {
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* 确保点击区域足够大 */

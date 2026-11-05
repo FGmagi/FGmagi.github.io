@@ -1,5 +1,4 @@
 ---
-// 26.09.02 [11]修改，内容为：站点统计移除"分类数"行与 getCategoryList 使用；文章数/标签数/总字数/运行天数/最近更新保持
 import { Icon } from "astro-icon/components";
 import { siteConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
@@ -20,7 +19,6 @@ const { class: className, style } = Astro.props;
 // 从配置中获取站点开始日期
 const siteStartDate = siteConfig.siteStartDate || "2025-01-01";
 
-// 26.09.02 [10、H-01]：站点统计取数改用 getActiveSortedPosts（数据源过滤 active:false），文章数/总字数/最近更新日期不再计入 inactive
 const posts = await getActiveSortedPosts();
 const tags = await getTagList();
 

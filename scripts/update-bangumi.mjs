@@ -8,7 +8,6 @@ const CONFIG_PATH = path.join(
 	"../src/config.ts",
 );
 
-// 26.09.02 [7]：输出路径改读 config（dataFiles.bangumiDataJson，相对项目根）
 async function getOutputFile() {
 	const configContent = await fs.readFile(CONFIG_PATH, "utf-8");
 	const match = configContent.match(/bangumiDataJson:\s*["']([^"']+)["']/);

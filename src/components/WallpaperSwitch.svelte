@@ -1,9 +1,9 @@
 <script lang="ts">
-    // 26.09.02 [14]：新增全屏模式“切换壁纸”按钮——全屏 + 当前设备组可用壁纸 ≥2 + carousel.enable 时显示，
     // 点击调用 __mizukiSwitchWallpaper(true)（force 绕过间隔门控，仍写回 last_switch 重新计时）；
     // 出现时序：按钮位宽先展开（左侧“全部/目录/主题色/模式”平滑左移）→ 按钮内容再淡入；
     // 消失时序：按钮内容先淡出 → 位宽收缩（左侧按钮平滑右移填补）；首次载入直接就位不做动画
     import {
+        WALLPAPER_BANNER,
         WALLPAPER_FULLSCREEN,
         WALLPAPER_NONE,
         DARK_MODE,
@@ -13,6 +13,7 @@
     import I18nKey from "@i18n/i18nKey";
     import { i18n } from "@i18n/translation";
     import Icon from "@iconify/svelte";
+    import "@utils/iconify-local";
     import {
         getStoredWallpaperMode,
         setWallpaperMode,
@@ -21,40 +22,43 @@
     } from "@utils/setting-utils";
     import type { WALLPAPER_MODE, LIGHT_DARK_MODE } from "@/types/config";
     import { panelManager } from "../utils/panel-manager.js";
+    import { prefersReducedMotion } from "../utils/motion-preference";
     import { fullscreenWallpaperConfig, siteConfig } from "../config";
     import { onDestroy, onMount } from "svelte";
 
     type LayoutMode = "list" | "grid";
 
-    // 仅保留全屏与隐藏两种壁纸模式（横幅模式已移除）
-    const wallpaperOptions: { mode: WALLPAPER_MODE; icon: string; label: I18nKey }[] = [
+    // 横幅实现仍保留，但当前配置不向用户显示入口。
+    const allWallpaperOptions: { mode: WALLPAPER_MODE; icon: string; label: I18nKey }[] = [
+        { mode: WALLPAPER_BANNER, icon: "material-symbols:view-day-outline", label: I18nKey.wallpaperBanner },
         { mode: WALLPAPER_FULLSCREEN, icon: "material-symbols:wallpaper", label: I18nKey.wallpaperFullscreen },
         { mode: WALLPAPER_NONE, icon: "material-symbols:hide-image-outline", label: I18nKey.wallpaperNone },
     ];
+    const wallpaperOptions = siteConfig.wallpaperMode.enableBannerMode
+        ? allWallpaperOptions
+        : allWallpaperOptions.filter((option) => option.mode !== WALLPAPER_BANNER);
 
     let mode: WALLPAPER_MODE = $state(WALLPAPER_FULLSCREEN);
     let theme: LIGHT_DARK_MODE = $state(DEFAULT_THEME);
     let layout: LayoutMode = $state("list");
-    // 26.08.31修改，内容为：简洁模式默认改为关闭（常规模式）
     let simpleMode: boolean = $state(false);
 
-    // 26.08.30修改，内容为：onMount 初始化增加主题、布局模式、简洁模式的读取与旧 banner 数据迁移
     onMount(() => {
         mode = getStoredWallpaperMode();
-        // 26.08.31修改，内容为：移除旧 banner 数据迁移，尊重缓存模式（默认启动为 fullscreen，有缓存用缓存）
+        if (!siteConfig.wallpaperMode.enableBannerMode && mode === WALLPAPER_BANNER) {
+            mode = WALLPAPER_FULLSCREEN;
+            setWallpaperMode(mode);
+        }
         theme = getStoredTheme();
         const saved = sessionStorage.getItem("postListLayout") as LayoutMode | null;
         layout = saved === "list" || saved === "grid"
             ? saved
             : (siteConfig.postListLayout.defaultMode as LayoutMode) || "list";
-        // 26.08.31修改，内容为：读取简洁模式，默认常规模式（仅当存储值为 true 时启用）
         const savedSimple = localStorage.getItem("simpleMode");
         simpleMode = savedSimple === "true";
-        // 26.09.02 [14]：初始化“切换壁纸”按钮（首帧直接就位，不播放位移动画）
         initCycleButton();
     });
 
-    // 26.09.02 [14]：清理“切换壁纸”按钮的监听器与计时器，避免热更新/swup 场景重复叠加
     onDestroy(() => {
         cycleFontsCanceled = true;
         window.clearTimeout(cycleHideTimer);
@@ -62,12 +66,8 @@
         if (cycleModeHandler) window.removeEventListener("wallpaper-mode-change", cycleModeHandler);
         if (cycleResizeHandler) window.removeEventListener("resize", cycleResizeHandler);
         if (cyclePageViewHandler) document.removeEventListener("swup:page:view", cyclePageViewHandler);
-        if (cycleReducedMql && cycleReducedHandler && typeof cycleReducedMql.removeEventListener === "function") {
-            cycleReducedMql.removeEventListener("change", cycleReducedHandler);
-        }
     });
 
-    // 26.09.02 [14]：“切换壁纸”按钮的可见性（mode=fullscreen + 当前设备组 ≥2 + carousel.enable）与位移动画状态
     type CyclePhase = "hidden" | "shown" | "leaving";
     const CYCLE_MD_QUERY = "(min-width: 768px)";
     let cycleHostEl: HTMLElement | null = $state(null);
@@ -76,17 +76,11 @@
     // 首帧后就位完成前抑制过渡，避免页面以全屏打开时按钮从 0 宽展开
     let cycleAnimReady: boolean = $state(false);
     let cycleSuppressAnim: boolean = $state(true);
-    let cycleReducedMotion: boolean = $state(
-        typeof window !== "undefined" &&
-        !!window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    );
+    let cycleReducedMotion: boolean = $state(false);
     let cycleHideTimer: number | undefined;
-    let cycleReducedMql: MediaQueryList | undefined;
     let cycleModeHandler: ((event: Event) => void) | undefined;
     let cycleResizeHandler: (() => void) | undefined;
     let cyclePageViewHandler: (() => void) | undefined;
-    let cycleReducedHandler: (() => void) | undefined;
     let cycleFontsCanceled = false;
 
     interface WallpaperSwitchApi {
@@ -201,11 +195,9 @@
         handleCycleVisibilityChange(false);
     }
 
-    // 2026.9.2 修复“切换壁纸”字体显示不全
     let cycleResizeObserver: ResizeObserver | undefined;
     function initCycleButton(): void {
-        cycleReducedMql = window.matchMedia("(prefers-reduced-motion: reduce)");
-        cycleReducedMotion = cycleReducedMql.matches;
+        cycleReducedMotion = prefersReducedMotion();
         cycleSuppressAnim = true;
         cyclePhase = canShowCycleButton() ? "shown" : "hidden";
         if (cyclePhase === "shown") {
@@ -218,16 +210,9 @@
         cycleModeHandler = handleWallpaperModeChange;
         cycleResizeHandler = handleCycleResize;
         cyclePageViewHandler = handleSwupPageView;
-        cycleReducedHandler = () => {
-            cycleReducedMotion = cycleReducedMql ? cycleReducedMql.matches : false;
-            cycleSuppressAnim = cycleReducedMotion;
-        };
         window.addEventListener("wallpaper-mode-change", cycleModeHandler);
         window.addEventListener("resize", cycleResizeHandler);
         document.addEventListener("swup:page:view", cyclePageViewHandler);
-        if (cycleReducedMql && typeof cycleReducedMql.addEventListener === "function") {
-            cycleReducedMql.addEventListener("change", cycleReducedHandler);
-        }
 
         // 字体就绪后修正内容自然宽度，避免本地字体加载前后按钮宽度漂移
         if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
@@ -259,7 +244,6 @@
         });
     }
 
-    // 26.09.02 [14]：点击“切换壁纸”——force=true 立即换图（不受 interval 最小间隔限制，仍重新计时）
     function cycleWallpaperNow(): void {
         const api = (window as unknown as WallpaperSwitchApi).__mizukiSwitchWallpaper;
         if (typeof api === "function") api(true);
@@ -267,14 +251,13 @@
 
     let currentIcon = $derived(wallpaperOptions.find(opt => opt.mode === mode)?.icon || wallpaperOptions[0].icon);
     let wallpaperLabel = $derived(wallpaperOptions.find(opt => opt.mode === mode)?.label ?? I18nKey.wallpaperFullscreen);
-    const wallpaperSequence = [WALLPAPER_FULLSCREEN, WALLPAPER_NONE];
+    const wallpaperSequence = wallpaperOptions.map((option) => option.mode);
 
     function switchWallpaperMode(newMode: WALLPAPER_MODE) {
         mode = newMode;
         setWallpaperMode(newMode);
     }
 
-    // 26.09.02修改，内容为：模式切换后自动收回"模式"下拉框（覆盖 全屏/隐藏壁纸、常规/简洁、白天/黑夜 三组开关）
     async function closeWallpaperPanel() {
         try {
             await panelManager.closePanel("wallpaper-mode-panel");
@@ -285,13 +268,11 @@
         }
     }
 
-    // 26.08.30修改，内容为：新增主题切换函数（亮色/暗色，调用 setTheme 持久化）
     function switchTheme(newTheme: LIGHT_DARK_MODE) {
         theme = newTheme;
         setTheme(newTheme);
     }
 
-    // 26.08.30修改，内容为：新增布局切换函数（列表/网格），持久化并广播 layoutChange 事件
     function switchLayout(newLayout: LayoutMode) {
         layout = newLayout;
         sessionStorage.setItem("postListLayout", newLayout);
@@ -301,36 +282,30 @@
         );
     }
 
-    // 26.08.30修改，内容为：新增壁纸模式循环切换函数（全屏/隐藏），替换原多选项面板；26.09.02修改，内容为：切换后自动收回下拉框
     async function cycleWallpaper() {
         const idx = wallpaperSequence.indexOf(mode);
         switchWallpaperMode(wallpaperSequence[(idx + 1) % wallpaperSequence.length]);
         await closeWallpaperPanel();
     }
 
-    // 26.08.30修改，内容为：新增布局循环切换函数（列表/网格互切）
     function cycleLayout() {
         switchLayout(layout === "list" ? "grid" : "list");
     }
 
-    // 26.08.30修改，内容为：新增白天/夜晚主题循环切换函数（亮色/暗色互切）；26.09.02修改，内容为：切换后自动收回下拉框
     async function toggleTheme() {
         switchTheme(theme === LIGHT_MODE ? DARK_MODE : LIGHT_MODE);
         await closeWallpaperPanel();
     }
 
-    // 26.08.31修改，内容为：简洁模式切换先隐藏主网格，完成布局状态更新后统一淡入，显式清理过渡标记避免残留
     let simpleModeSwitching = false;
     let simpleModeSwitchTimer: number | undefined;
     let simpleModeCleanupTimer: number | undefined;
 
-    // 26.08.31修改，内容为：无论模式状态如何更新，都移除两阶段过渡类并释放切换锁
     function finishSimpleModeTransition() {
         document.body.classList.remove("simple-mode-switching", "simple-mode-switching-in");
         simpleModeSwitching = false;
     }
 
-    // 26.09.02修改，内容为：简洁/常规切换后自动收回下拉框（不等待 250ms 布局过渡完成，立即收回）
     async function toggleSimpleMode() {
         if (simpleModeSwitching) return;
         simpleModeSwitching = true;
@@ -389,8 +364,6 @@
         transition: transform 75ms ease-out, background-color 0ms !important;
     }
 
-    /* 26.09.02 [14]：切换壁纸按钮位移动画——位宽展开/收缩 220ms（使左侧“全部/目录/主题色/模式”平滑左移/右移），
-       内容淡入延迟 120ms（展开接近完成时出现）、淡出 140ms 先行（再收缩位宽） */
     .wallpaper-actions {
         display: flex;
         align-items: center;
@@ -479,7 +452,6 @@
     </div>
     </div>
 
-    <!-- 26.09.02 [14]：“切换壁纸”按钮宿主——宽度 0↔自然宽展开/收缩，内容淡入淡出；面板锚点保持在左侧“模式”按钮内 -->
     <div
         class="wallpaper-cycle-host"
         class:cycle-shown={cyclePhase === "shown"}

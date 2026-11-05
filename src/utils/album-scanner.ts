@@ -1,8 +1,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
-import { dataFiles } from "../config";
+import { dataFiles } from "../config/data";
 import type { AlbumGroup, Photo } from "../types/album";
+import mediaManifest from "../generated/media-manifest.json";
 import {
 	ALBUM_COVER_NAME_PREFIX,
 	ALBUM_DEFAULT_COLUMNS,
@@ -11,11 +12,8 @@ import {
 	ALBUM_MIN_COLUMNS,
 } from "../types/album";
 
-// 26.09.02 [9]：photo_dir_urls 兼容旧单数键 photo_dir_url（string|string[]，scanner 归一读取并 warn 迁移提示）。
-// 26.09.02 [8]：相册模块改造——albumsDir/info.json 改为顶层对象数组（每对象一个相册），
 // 新增外链能力：photo_urls（外链单图 url 数组）与 photo_dir_urls（外链图片文件夹 url 数组，
 // 构建期自动读取其下图片直链）。仍完整保留既有 per-folder 对象模式：根 info.json 缺失或非数组时回退。
-// 26.09.02 [7]：相册目录改读 config（dataFiles.albumsDir）
 
 // 图片扩展名白名单（本地文件夹 / 外链目录扫描一致）
 const PHOTO_EXTENSIONS = [
@@ -39,6 +37,7 @@ const REMOTE_TIMEOUT_MS = 15000;
 // 两上限兜底默认值（与 src/config.ts 注释一致）
 const DEFAULT_MAX_IMAGES_PER_FOLDER = 500;
 const DEFAULT_MAX_ALBUM_SIZE_BYTES = 1073741824; // 1GB
+let remoteLockCache: Record<string, string[]> | null | undefined;
 
 // 无可用封面时的白色占位图网页 URL。映射 dataFiles.white_webp 的“文件系统路径”为“网页 URL”：
 // 该值须指向 public/ 下某资源（如 "public/images/white_webp"），剥掉开头 "public/"（或 "public\"）、
@@ -58,7 +57,14 @@ const WHITE_COVER_PLACEHOLDER_URL = (() => {
 
 const DEFAULT_DATE = () => new Date().toISOString().split("T")[0];
 
-export async function scanAlbums(): Promise<AlbumGroup[]> {
+let albumScanPromise: Promise<AlbumGroup[]> | null = null;
+
+export function scanAlbums(): Promise<AlbumGroup[]> {
+	albumScanPromise ??= scanAlbumsUncached();
+	return albumScanPromise;
+}
+
+async function scanAlbumsUncached(): Promise<AlbumGroup[]> {
 	const albumsDir = path.join(process.cwd(), dataFiles.albumsDir);
 	const albums: AlbumGroup[] = [];
 
@@ -70,7 +76,11 @@ export async function scanAlbums(): Promise<AlbumGroup[]> {
 
 	// [数组模式优先] 尝试读取 albumsDir/info.json 顶层数组
 	const infoFileName = dataFiles.albumsInfoFile || "info.json";
-	const rootInfoPath = path.join(albumsDir, infoFileName);
+	const infoDir = path.join(
+		process.cwd(),
+		dataFiles.albumsInfoDir || dataFiles.albumsDir,
+	);
+	const rootInfoPath = path.join(infoDir, infoFileName);
 	if (fs.existsSync(rootInfoPath)) {
 		try {
 			const parsed = JSON.parse(fs.readFileSync(rootInfoPath, "utf-8"));
@@ -225,20 +235,45 @@ async function buildAlbumFromRootEntry(
 	}
 
 	const photoDirUrls = collectDirUrlStrings(entry);
-	const dirFolderPhotos = await mapLimit(
-		photoDirUrls,
-		MAX_REMOTE_CONCURRENCY,
-		async (dirUrl, i) => {
+	// A local source is the reproducible path. Remote directory discovery runs only
+	// when no local files exist; ordinary builds never depend on GitHub being online.
+	if (photos.length === 0) {
+		const lock = loadRemoteLock(albumsDir);
+		const unlockedDirs: string[] = [];
+		photoDirUrls.forEach((dirUrl, i) => {
 			if (typeof dirUrl !== "string" || !isHttpUrl(dirUrl)) {
 				console.warn(
 					`相册 ${id} 的外链文件夹不是 http(s) 地址，已跳过: ${dirUrl}`,
 				);
-				return [] as Photo[];
+				return;
 			}
-			return fetchPhotoDirUrl(dirUrl.trim(), id, i, maxImagesPerFolder);
-		},
-	);
-	for (const arr of dirFolderPhotos) photos.push(...arr);
+			const files = lock?.[dirUrl.trim()];
+			if (Array.isArray(files) && files.length > 0) {
+				files
+					.slice(0, maxImagesPerFolder)
+					.forEach((file, fileIndex) => {
+						photos.push(
+							makeUrlPhoto(
+								`${dirUrl.trim().replace(/\/+$/, "")}/${encodeURIComponent(file)}`,
+								id,
+								`dir-${i}-${fileIndex}`,
+								true,
+							),
+						);
+					});
+			} else {
+				unlockedDirs.push(dirUrl);
+			}
+		});
+		const dirFolderPhotos = await mapLimit(
+			unlockedDirs,
+			MAX_REMOTE_CONCURRENCY,
+			async (dirUrl, i) => {
+				return fetchPhotoDirUrl(dirUrl.trim(), id, i, maxImagesPerFolder);
+			},
+		);
+		for (const arr of dirFolderPhotos) photos.push(...arr);
+	}
 
 	// 逐张计算去重键后按 hash 去重（重复项隐藏/剔除，保留首个）。
 	// 注：外链不下载内容故以规范化 URL 为键去重——这是懒加载 / 防流量的折衷。
@@ -263,13 +298,22 @@ async function buildAlbumFromRootEntry(
 	}
 
 	// 封面：显式 http 直链 → 本地 cover 文件 / 外链文件名匹配；均未命中 → 白色占位（不再回退首张照片）
-	const cover = resolveCover(
+	let cover = resolveCover(
 		localFolderPath,
 		hasLocalFolder,
 		id,
 		entry.cover,
 		finalPhotos,
 	);
+	const explicitCover =
+		typeof entry.cover === "string" ? entry.cover.trim() : "";
+	if (explicitCover && !isHttpUrl(explicitCover)) {
+		const key = photoNameKey(explicitCover);
+		const coverPhoto = finalPhotos.find(
+			(photo) => photoNameKey(photo.src) === key,
+		);
+		if (coverPhoto?.thumbnail) cover = coverPhoto.thumbnail;
+	}
 
 	return {
 		id,
@@ -288,6 +332,29 @@ async function buildAlbumFromRootEntry(
 		columns: clampColumns(entry.columns),
 		photos: finalPhotos,
 	};
+}
+
+function loadRemoteLock(
+	albumsDir: string,
+): Record<string, string[]> | null {
+	if (remoteLockCache !== undefined) return remoteLockCache;
+	const infoDir = path.join(
+		process.cwd(),
+		dataFiles.albumsInfoDir || albumsDir,
+	);
+	const lockPath = path.join(infoDir, "remote-lock.json");
+	try {
+		const parsed = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+		remoteLockCache =
+			parsed?.schema === 1 &&
+			parsed?.directories &&
+			typeof parsed.directories === "object"
+				? parsed.directories
+				: null;
+	} catch {
+		remoteLockCache = null;
+	}
+	return remoteLockCache ?? null;
 }
 
 // 本地文件夹图片扫描（数组模式）：含内容 md5 去重键
@@ -311,14 +378,41 @@ function scanLocalFolderPhotos(folderPath: string, albumId: string): Photo[] {
 			return;
 		}
 		const { baseName, tags } = parseFileName(file);
+		const media = (
+			mediaManifest.albums as Record<
+				string,
+				Array<{
+					sourceKey: string;
+					originalUrl: string | null;
+					width: number;
+					height: number;
+					webp: Array<{ width: number; url: string }>;
+					thumbnail: string;
+					medium: string;
+					hash: string;
+					cacheVersion: string;
+				}>
+			>
+		)[albumId]?.find((item) => item.sourceKey === `${albumId}/${file}`);
+		const fallbackSource = `${dataFiles.albumsWebDir}/${albumId}/${file}`;
 		photos.push({
 			id: `${albumId}-photo-${index}`,
-			src: `${dataFiles.albumsWebDir}/${albumId}/${file}`,
+			src: media?.originalUrl || fallbackSource,
+			originalSrc: media?.originalUrl || fallbackSource,
+			thumbnail: media?.thumbnail,
+			medium: media?.medium,
+			webp: media?.webp,
+			srcset: media?.webp
+				?.map((variant) => `${variant.url} ${variant.width}w`)
+				.join(", "),
+			cacheVersion: media?.cacheVersion,
+			width: media?.width,
+			height: media?.height,
 			alt: baseName,
 			title: baseName,
 			tags,
 			date: stats.mtime.toISOString().split("T")[0],
-			hash: fileContentMd5(filePath),
+			hash: media?.hash || fileContentMd5(filePath),
 		});
 	});
 	return photos;
@@ -335,7 +429,12 @@ function fileContentMd5(filePath: string): string {
 }
 
 // 外链单图/文件夹图片 → Photo（不下载，只记 src，去重键=规范化 URL）
-function makeUrlPhoto(url: string, albumId: string, suffix: string): Photo {
+function makeUrlPhoto(
+	url: string,
+	albumId: string,
+	suffix: string,
+	locked = false,
+): Photo {
 	const name = remoteName(url);
 	return {
 		id: `${albumId}-external-photo-${suffix}`,
@@ -343,7 +442,8 @@ function makeUrlPhoto(url: string, albumId: string, suffix: string): Photo {
 		alt: name || `Photo ${suffix}`,
 		title: name || undefined,
 		date: DEFAULT_DATE(),
-		hash: normalizeUrlKey(url),
+		hash: `${locked ? "lock:" : ""}${normalizeUrlKey(url)}`,
+		locked,
 	};
 }
 
@@ -735,6 +835,10 @@ async function photoByteSize(
 	p: Photo,
 	localFolderPath: string,
 ): Promise<number | undefined> {
+	// Generated responsive media proves this is local. The media lock already
+	// bounds the source set, so ordinary builds must not issue a remote HEAD.
+	if (p.thumbnail) return undefined;
+	if (p.locked) return undefined;
 	// 本地照片（src 形如 /images/<id>/<file>）
 	if (p.src.startsWith(dataFiles.albumsWebDir + "/") && localFolderPath) {
 		try {
@@ -994,7 +1098,6 @@ async function processAlbumFolder(
 			return null;
 		}
 
-		// 26.09.02 [7]：相册封面网页路径改读 config（dataFiles.albumsWebDir）
 		cover = `${dataFiles.albumsWebDir}/${folderName}/${cover_name}`;
 		photos = scanPhotos(folderPath, folderName);
 	}
@@ -1049,7 +1152,6 @@ function scanPhotos(folderPath: string, albumId: string): Photo[] {
 		// 解析文件名中的标签
 		const { baseName, tags } = parseFileName(file);
 
-		// 26.09.02 [7]：照片网页路径改读 config（dataFiles.albumsWebDir）
 		photos.push({
 			id: `${albumId}-photo-${index}`,
 			src: `${dataFiles.albumsWebDir}/${albumId}/${file}`,

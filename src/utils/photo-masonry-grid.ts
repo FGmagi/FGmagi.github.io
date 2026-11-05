@@ -1,16 +1,4 @@
-/**
- * 相册瀑布流「超宽横图跨列」运行期排版（26.09.21）。
- *
- * 方案 B：CSS Grid + 行跨。只在「相册是 masonry + 配置开关打开 + 相册清单里给了参数」时
- * 接管排版；其余情况返回 null，页面保持原来的 CSS 多列瀑布流（无 JS 也照旧可读）。
- *
- * 分工：
- *   - 本文件负责 DOM：读尺寸/配置 → 调 masonry-pack 纯函数 → 写 grid-column/row 内联样式；
- *   - 跨列规则：宽高比 ≥ data-span-min-aspect 的照片最多跨 data-span-max 列（上限 2）；
- *   - 自适应间距：data-gap-adaptive（px）交给 packing 内核消化跨列留下的空洞；
- *   - 尺寸变化（Worker 探测回填、加载后校正）与容器宽度/断点变化都会触发重排，
- *     重排本身走 rAF 合帧，且只写内联样式，不重新创建 DOM。
- */
+
 
 import { packMasonry } from "./masonry-pack.js";
 import type { MasonryPackInput } from "./masonry-pack.js";

@@ -1,15 +1,4 @@
-/**
- * 相册图片尺寸「批量探测」主线程门面（26.09.14 新增）。
- *
- * 职责：把尺寸探测整体交给 Web Worker（photo-probe-worker），主线程只接收结果回调，
- * 保证外链不可达（连接长时间无响应）时 UI 线程不被探测过程占住；同时提供三重收敛保证：
- *   ① Worker 内全局截止 deadlineMs —— 到点收工；
- *   ② 客户端截止 deadlineMs + 1s —— Worker 卡住/消息丢失也能收敛；
- *   ③ Worker 创建失败（旧浏览器 / CSP）→ 自动降级为主线程小并发探测；
- *   ④ signal abort → 终止 Worker（连在途请求一起断掉，绝不让悬挂请求继续占用连接）。
- *
- * 消费方：album-gallery（相册详情页尺寸期）、album-prefetch（非相册页空闲预计算）。
- */
+
 
 import { fetchHeaderSize } from "./photo-size.js";
 

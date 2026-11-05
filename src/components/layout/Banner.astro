@@ -1,0 +1,301 @@
+---
+import {
+	motionSettingsConfig,
+	scaleMotionDuration,
+	siteConfig,
+} from "../../config";
+import TypewriterText from "../TypewriterText.astro";
+
+interface Props {
+	desktop: string[];
+	mobile: string[];
+}
+
+const desktop = (Astro.props.desktop || []).filter(Boolean);
+const mobile = (Astro.props.mobile || []).filter(Boolean);
+const carousel =
+	siteConfig.banner.carousel?.enable === true &&
+	Math.max(desktop.length, mobile.length) > 1;
+const interval = Math.max(4, Number(siteConfig.banner.carousel?.interval) || 10);
+const crossfadeDuration = scaleMotionDuration(
+	motionSettingsConfig.features.wallpaperCrossfade.duration,
+);
+const kenBurnsDuration = scaleMotionDuration(
+	motionSettingsConfig.features.wallpaperKenBurns.duration,
+);
+const position = siteConfig.banner.position || "center";
+const home = Astro.url.pathname === "/" || Astro.url.pathname === "";
+const subtitle = siteConfig.banner.homeText?.subtitle;
+---
+
+<div
+	id="banner-carousel"
+	class="relative h-full w-full overflow-hidden"
+	data-fg-banner
+	data-fg-banner-interval={interval}
+	style={`--fg-banner-crossfade: ${crossfadeDuration}ms; --fg-banner-ken-burns: ${kenBurnsDuration}ms;`}
+	aria-label="站点横幅图片"
+>
+	<div class="fg-banner-slot absolute inset-0 opacity-100" data-banner-slot="a">
+		<img alt="" class="fg-banner-image" decoding="async" fetchpriority="high" style={`object-position: ${position}`} />
+	</div>
+	<div class="fg-banner-slot absolute inset-0 opacity-0" data-banner-slot="b" aria-hidden="true">
+		<img alt="" class="fg-banner-image" decoding="async" style={`object-position: ${position}`} />
+	</div>
+	{carousel && (
+		<button
+			type="button"
+			class="fg-banner-pause absolute right-3 bottom-3 z-30 rounded-full bg-black/55 px-3 py-1 text-xs text-white backdrop-blur"
+			data-banner-pause
+			aria-label="暂停横幅自动轮播"
+			aria-pressed="false"
+		>暂停</button>
+	)}
+	{home && siteConfig.banner.homeText?.enable && (
+		<div class="banner-text-overlay absolute inset-0 z-20 flex items-center justify-center">
+			<div class="w-4/5 lg:w-3/4 text-center mb-0">
+				<div class="flex flex-col">
+					{siteConfig.banner.homeText.title && (
+						<h1 class="banner-title text-6xl lg:text-8xl text-white drop-shadow-lg mb-2 lg:mb-4">
+							{siteConfig.banner.homeText.title}
+						</h1>
+					)}
+					{subtitle && (
+						<h2 class="banner-subtitle text-xl lg:text-3xl text-white/90 drop-shadow-md">
+							<span class="inline-block min-h-[1.2em]">
+								{siteConfig.banner.homeText.typewriter?.enable ? (
+									<TypewriterText
+										text={subtitle}
+										speed={siteConfig.banner.homeText.typewriter.speed}
+										deleteSpeed={siteConfig.banner.homeText.typewriter.deleteSpeed}
+										pauseTime={siteConfig.banner.homeText.typewriter.pauseTime}
+									/>
+								) : (
+									Array.isArray(subtitle) ? subtitle[0] : subtitle
+								)}
+							</span>
+						</h2>
+					)}
+				</div>
+			</div>
+		</div>
+	)}
+	{siteConfig.banner.waves?.enable && (
+		<div class="waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]" aria-hidden="true">
+			<svg class="waves h-full w-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 20 150 32" preserveAspectRatio="none">
+				<defs>
+					<path id="fg-gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v48h-352z" />
+				</defs>
+				<g class="parallax">
+					<use href="#fg-gentle-wave" x="48" y="0" class="opacity-25 fill-[var(--page-bg)]" style="animation-delay:-2s;animation-duration:7s" />
+					<use href="#fg-gentle-wave" x="48" y="3" class="opacity-50 fill-[var(--page-bg)]" style="animation-delay:-3s;animation-duration:10s" />
+					<use href="#fg-gentle-wave" x="48" y="5" class="opacity-75 fill-[var(--page-bg)]" style="animation-delay:-4s;animation-duration:13s" />
+					<use href="#fg-gentle-wave" x="48" y="7" class="fill-[var(--page-bg)]" style="animation-delay:-5s;animation-duration:20s" />
+				</g>
+			</svg>
+		</div>
+	)}
+</div>
+
+<script
+	is:inline
+	define:vars={{
+		desktopImages: desktop,
+		mobileImages: mobile,
+		carousel,
+		interval,
+		crossfadeDuration,
+	}}
+>
+	(function () {
+		const root = document.getElementById("banner-carousel");
+		if (!root) return;
+		if (window.__fgBannerReady) return;
+		window.__fgBannerReady = true;
+		const lists = { desktop: desktopImages || [], mobile: mobileImages || [] };
+		const slotA = root.querySelector('[data-banner-slot="a"]');
+		const slotB = root.querySelector('[data-banner-slot="b"]');
+		const pauseButton = root.querySelector("[data-banner-pause]");
+		if (!slotA || !slotB) return;
+
+		const isDesktop = () => window.matchMedia("(min-width: 768px)").matches;
+		const groupFor = () => {
+			const key = isDesktop() ? "desktop" : "mobile";
+			const list = lists[key]?.length ? lists[key] : lists[isDesktop() ? "mobile" : "desktop"];
+			return list || [];
+		};
+		const mode = () => localStorage.getItem("wallpaperMode") || "banner";
+		let index = 0;
+		let active = "a";
+		let paused = false;
+		let timer = 0;
+		let pointerX = null;
+
+		const imageIn = (slot) => slot.querySelector("img");
+		const stop = () => {
+			if (timer) window.clearInterval(timer);
+			timer = 0;
+		};
+		const start = () => {
+			stop();
+			const enabled =
+				carousel &&
+				!paused &&
+				!document.hidden &&
+				mode() === "banner" &&
+				document.documentElement.dataset.motionBannerAutoPlay !== "off";
+			if (enabled) timer = window.setInterval(() => next(false), interval * 1000);
+		};
+		const swap = (src, immediate) => {
+			const list = groupFor();
+			if (!list.length || !src) return;
+			const current = active === "a" ? slotA : slotB;
+			const buffer = active === "a" ? slotB : slotA;
+			const bufferImage = imageIn(buffer);
+			if (!bufferImage) return;
+			const finish = () => {
+				bufferImage.removeEventListener("load", finish);
+				buffer.style.opacity = "1";
+				current.style.opacity = "0";
+				active = active === "a" ? "b" : "a";
+				window.setTimeout(() => {
+					const old = active === "a" ? slotB : slotA;
+					const oldImage = imageIn(old);
+					if (!oldImage) return;
+					oldImage.removeAttribute("src");
+					old.style.opacity = "1";
+					if (active === "b") slotB.style.opacity = "1";
+					else slotA.style.opacity = "1";
+				}, crossfadeDuration);
+			};
+			if (immediate) {
+				bufferImage.onload = null;
+				bufferImage.src = src;
+				bufferImage.removeAttribute("aria-hidden");
+				current.style.opacity = "0";
+				buffer.style.opacity = "1";
+				active = active === "a" ? "b" : "a";
+				return;
+			}
+			bufferImage.onerror = () => {
+				bufferImage.onerror = null;
+				buffer.style.opacity = "0";
+			};
+			bufferImage.addEventListener("load", finish, { once: true });
+			bufferImage.src = src;
+		};
+		const activate = (immediate) => {
+			const list = groupFor();
+			if (!list.length) return;
+			index = ((index % list.length) + list.length) % list.length;
+			if (!imageIn(slotA)?.getAttribute("src")) {
+				const image = imageIn(slotA);
+				if (!image) return;
+				image.src = list[index];
+				if (!isDesktop()) image.alt = "站点横幅图片";
+				return;
+			}
+			if (!immediate && list.length > 1) index = (index + 1) % list.length;
+			swap(list[index], immediate);
+		};
+		const next = (immediate) => activate(immediate);
+		const setPaused = (value) => {
+			paused = value;
+			if (pauseButton) {
+				pauseButton.textContent = paused ? "继续" : "暂停";
+				pauseButton.setAttribute("aria-pressed", paused ? "true" : "false");
+				pauseButton.setAttribute(
+					"aria-label",
+					paused ? "继续横幅自动轮播" : "暂停横幅自动轮播",
+				);
+			}
+			start();
+		};
+
+		if (mode() === "banner") activate(true);
+		const onMode = () => {
+			if (mode() === "banner") {
+				activate(true);
+				start();
+			} else {
+				stop();
+			}
+		};
+		const onResize = () => {
+			if (mode() !== "banner") return;
+			index = 0;
+			slotA.style.opacity = "1";
+			slotB.style.opacity = "0";
+			active = "a";
+			const image = imageIn(slotA);
+			const nextImage = imageIn(slotB);
+			if (image) image.removeAttribute("src");
+			if (nextImage) nextImage.removeAttribute("src");
+			activate(true);
+		};
+		const onVisibility = () => {
+			if (document.hidden) stop();
+			else start();
+		};
+		window.addEventListener("wallpaper-mode-change", onMode);
+		window.addEventListener("resize", onResize);
+		window.addEventListener("fgmagi:settings-change", start);
+		document.addEventListener("visibilitychange", onVisibility);
+		window.addEventListener("pagehide", stop, { once: true });
+		pauseButton?.addEventListener("click", () => setPaused(!paused));
+		root.addEventListener("pointerdown", (event) => {
+			pointerX = event.clientX;
+		}, { passive: true });
+		root.addEventListener("pointerup", (event) => {
+			if (pointerX === null) return;
+			const delta = event.clientX - pointerX;
+			pointerX = null;
+			if (Math.abs(delta) > 48) next(false);
+		}, { passive: true });
+		start();
+	})();
+</script>
+
+<style>
+	.fg-banner-image {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		animation: fg-banner-ken-burns var(--fg-banner-ken-burns, 18s) ease-out alternate infinite;
+		transform-origin: center;
+	}
+	.fg-banner-slot {
+		transition: opacity var(--fg-banner-crossfade, 850ms) ease;
+		will-change: opacity;
+	}
+	.fg-banner-pause {
+		border: 1px solid rgb(255 255 255 / 0.22);
+	}
+	html[data-motion-wallpaper-ken-burns="off"] .fg-banner-image {
+		animation: none;
+	}
+	html[data-motion-wallpaper-crossfade="off"] .fg-banner-slot {
+		transition-duration: 0.01ms;
+	}
+	html[data-motion-banner-waves="off"] .waves .parallax use {
+		animation: none;
+	}
+	.waves .parallax use {
+		animation-name: fg-banner-wave;
+		animation-timing-function: cubic-bezier(0.5, 0.5, 0.45, 0.5);
+		animation-iteration-count: infinite;
+	}
+	@keyframes fg-banner-wave {
+		from { transform: translate3d(-90px, 0, 0); }
+		to { transform: translate3d(85px, 0, 0); }
+	}
+	@keyframes fg-banner-ken-burns {
+		from { transform: scale(1.01); }
+		to { transform: scale(1.045); }
+	}
+	html[data-reduced-motion="true"] .fg-banner-image {
+		animation: none;
+	}
+</style>
+

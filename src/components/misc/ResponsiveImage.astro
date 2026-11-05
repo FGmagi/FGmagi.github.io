@@ -1,0 +1,154 @@
+---
+interface Props {
+	src: string;
+	thumb?: string;
+	medium?: string;
+	srcset?: string;
+	sizes?: string;
+	alt: string;
+	class?: string;
+	width?: number;
+	height?: number;
+	loading?: "eager" | "lazy";
+	fetchpriority?: "high" | "low" | "auto";
+	referrerpolicy?: "no-referrer" | "origin" | "strict-origin-when-cross-origin";
+	position?: string;
+}
+
+const {
+	src,
+	thumb,
+	medium,
+	srcset,
+	sizes,
+	alt,
+	class: className = "",
+	width,
+	height,
+	loading = "lazy",
+	fetchpriority = "auto",
+	referrerpolicy,
+	position = "center",
+} = Astro.props;
+
+const initial = thumb || medium || src;
+const effectiveSrcset =
+	srcset ||
+	[
+		thumb && `${thumb} 360w`,
+		medium && `${medium} 720w`,
+	]
+		.filter(Boolean)
+		.join(", ") ||
+	undefined;
+const host = (() => {
+	try {
+		return new URL(src).hostname;
+	} catch {
+		return "";
+	}
+})();
+const safeReferrer =
+	referrerpolicy ||
+	(/(?:hdslb\.com|bilibili\.com|biliimg\.com)$/i.test(host)
+		? "no-referrer"
+		: undefined);
+---
+
+<span class:list={["responsive-image-shell relative block overflow-hidden", className]} data-image-state="idle">
+	<img
+		src={initial}
+		srcset={effectiveSrcset}
+		sizes={effectiveSrcset ? sizes || "100vw" : undefined}
+		alt={alt}
+		width={width}
+		height={height}
+		loading={loading}
+		decoding="async"
+		fetchpriority={fetchpriority}
+		referrerpolicy={safeReferrer}
+		style={`object-position: ${position}`}
+		data-original-src={src}
+	/>
+	<span class="responsive-image-error" aria-hidden="true">图片不可用</span>
+</span>
+
+<script>
+	function markImage(image: HTMLImageElement): void {
+		const shell = image.closest<HTMLElement>(".responsive-image-shell");
+		if (!shell) return;
+		shell.dataset.imageState = "loaded";
+		shell.classList.add("is-loaded");
+	}
+
+	function markError(image: HTMLImageElement): void {
+		const shell = image.closest<HTMLElement>(".responsive-image-shell");
+		if (!shell) return;
+		shell.dataset.imageState = "error";
+		shell.classList.add("is-error");
+		window.dispatchEvent(
+			new CustomEvent("image:error", {
+				detail: { src: image.dataset.originalSrc || image.src },
+			}),
+		);
+	}
+
+	function hydrateImages(root: ParentNode = document): void {
+		root.querySelectorAll<HTMLImageElement>(".responsive-image-shell > img").forEach(
+			(image) => {
+				if (image.dataset.responsiveBound === "1") return;
+				image.dataset.responsiveBound = "1";
+				image.dataset.fallback = image.dataset.fallback || "1";
+				image.addEventListener("load", () => markImage(image), { once: true });
+				image.addEventListener("error", () => markError(image), { once: true });
+				if (image.complete) {
+					if (image.naturalWidth > 0) markImage(image);
+					else markError(image);
+				}
+			},
+		);
+	}
+	hydrateImages();
+	document.addEventListener("astro:page-load", () => hydrateImages());
+	document.addEventListener("swup:page:view", () => hydrateImages());
+</script>
+
+<style>
+	.responsive-image-shell {
+		background:
+			linear-gradient(135deg, color-mix(in oklab, var(--card-bg), black 6%), var(--card-bg));
+	}
+	.responsive-image-shell > img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.responsive-image-shell[data-image-state="idle"] > img,
+	.responsive-image-shell[data-image-state="loading"] > img {
+		opacity: 0.01;
+	}
+	.responsive-image-shell[data-image-state="loaded"] > img {
+		opacity: 1;
+		transition: opacity 0.24s ease;
+	}
+	.responsive-image-shell[data-image-state="error"] > img {
+		opacity: 0;
+	}
+	.responsive-image-error {
+		position: absolute;
+		inset: 0;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75rem;
+		color: var(--text-50, rgb(100 116 139));
+	}
+	.responsive-image-shell.is-error .responsive-image-error {
+		display: flex;
+	}
+	:global(html[data-motion-image-reveal="off"]) .responsive-image-shell > img {
+		transition: none !important;
+		opacity: 1;
+	}
+</style>
+

@@ -1,19 +1,4 @@
-/**
- * 相册图片「取图 + 解码」主线程门面（26.09.14 新增）。
- *
- * 职责：把「下载整张图 + 解码成位图」整体交给 photo-bitmap-worker，主线程只 await 一个
- * ImageBitmap（零拷贝 transfer 回来）后 drawImage 一次。外链不可达 / 解码失败时返回 null，
- * 调用方回退到既有 <img> 路径 —— 功能不降级，只是那条路继续走渲染进程解码。
- *
- * 收敛保证（与 photo-probe-client 同构）：
- *   ① 每个 job 有独立超时：单张外链悬挂不会拖住整批（此前的坑：整批一个 deadline，
- *      未探出的项一起等，表现为整页卡死）；
- *   ② 客户端兜底截止 = job 超时 + 2s：Worker 卡住/消息丢失也能收敛；
- *   ③ Worker 创建失败 / 运行错误（旧浏览器、CSP）→ 标记不可用并 settle 所有等待者（返回 null）；
- *   ④ abort / cancelPhotoBitmap() → 向 Worker 发 cancel 并立即 settle，绝不让主线程干等。
- *
- * 绝不长期持有：调用方在不需要时调用 cancelPhotoBitmap(jobId)。
- */
+
 
 export interface PhotoBitmapJob {
 	jobId: number;

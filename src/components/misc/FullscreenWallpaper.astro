@@ -1,5 +1,9 @@
 ---
-import { siteConfig } from "../../config";
+import {
+	motionSettingsConfig,
+	scaleMotionDuration,
+	siteConfig,
+} from "../../config";
 import type { FullscreenWallpaperConfig } from "../../types/config";
 
 interface Props {
@@ -9,374 +13,414 @@ interface Props {
 
 const { config, className } = Astro.props;
 
-/**
- * 26.09.01 [2]：防御性归一化图片路径
- * 去除配置中误写的 public/ 前缀，并确保本地路径以 / 开头；http(s) 远程地址原样返回
- */
-const normalizeAssetPath = (src: string): string => {
+function normalizeAssetPath(src: string): string {
 	if (!src) return src;
 	if (/^(https?:)?\/\//i.test(src)) return src;
-	let p = src.trim();
-	if (p.startsWith("public/")) p = p.slice("public/".length);
-	if (!p.startsWith("/")) p = "/" + p;
-	return p;
-};
+	let value = src.trim();
+	if (value.startsWith("public/")) value = value.slice("public/".length);
+	if (!value.startsWith("/")) value = `/${value}`;
+	return value;
+}
 
-// 获取当前设备类型的图片源
-const getImageSources = async () => {
-	let srcConfig = config.src;
-
-	// API 图片逻辑
-	if (siteConfig.banner.imageApi?.enable && siteConfig.banner.imageApi?.url) {
+async function getImageSources() {
+	let source = config.src;
+	if (siteConfig.banner.imageApi?.enable && siteConfig.banner.imageApi.url) {
 		try {
 			const response = await fetch(siteConfig.banner.imageApi.url);
-			const text = await response.text();
-			const apiImages = text.split("\n").filter((line) => line.trim());
-			if (apiImages.length > 0) {
-				return { desktop: apiImages.map(normalizeAssetPath), mobile: apiImages.map(normalizeAssetPath) };
-			}
-		} catch (error) {
-			console.warn("Failed to fetch images from API:", error);
+			const lines = (await response.text())
+				.split("\n")
+				.map((line) => line.trim())
+				.filter(Boolean);
+			if (lines.length) source = lines;
+		} catch {
+			// The local configuration remains the fallback.
 		}
 	}
 
-	const toArray = (src: string | string[] | undefined): string[] => 
-		Array.isArray(src) ? src : (typeof src === "string" ? [src] : []);
-
-	if (typeof srcConfig === "object" && srcConfig !== null && !Array.isArray(srcConfig)) {
-		const desktop = toArray(srcConfig.desktop);
-		const mobile = toArray(srcConfig.mobile);
-		const resolvedDesktop = desktop.length > 0 ? desktop : mobile;
-		const resolvedMobile = mobile.length > 0 ? mobile : desktop;
+	const toArray = (value: string | string[] | undefined): string[] =>
+		Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
+	if (source && typeof source === "object" && !Array.isArray(source)) {
+		const desktop = toArray(source.desktop);
+		const mobile = toArray(source.mobile);
 		return {
-			desktop: resolvedDesktop.map(normalizeAssetPath),
-			mobile: resolvedMobile.map(normalizeAssetPath),
+			desktop: (desktop.length ? desktop : mobile).map(normalizeAssetPath),
+			mobile: (mobile.length ? mobile : desktop).map(normalizeAssetPath),
 		};
 	}
-
-	// 如果是字符串或字符串数组，同时用于桌面端和移动端
-	const allImages = toArray(srcConfig as string | string[]);
-	return { desktop: allImages.map(normalizeAssetPath), mobile: allImages.map(normalizeAssetPath) };
-};
+	const all = toArray(source as string | string[]).map(normalizeAssetPath);
+	return { desktop: all, mobile: all };
+}
 
 const imageSources = await getImageSources();
-const hasDesktopImages = imageSources.desktop.length > 0;
-const hasMobileImages = imageSources.mobile.length > 0;
+if (!imageSources.desktop.length && !imageSources.mobile.length) return null;
 
-if (!hasDesktopImages && !hasMobileImages) return null;
-
-// 轮播配置
-const isCarouselEnabled = config.carousel?.enable && 
-	(imageSources.desktop.length > 1 || imageSources.mobile.length > 1);
-const carouselInterval = config.carousel?.interval || 5;
-
-// 样式配置
+const interval = Math.max(30, Number(config.carousel?.interval) || 300);
+const carouselEnabled =
+	config.carousel?.enable === true &&
+	Math.max(imageSources.desktop.length, imageSources.mobile.length) > 1;
 const position = config.position || "center";
-const zIndex = config.zIndex || -1;
-const opacity = config.opacity || 0.8;
-const blurAmount = config.blur || 0;
-const positionClass = (() => {
-	switch (position) {
-		case "top": return "object-top";
-		case "bottom": return "object-bottom";
-		default: return "object-center";
-	}
-})();
-
-/**
- * 26.11.03（动效整体修缮 · 批 2）：壁纸改「单图 + 双缓冲」
- * ────────────────────────────────────────────────────────────────────
- * 旧实现的浪费：桌面 4 张 + 移动 3 张全部以 <img> 写进 DOM，且都是
- * `absolute inset-0 w-full h-full` ⇒ 它们全部落在视口内，`loading="lazy"`
- * 完全不生效（实测桌面端首屏会请求 5 张：4 桌面 + 移动组那张 eager，≈561KB），
- * 而真正显示的只有 1 张。
- *
- * 现实现：
- *   · 每个设备组只有一个「活动槽 a」与一个「缓冲槽 b」，SSR 都**不写 src**；
- *   · 解析期脚本（首帧前执行）按当前设备 + sessionStorage 里的索引，只给活动槽
- *     写入那一张图的 src ⇒ 首屏壁纸请求从 5 张降为 1 张；
- *   · 切换时把目标图写进缓冲槽，载入完成后 1s 交叉淡化，再释放旧槽的 src
- *     ⇒ 任意时刻内存里最多 2 张图；
- *   · 跨断点 resize 时若另一组的活动槽还空着，才补一次（仍只 1 张）。
- *
- * 对外契约保持不变（WallpaperSwitch.svelte / MainGridLayout 依赖）：
- *   `data-fullscreen-wallpaper`、`data-wp-desktop-count`、`data-wp-mobile-count`、
- *   `window.__mizukiSwitchWallpaper(force?)`、sessionStorage 的
- *   `mizuki_wallpaper_index` / `mizuki_wallpaper_last_switch`、
- *   `wallpaper_desktop_index` / `wallpaper_mobile_index`（非轮播时的随机记忆）。
- */
-
-// 设备组渲染清单（两组都渲染，便于跨断点补位；空组不渲染槽位）
-const renderGroups = [
+const zIndex = config.zIndex ?? -1;
+const opacity = config.opacity ?? 0.28;
+const blur = config.blur ?? 0;
+const positionClass = {
+	top: "object-top",
+	center: "object-center",
+	bottom: "object-bottom",
+}[position];
+const bannerModeEnabled = siteConfig.wallpaperMode.enableBannerMode !== false;
+const crossfadeDuration = scaleMotionDuration(
+	motionSettingsConfig.features.wallpaperCrossfade.duration,
+);
+const kenBurnsDuration = scaleMotionDuration(
+	motionSettingsConfig.features.wallpaperKenBurns.duration,
+);
+const groups = [
 	{
 		key: "desktop",
-		containerClass: "hidden md:block",
-		count: imageSources.desktop.length,
+		sources: imageSources.desktop,
+		className: "hidden md:block",
 	},
 	{
 		key: "mobile",
-		containerClass: "block md:hidden",
-		count: imageSources.mobile.length,
+		sources: imageSources.mobile,
+		className: "block md:hidden",
 	},
 ];
-
-// 图片公共样式：不再常驻 will-change（旧实现每张图都有），交叉淡化交给 transition-opacity
-const slotStyle = `transform: translateZ(0); backface-visibility: hidden;${blurAmount > 0 ? ` filter: blur(${blurAmount}px);` : ""}`;
-const slotClass = `absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${positionClass}`;
 ---
 
-<!-- 26.09.02 [14]：容器暴露 SSR 解析后的桌面/移动组实际图数（含 desktop↔mobile 回退与 imageApi 分支），供“切换壁纸”按钮判断当前设备可用壁纸数 -->
-<div 
+<div
 	class:list={[
-		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none",
-		className
+		"fixed inset-0 w-full h-full overflow-hidden pointer-events-none wallpaper-container",
+		className,
 	]}
-	style={`z-index: ${zIndex}; opacity: ${opacity}; transform: translateZ(0);`}
+	style={`z-index:${zIndex};opacity:${opacity};filter:blur(${blur}px);transform:translateZ(0);--wp-ken-burns-duration:${kenBurnsDuration}ms`}
 	data-fullscreen-wallpaper
 	data-wp-desktop-count={imageSources.desktop.length}
 	data-wp-mobile-count={imageSources.mobile.length}
+	data-wp-carousel={carouselEnabled ? "true" : "false"}
+	data-wp-interval={interval}
 >
-	<script is:inline>
-	// 立即执行脚本：防止闪烁
-	(function() {
-		// 26.08.31修改，内容为：无缓存时默认 fullscreen（与配置一致），避免启动时按 banner 隐藏壁纸造成闪烁
-		const mode = localStorage.getItem('wallpaperMode') || 'fullscreen';
-		if (mode !== 'fullscreen') {
-			document.currentScript.parentElement.style.display = 'none';
-		}
-	})();
+	<script
+		is:inline
+		define:vars={{ bannerModeEnabled }}
+	>
+		(function () {
+			const root = document.currentScript?.parentElement;
+			if (!root) return;
+			let mode = localStorage.getItem("wallpaperMode") || "fullscreen";
+			if (!bannerModeEnabled && mode === "banner") {
+				mode = "fullscreen";
+				localStorage.setItem("wallpaperMode", mode);
+			}
+			if (mode !== "fullscreen") root.style.display = "none";
+		})();
 	</script>
 
-	{renderGroups.map((group) => (
-		group.count > 0 && (
-			<div
-				class={`${group.containerClass} w-full h-full relative`}
-				data-wp-group={group.key}
-			>
-				<img
-					data-wp-slot="a"
-					alt={`${group.key} wallpaper`}
-					class={slotClass}
-					style={slotStyle}
-					decoding="async"
-					fetchpriority="high"
-				/>
-				<img
-					data-wp-slot="b"
-					alt=""
-					aria-hidden="true"
-					class={slotClass}
-					style={`${slotStyle} opacity: 0;`}
-					decoding="async"
-				/>
-			</div>
+	{
+		groups.map((group) =>
+			group.sources.length > 0 ? (
+				<div
+					class={`${group.className} w-full h-full relative`}
+					data-wp-group={group.key}
+					data-wp-active-slot="a"
+				>
+					<img
+						data-wp-slot="a"
+						alt=""
+						aria-hidden="true"
+						class:list={[
+							"wp-ken-burns absolute inset-0 w-full h-full object-cover opacity-100",
+							positionClass,
+						]}
+						decoding="async"
+						fetchpriority="high"
+						data-fg-ken-burns
+					/>
+					<img
+						data-wp-slot="b"
+						alt=""
+						aria-hidden="true"
+						class:list={[
+							"wp-ken-burns absolute inset-0 w-full h-full object-cover opacity-0",
+							positionClass,
+						]}
+						decoding="async"
+						data-fg-ken-burns
+					/>
+				</div>
+			) : null,
 		)
-	))}
+	}
 
-	<!-- 解析期（首帧前）只为「当前设备组」的活动槽写入一张图的 src -->
 	<script
 		is:inline
 		define:vars={{
 			desktopImages: imageSources.desktop,
 			mobileImages: imageSources.mobile,
-			carouselEnabled: isCarouselEnabled,
+			carouselEnabled,
+			interval,
+			bannerModeEnabled,
+			crossfadeDuration,
 		}}
 	>
 		(function () {
-			const root = document.currentScript.parentElement;
-			if (!root) return;
+			const root = document.querySelector("[data-fullscreen-wallpaper]");
+			if (!root || window.__fgWallpaperReady) return;
+			window.__fgWallpaperReady = true;
 
 			const INDEX_KEY = "mizuki_wallpaper_index";
-			const DESKTOP_KEY = "wallpaper_desktop_index";
-			const MOBILE_KEY = "wallpaper_mobile_index";
+			const LAST_SWITCH_KEY = "mizuki_wallpaper_last_switch";
 			const lists = { desktop: desktopImages || [], mobile: mobileImages || [] };
+			const media = window.matchMedia("(min-width: 768px)");
+			let timer = null;
+			let switching = false;
+			let destroyed = false;
+			let jobToken = 0;
 
-			const clampIndex = (value, len) => {
-				const n = Number.isFinite(value) ? value : 0;
-				if (len <= 0) return 0;
-				return n < 0 ? 0 : n >= len ? len - 1 : n;
+			const mode = () => {
+				let value = localStorage.getItem("wallpaperMode") || "fullscreen";
+				if (!bannerModeEnabled && value === "banner") {
+					value = "fullscreen";
+					localStorage.setItem("wallpaperMode", value);
+				}
+				return value;
 			};
+			const groupName = () => (media.matches ? "desktop" : "mobile");
+			const getGroup = (name = groupName()) =>
+				root.querySelector(`[data-wp-group="${name}"]`);
+			const getList = (name = groupName()) => {
+				const primary = lists[name] || [];
+				return primary.length ? primary : lists[name === "desktop" ? "mobile" : "desktop"] || [];
+			};
+			const getSlot = (group, name) =>
+				group?.querySelector(`[data-wp-slot="${name}"]`) || null;
+			const activeName = (group) =>
+				group?.dataset.wpActiveSlot === "b" ? "b" : "a";
+			const currentIndex = (length) => {
+				const saved = Number.parseInt(sessionStorage.getItem(INDEX_KEY) || "0", 10);
+				return Number.isFinite(saved) && saved >= 0 && saved < length ? saved : 0;
+			};
+			const readLastSwitch = () => {
+				const value = Number.parseInt(sessionStorage.getItem(LAST_SWITCH_KEY) || "0", 10);
+				return Number.isFinite(value) ? value : 0;
+			};
+			const clearTimer = () => {
+				if (timer) window.clearTimeout(timer);
+				timer = null;
+				root.dataset.wpAutoplay = "off";
+			};
+			const canAutoplay = () =>
+				carouselEnabled &&
+				mode() === "fullscreen" &&
+				!document.hidden &&
+				document.documentElement.dataset.motionBannerAutoPlay !== "off" &&
+				document.documentElement.dataset.reducedMotion !== "true";
 
-			// 非轮播：随机记住上一条，避免连续两次同一张（沿用旧键位语义）
-			function randomIndex(storageKey, len) {
-				if (len <= 1) return 0;
-				const last = parseInt(sessionStorage.getItem(storageKey) || "-1", 10);
-				let next = Math.floor(Math.random() * len);
-				let guard = 0;
-				while (next === last && guard < 8) {
-					next = Math.floor(Math.random() * len);
-					guard += 1;
-				}
-				sessionStorage.setItem(storageKey, String(next));
-				return next;
+			function activateInitial(group = getGroup()) {
+				if (!group) return;
+				const list = getList(group.dataset.wpGroup);
+				const slot = getSlot(group, activeName(group));
+				if (!slot || !list.length || slot.getAttribute("src")) return;
+				slot.src = list[currentIndex(list.length)];
+				group.dataset.wpActiveSlot = activeName(group);
 			}
 
-			function resolveIndex(groupKey, len) {
-				if (carouselEnabled) {
-					return clampIndex(
-						parseInt(sessionStorage.getItem(INDEX_KEY) || "0", 10),
-						len,
-					);
-				}
-				const key = groupKey === "desktop" ? DESKTOP_KEY : MOBILE_KEY;
-				const saved = sessionStorage.getItem(key);
-				return saved === null ? randomIndex(key, len) : clampIndex(parseInt(saved, 10), len);
+			function waitForImage(image) {
+				return new Promise((resolve) => {
+					if (image.complete && image.naturalWidth > 0) {
+						resolve(true);
+						return;
+					}
+					const done = (ok) => {
+						image.removeEventListener("load", onLoad);
+						image.removeEventListener("error", onError);
+						resolve(ok);
+					};
+					const onLoad = () => done(true);
+					const onError = () => done(false);
+					image.addEventListener("load", onLoad, { once: true });
+					image.addEventListener("error", onError, { once: true });
+				});
 			}
 
-			const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-			const primary = isDesktop ? "desktop" : "mobile";
-			const secondary = isDesktop ? "mobile" : "desktop";
+			function nextPaint() {
+				return new Promise((resolve) => {
+					let settled = false;
+					const finish = () => {
+						if (settled) return;
+						settled = true;
+						resolve();
+					};
+					if (typeof requestAnimationFrame === "function") {
+						requestAnimationFrame(finish);
+					}
+					window.setTimeout(finish, 32);
+				});
+			}
 
-			// 壁纸模式不是「全屏」时容器已被上一段脚本 display:none：
-			// 此时一张都不加载（旧实现照旧挂满 5 张），等切回全屏模式再补。
-			const isVisible = () => root.style.display !== "none";
+			function schedule() {
+				clearTimer();
+				if (destroyed || !canAutoplay()) return;
+				const last = readLastSwitch();
+				const elapsed = last ? Date.now() - last : interval * 1000;
+				const remaining = Math.max(1000, interval * 1000 - elapsed);
+				timer = window.setTimeout(() => {
+					timer = null;
+					root.dataset.wpAutoplay = "switching";
+					void switchWallpaper(false, true);
+				}, remaining);
+				root.dataset.wpAutoplay = "scheduled";
+			}
 
-			// 只填「当前设备组」的活动槽；该组无图时退回另一组（与旧版 desktop↔mobile 回退一致）
-			function activate(groupKey) {
-				const list = lists[groupKey] || [];
-				if (list.length === 0) return false;
-				const group = root.querySelector('[data-wp-group="' + groupKey + '"]');
-				if (!group) return false;
-				const slot = group.querySelector('[data-wp-slot="a"]');
-				if (!slot) return false;
-				if (!slot.getAttribute("src")) {
-					slot.src = list[resolveIndex(groupKey, list.length)];
+			async function switchWallpaper(force = false, automatic = false) {
+				if (!carouselEnabled || switching || destroyed) return false;
+				if (mode() !== "fullscreen") return false;
+				if (!force && !automatic) {
+					const last = readLastSwitch();
+					if (last && Date.now() - last < interval * 1000) return false;
 				}
+
+				const group = getGroup();
+				const list = getList();
+				if (!group || list.length <= 1) return false;
+				const activeSlot = activeName(group);
+				const bufferSlot = activeSlot === "a" ? "b" : "a";
+				const active = getSlot(group, activeSlot);
+				const buffer = getSlot(group, bufferSlot);
+				if (!active || !buffer) return false;
+
+				const current = currentIndex(list.length);
+				let next = (current + 1) % list.length;
+				if (list.length > 2) {
+					next = Math.floor(Math.random() * list.length);
+					if (next === current) next = (next + 1) % list.length;
+				}
+
+				switching = true;
+				const token = ++jobToken;
+				clearTimer();
+				buffer.style.transition = "none";
+				buffer.style.opacity = "0";
+				buffer.style.zIndex = "2";
+				buffer.style.transform = "translateZ(0)";
+				const loadedPromise = waitForImage(buffer);
+				buffer.src = list[next];
+				const loaded = await loadedPromise;
+				if (!loaded || destroyed || token !== jobToken || mode() !== "fullscreen") {
+					buffer.removeAttribute("src");
+					buffer.style.opacity = "0";
+					buffer.style.zIndex = "";
+					switching = false;
+					sessionStorage.setItem(LAST_SWITCH_KEY, String(Date.now()));
+					schedule();
+					return false;
+				}
+
+				const fadeMs =
+					document.documentElement.dataset.motionWallpaperCrossfade === "off" ||
+					document.documentElement.dataset.reducedMotion === "true"
+						? 0
+						: crossfadeDuration;
+				await nextPaint();
+				buffer.style.transition = `opacity ${fadeMs}ms ease-in-out`;
+				active.style.transition = `opacity ${fadeMs}ms ease-in-out`;
+				buffer.style.opacity = "1";
+				active.style.opacity = "0";
+
+				await new Promise((resolve) =>
+					window.setTimeout(resolve, fadeMs + 40),
+				);
+				if (destroyed || token !== jobToken) return false;
+				active.removeAttribute("src");
+				active.style.transition = "";
+				buffer.style.transition = "";
+				active.style.opacity = "1";
+				active.style.zIndex = "";
+				buffer.style.zIndex = "";
+				group.dataset.wpActiveSlot = bufferSlot;
+				sessionStorage.setItem(INDEX_KEY, String(next));
+				sessionStorage.setItem(LAST_SWITCH_KEY, String(Date.now()));
+				switching = false;
+				schedule();
 				return true;
 			}
 
-			if (isVisible() && !activate(primary)) activate(secondary);
-			// 当前可见槽位记在 DOM 上：swup 换页可能重放脚本，闭包状态会丢，DOM 不会
-			root.dataset.wpActiveSlot = "a";
+			window.__mizukiSwitchWallpaper = (force = true) =>
+				void switchWallpaper(force, false);
+			window.__fgmizukiWallpaperStatus = () => ({
+				carouselEnabled,
+				interval,
+				hidden: document.hidden,
+				reducedMotion: document.documentElement.dataset.reducedMotion,
+				autoPlayPreference:
+					document.documentElement.dataset.motionBannerAutoPlay,
+				mode: mode(),
+				canAutoplay: canAutoplay(),
+				destroyed,
+				switching,
+				timerActive: timer !== null,
+			});
 
-			// 跨断点：另一组首次可见时才补一次图（仍只 1 张，且已有 src 不重复请求）
-			const mq = window.matchMedia("(min-width: 768px)");
-			const sync = () => {
-				if (!isVisible()) return;
-				const key = mq.matches ? "desktop" : "mobile";
-				if (!activate(key)) activate(mq.matches ? "mobile" : "desktop");
-			};
-			if (typeof mq.addEventListener === "function") {
-				mq.addEventListener("change", sync);
-			} else if (typeof mq.addListener === "function") {
-				mq.addListener(sync);
+			function syncGroup() {
+				const group = getGroup();
+				if (!group) return;
+				activateInitial(group);
+				schedule();
 			}
 
-			// 壁纸模式在 banner / 全屏之间切换时（见 WallpaperSwitch.svelte 派发的事件）补图
-			window.addEventListener("wallpaper-mode-change", sync);
+			function syncMode() {
+				if (mode() === "fullscreen") {
+					activateInitial();
+					schedule();
+				} else {
+					clearTimer();
+				}
+			}
+
+			function onVisibility() {
+				if (document.hidden) clearTimer();
+				else schedule();
+			}
+
+			function destroy() {
+				destroyed = true;
+				jobToken += 1;
+				clearTimer();
+				window.removeEventListener("resize", syncGroup);
+				window.removeEventListener("wallpaper-mode-change", syncMode);
+				window.removeEventListener("fgmagi:settings-change", syncMode);
+				document.removeEventListener("visibilitychange", onVisibility);
+			}
+
+			activateInitial();
+			if (!readLastSwitch()) {
+				sessionStorage.setItem(LAST_SWITCH_KEY, String(Date.now()));
+			}
+			if (media.addEventListener) media.addEventListener("change", syncGroup);
+			window.addEventListener("resize", syncGroup);
+			window.addEventListener("wallpaper-mode-change", syncMode);
+			window.addEventListener("fgmagi:settings-change", syncMode);
+			document.addEventListener("visibilitychange", onVisibility);
+			window.addEventListener("pagehide", destroy, { once: true });
+			schedule();
 		})();
 	</script>
-
-	{isCarouselEnabled && (
-		<script
-			is:inline
-			define:vars={{
-				carouselInterval,
-				carouselEnabled: config.carousel?.enable,
-				desktopImages: imageSources.desktop,
-				mobileImages: imageSources.mobile,
-			}}
-		>
-			/**
-			 * 26.09.01 [3]：移除 setInterval 定时自动轮播，改为暴露 window.__mizukiSwitchWallpaper 手动切换接口
-			 * 由 MainGridLayout 的 swup 钩子在「页面切换且目标页为主页」时调用：随机换图（>2 张时保证前后不同）、
-			 * 距上次切换不足 carousel.interval 秒则跳过；carousel.enable 仍为总开关（false 时直接返回）
-			 * 26.09.02 [14]：新增可选参数 force——true 时跳过最小间隔检查（“切换壁纸”按钮手动触发），
-			 * 仍执行随机换图/渐变并写回 mizuki_wallpaper_index/last_switch；swup 自动触发不传 force，保持原间隔门控
-			 * 26.11.03：实现改为「双缓冲槽交叉淡化」——只把目标图写进当前不可见的缓冲槽，
-			 * 载入完成后淡化并把旧槽的 src 释放，任意时刻最多 2 张图在内存（旧版一次性挂满全部图）。
-			 */
-			function initFullscreenWallpaperSwitch() {
-				const root = document.querySelector('[data-fullscreen-wallpaper]');
-				if (!root) return;
-
-				const INDEX_KEY = 'mizuki_wallpaper_index';
-				const LAST_SWITCH_KEY = 'mizuki_wallpaper_last_switch';
-				const FADE_MS = 1050;
-
-				function currentGroup() {
-					const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-					return {
-						list: isDesktop ? desktopImages : mobileImages,
-						el: root.querySelector(
-							isDesktop ? '[data-wp-group="desktop"]' : '[data-wp-group="mobile"]',
-						),
-					};
-				}
-
-				// 手动切换接口：页面切至主页时由 swup 钩子触发；force=true 由“切换壁纸”按钮触发（绕过间隔门控）
-				window.__mizukiSwitchWallpaper = function (force) {
-					// 总开关：enable=false 时完全不切换
-					if (!carouselEnabled) return;
-					if (!root || !document.body.contains(root)) return;
-
-					// 最小切换间隔检查（首次/无记录时允许切换）
-					const lastSwitch = parseInt(sessionStorage.getItem(LAST_SWITCH_KEY) || '0', 10);
-					// 26.09.02 [14]：force=true 时跳过间隔检查（切换后仍写回 last_switch，重新计时）
-					if (!force && lastSwitch && Date.now() - lastSwitch < carouselInterval * 1000) return;
-
-					const group = currentGroup();
-					const list = group.list || [];
-					// 长度 1 或空则忽略
-					if (!group.el || list.length <= 1) return;
-
-					const savedIndex = parseInt(sessionStorage.getItem(INDEX_KEY) || '0', 10);
-					const currentIndex = savedIndex >= 0 && savedIndex < list.length ? savedIndex : 0;
-
-					let newIndex;
-					if (list.length === 2) {
-						// 两张图直接互切，保证必定换图
-						newIndex = 1 - currentIndex;
-					} else {
-						// >2 张：循环随机直到与当前索引不同，保证前后两次不选同一张
-						let guard = 0;
-						do {
-							newIndex = Math.floor(Math.random() * list.length);
-							guard += 1;
-						} while (newIndex === currentIndex && guard < 12);
-					}
-
-					const activeSlot = root.dataset.wpActiveSlot === 'b' ? 'b' : 'a';
-					const activeEl = group.el.querySelector('[data-wp-slot="' + activeSlot + '"]');
-					const bufferSlot = activeSlot === 'a' ? 'b' : 'a';
-					const bufferEl = group.el.querySelector('[data-wp-slot="' + bufferSlot + '"]');
-					if (!activeEl || !bufferEl) return;
-
-					// 缓冲槽先压到上层并透明，等新图解码完成再淡化 ⇒ 不会闪白/闪旧图
-					bufferEl.style.zIndex = '1';
-					bufferEl.style.opacity = '0';
-					bufferEl.onload = function () {
-						bufferEl.onload = null;
-						bufferEl.style.opacity = '1';
-						activeEl.style.opacity = '0';
-						window.setTimeout(function () {
-							// 交棒：缓冲槽成为可见层，旧层释放图片资源后待命
-							activeEl.removeAttribute('src');
-							activeEl.style.zIndex = '';
-							activeEl.style.opacity = '1';
-							bufferEl.style.zIndex = '';
-							root.dataset.wpActiveSlot = bufferSlot;
-						}, FADE_MS);
-					};
-					bufferEl.onerror = function () {
-						bufferEl.onload = null;
-						bufferEl.onerror = null;
-						bufferEl.removeAttribute('src');
-						bufferEl.style.zIndex = '';
-						bufferEl.style.opacity = '0';
-					};
-					bufferEl.src = list[newIndex];
-
-					sessionStorage.setItem(INDEX_KEY, newIndex.toString());
-					sessionStorage.setItem(LAST_SWITCH_KEY, Date.now().toString());
-				};
-			}
-
-			if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', initFullscreenWallpaperSwitch);
-			} else {
-				initFullscreenWallpaperSwitch();
-			}
-		</script>
-	)}
 </div>
+
+<style>
+	.wp-ken-burns {
+		animation: wallpaper-ken-burns var(--wp-ken-burns-duration, 18s) ease-out alternate infinite;
+		transform-origin: center;
+		backface-visibility: hidden;
+	}
+	@keyframes wallpaper-ken-burns {
+		from { transform: scale(1.01) translateZ(0); }
+		to { transform: scale(1.045) translateZ(0); }
+	}
+	html[data-motion-wallpaper-ken-burns="off"] .wp-ken-burns {
+		animation: none;
+	}
+	html[data-reduced-motion="true"] .wp-ken-burns {
+		animation: none;
+	}
+</style>

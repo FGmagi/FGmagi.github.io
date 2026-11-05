@@ -12,7 +12,6 @@ enum I18nKey {
 	navOthers = "navOthers",
 
 	tags = "tags",
-	// 26.09.02 [13]：标签筛选卡片标题
 	tagFilter = "tagFilter",
 	categories = "categories",
 	recentPosts = "recentPosts",
@@ -54,7 +53,6 @@ enum I18nKey {
 	friendsFilterAll = "friendsFilterAll",
 	friendsNoResults = "friendsNoResults",
 	friendsVisit = "friendsVisit",
-	// 26.11.03：友链双站点按钮文案（main=左侧/第一个，backup=右侧/第二个）
 	friendsVisitMain = "friendsVisitMain",
 	friendsVisitBackup = "friendsVisitBackup",
 	friendsCopyLink = "friendsCopyLink",
@@ -277,7 +275,6 @@ enum I18nKey {
 	wallpaperBanner = "wallpaperBanner",
 	wallpaperFullscreen = "wallpaperFullscreen",
 	wallpaperNone = "wallpaperNone",
-	// 26.09.02 [14]：新增“切换壁纸”按钮文案键
 	wallpaperCycle = "wallpaperCycle",
 
 	// 站点统计
@@ -332,8 +329,6 @@ enum I18nKey {
 	switchToGridMode = "switchToGridMode",
 	switchToListMode = "switchToListMode",
 
-	// 26.08.30修改，内容为：新增布局/主题模式显示文案 key（listMode/gridMode/dayMode/nightMode）与简洁模式 key（simpleMode/normalMode）
-	// 布局/主题模式显示
 	listMode = "listMode",
 	gridMode = "gridMode",
 	dayMode = "dayMode",

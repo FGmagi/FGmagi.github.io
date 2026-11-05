@@ -1,7 +1,4 @@
 ---
-// 26.09.02 [13]：标签筛选卡片——接管首页左下角空位。SSR：读取 getTagList()（10 已保证不含 active:false），
-// 按字母序渲染标签 chip（复用 btn-regular 标签 chip 视觉；showCount 开启时同 chip 显示"标签名：N"）。
-// 客户端：点击 chip 激活/取消（OR 交集 DOM 过滤当前页卡片），切页/原地跳回主页/翻页自动复位（全局钩子只绑一次）。
 import { tagFilterConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
@@ -58,18 +55,15 @@ const style = Astro.props.style;
 					);
 				})
 			}
-			{/* 26.09.02 [13]：末行占位——flex-grow 吸走最后一行剩余空间，使 space-between 的末行视觉靠左 */}
 			<span class="tag-filter-filler" aria-hidden="true"></span>
 		</div>
 	</WidgetLayout>
 )}
 
 <style>
-	/* 26.11.05：标签筛选改为「逐卡」动画（下滑淡出 / 上滑淡入），
-	   由 motion.css 的 .card-filter-anim / .card-filter-hidden 提供表现，
-	   这里不再对 #post-list-container 整体做淡入淡出（避免与逐卡动画叠成两次）。 */
 
-	/* 26.09.02 [13]：行内拉伸（space-between 占满行宽）+ 末行占位（filler）实现最后一行靠左；字母序由 getTagList 保证 */
+
+
 	.tag-filter-list {
 		display: flex;
 		flex-wrap: wrap;
@@ -89,7 +83,7 @@ const style = Astro.props.style;
 		visibility: hidden;
 		pointer-events: none;
 	}
-	/* 26.09.02 [13]：激活高亮——primary 底 + 白字（随主题），再次点击取消恢复 btn-regular */
+
 	.tag-filter-chip.active,
 	.tag-filter-chip[aria-pressed="true"] {
 		background: var(--primary);
@@ -103,26 +97,39 @@ const style = Astro.props.style;
 </style>
 
 <script is:inline>
-	// 26.09.02 [13]：标签筛选卡客户端逻辑——chip 点击激活/取消、OR 交集 DOM 过滤当前页卡片、导航复位。
-	// 侧边栏随 swup 每次注入新 DOM（内联脚本随注入执行），chip 直接绑定在新 DOM 上；全局钩子以 __tagFilterBound 防重复累加。
 	(function () {
 		var root = document.querySelector('[data-tag-filter-root]');
 		if (!root) return;
 
-		// 26.09.02 [13]：激活集合挂在 window 级（__tagFilterActive），跨 swup 注入期间保存、复位时清空
 		function getActiveTags() {
 			if (!window.__tagFilterActive) window.__tagFilterActive = new Set();
 			return window.__tagFilterActive;
 		}
 
-		// 26.09.02 [13]：应用过滤——激活集为空恢复全量；卡片 data-tags 为 trim+小写、空格分隔的标签列表；
-		// 命中任一激活标签即显示（OR）；仅操作带 data-tags 的真实卡，空白占位卡/分隔线不受影响
-		// animate=false：不做逐卡动画（复位/切页时用，避免与页面切换的入场动画叠在一起）
 		function applyTagFilter(animate) {
 			var container = document.getElementById('post-list-container');
 			if (!container) return;
 			var active = getActiveTags();
 			var cards = container.querySelectorAll('[data-tags]');
+			var pagination = document.querySelector('[data-page-pagination]');
+			var desired = new Map();
+			if (animate === false && active.size === 0) {
+				cards.forEach(function (card) {
+					card.classList.remove(
+						'effect2-card',
+						'effect2-hidden',
+						'effect2-hiding',
+						'effect2-entering',
+						'effect2-revealing',
+						'effect2-moving',
+					);
+					var next = card.nextElementSibling;
+					if (next && next.classList.contains('post-card-divider')) {
+						next.style.display = '';
+					}
+				});
+				return;
+			}
 			for (var i = 0; i < cards.length; i++) {
 				var card = cards[i];
 				var tags = (card.getAttribute('data-tags') || '').split(/\s+/);
@@ -135,26 +142,65 @@ const style = Astro.props.style;
 						}
 					}
 				}
-				// 26.11.05：逐卡显隐统一交给 src/scripts/card-filter-visibility.js（window.CardFilter），
-				// 与 /friends/ 的过滤共用同一份实现；脚本尚未执行时退化为即时显隐。
-				var next = card.nextElementSibling;
-				var divider =
-					next && next.classList.contains('post-card-divider')
-						? next
-						: null;
-				if (window.CardFilter) {
-					window.CardFilter.apply(card, visible, {
-						divider: divider,
+				desired.set(card, visible);
+			}
+
+			if (window.CardFilter) {
+				window.CardFilter.applyGroup(
+					cards,
+					function (card) {
+						return desired.get(card) === true;
+					},
+					{
+						group: container,
+						layoutContainer: container,
+						moveAlong: pagination,
 						animate: animate !== false,
-					});
-				} else {
-					card.style.display = visible ? '' : 'none';
-					if (divider) divider.style.display = visible ? '' : 'none';
-				}
+						measureLayout: function () {
+							var changedDividers = [];
+							cards.forEach(function (card) {
+								var next = card.nextElementSibling;
+								if (!next || !next.classList.contains('post-card-divider')) {
+									return;
+								}
+								changedDividers.push([next, next.style.display]);
+								next.style.display = desired.get(card) ? '' : 'none';
+							});
+							return function () {
+								changedDividers.forEach(function (entry) {
+									entry[0].style.display = entry[1];
+								});
+							};
+						},
+						afterHide: function (hiddenCards) {
+							hiddenCards.forEach(function (card) {
+								var next = card.nextElementSibling;
+								if (next && next.classList.contains('post-card-divider')) {
+									next.style.display = 'none';
+								}
+							});
+						},
+						afterReveal: function (shownCards) {
+							shownCards.forEach(function (card) {
+								var next = card.nextElementSibling;
+								if (next && next.classList.contains('post-card-divider')) {
+									next.style.display = '';
+								}
+							});
+						},
+					},
+				);
+			} else {
+				cards.forEach(function (card) {
+					card.style.display = desired.get(card) ? '' : 'none';
+					var next = card.nextElementSibling;
+					if (next && next.classList.contains('post-card-divider')) {
+						next.style.display = desired.get(card) ? '' : 'none';
+					}
+				});
 			}
 		}
 
-		// 26.09.02 [13]：清空激活态并恢复全量（切页/原地跳回主页/翻页时调用）
 		function clearTagFilter() {
 			getActiveTags().clear();
 			document
@@ -163,11 +209,19 @@ const style = Astro.props.style;
 					chip.classList.remove('active');
 					chip.setAttribute('aria-pressed', 'false');
 				});
+			var container = document.getElementById('post-list-container');
+			if (
+				!container ||
+				document.body.classList.contains('swup-leaving') ||
+				document.documentElement.classList.contains('is-animating')
+			) {
+				// 只清理筛选状态，不改即将离场的主页 DOM，避免切页瞬间全部文章闪回。
+				return;
+			}
 			// 复位不做逐卡动画：切页/跳转本身已有入场动画，叠在一起会显得拖沓
 			applyTagFilter(false);
 		}
 
-		// 26.09.02 [13]：点击未激活 chip 加入激活集（高亮）并过滤；点击已激活 chip 取消激活并恢复
 		function bindTagFilterChips() {
 			document
 				.querySelectorAll('[data-tag-filter-root] .tag-filter-chip')
@@ -185,14 +239,12 @@ const style = Astro.props.style;
 							chip.setAttribute('aria-pressed', 'true');
 							active.add(tag);
 						}
-						// 26.09.14：增删标签都走渐变（中间卡片淡出→改显隐→淡入）
 						applyTagFilter(true);
 					});
 				});
 		}
 		bindTagFilterChips();
 
-		// 26.09.02 [13]：末行占位同步——filler 若因整行恰好填满而落到独立行则隐藏，避免产生空行；resize 时重算
 		function syncTagFilterFiller() {
 			var list = root.querySelectorAll('.tag-filter-chip');
 			var filler = root.querySelector('.tag-filter-filler');
@@ -220,9 +272,6 @@ const style = Astro.props.style;
 		}
 		scheduleFillerSync();
 
-		// 26.09.02 [13]：全局复位钩子只绑一次（__tagFilterBound）——
-		// ①Layout 对同路径链接原地淡出刷新（原地跳回主页）时清空；
-		// ②swup content:replace / page:view / popstate 统一复位（切其它页、回主页、/page/N/ 翻页均覆盖）
 		if (!window.__tagFilterBound) {
 			window.__tagFilterBound = true;
 
@@ -259,7 +308,6 @@ const style = Astro.props.style;
 				requestAnimationFrame(syncTagFilterFiller);
 			});
 
-			// 26.09.02 [13]：swup 模块晚于本脚本初始化时重试绑定 content:replace 复位
 			var swupTries = 0;
 			function tryBindSwupClear() {
 				if (window.swup && window.swup.hooks) {

@@ -1,24 +1,3 @@
-/**
- * 导航栏 / 主卡片「重合交界描边」。
- *
- * 需求背景：下拉后，导航栏与主卡片（文章卡片、友链卡片、图片卡片等）宽度很多时候完全一致，
- * 两者叠在一起时分不清边界。这里在**导航栏下边界**处、**只对真正被导航栏压住的那段卡片宽度**
- * 画一条主题色横线（带阴影，观感是横线而不是圆角矩形的下边线），
- * 重合出现/消失都走 opacity 渐变。
- *
- * 26.11.03（动效整体修缮 · 批 3）性能重写：
- *   旧实现把「找卡片」放在每一帧滚动里做 —— 12 次 elementFromPoint + 每个命中点向上遍历
- *   祖先、逐层 getComputedStyle（读 border-radius / background-color），单帧几十次样式计算，
- *   这是下拉掉帧的主要来源之一。
- *   现在拆成两段：
- *     · refreshGeometry()：只在 resize / swup 换页 / 目录重排 / 壁纸与简洁模式变化 / load
- *       时跑一次「找卡片」，并把卡片几何换算成**文档坐标**缓存起来；
- *     · paint()：每帧只读一次 window.scrollY 与导航栏底边，纯算术判断遮挡，不碰
- *       getComputedStyle / elementFromPoint。
- *
- * 表现完全不变：采样点横跨导航栏内宽（两端各留 4px）、命中后取「最宽且不超过导航栏宽、
- * 有可见背景且带圆角」的那层当卡片，横向区间合并后仅在重合部分画线。
- */
 
 // ⚠ 必须用 #navbar 自身：它的第一个子 div 是「用于入场动画」的 absolute 辅助层
 //   （top:-2rem/h:2rem），量它会得到 bottom=0，描边永远不会出现。
@@ -116,12 +95,12 @@ function currentScrollY() {
  * 重算缓存（事件驱动，不是每帧）：把所有布局读取集中在这里。
  */
 function refreshGeometry() {
-	// 切页渐变期间（预渲染帧 / 渐显中）#main-grid 是 pointer-events:none，
+	// 切页渐变期间（淡出 / 渐显中）#main-grid 是 pointer-events:none，
 	// elementFromPoint 采不到卡片。此时**保持旧缓存不动**，等重试/后续事件再量，
 	// 否则每来一次事件就把缓存清空、重试循环又从头跑，白烧几十次样式计算。
 	if (
-		document.body.classList.contains("page-prerender") ||
-		document.body.classList.contains("page-entering")
+		document.body.classList.contains("page-entering") ||
+		document.body.classList.contains("swup-leaving")
 	) {
 		schedulePaint();
 		return;
@@ -243,12 +222,6 @@ function schedulePaint() {
 	rafId = window.requestAnimationFrame(paint);
 }
 
-/**
- * 首载重试（26.11.03）：颜色/几何都要靠 elementFromPoint 采样，而首载的预渲染门
- * （body.page-prerender / page-entering）期间 #main-grid 是 pointer-events:none，
- * 此时 elementFromPoint 采不到卡片 ⇒ 缓存为空。旧实现每帧都在滚动时重算，所以会自愈；
- * 现在改为「没采到就有限次重试」，一旦采到立即停止（不常驻轮询）。
- */
 let retryTimer = 0;
 let retryCount = 0;
 function retryUntilReady() {

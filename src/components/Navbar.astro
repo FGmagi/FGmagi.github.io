@@ -1,11 +1,11 @@
 ---
 import { Icon } from "astro-icon/components";
+import { navBarConfig } from "../config/navigation";
 import {
-	navBarConfig,
 	navbarIconFallback,
 	navbarLogoFallback,
 	siteConfig,
-} from "../config";
+} from "../config/site";
 import { LinkPresets } from "../constants/link-presets";
 import { LinkPreset, type NavBarLink } from "../types/config";
 import { url } from "../utils/url-utils";
@@ -33,13 +33,12 @@ let links: NavBarLink[] = navBarConfig.links.map(
 	},
 );
 
-// 26.08.30修改，内容为：导航栏布局重构——左侧仅保留主页（logo + "主页"按钮），其余链接（全部/目录等）移入右侧功能区
 // 主页由左侧 logo 与"主页"按钮表示；其余（全部、目录）放入右侧窗体
 const [homeLink, ...restLinks] = links;
 ---
 <div id="navbar" class="z-50 onload-animation" data-transparent-mode={navbarTransparentMode} data-is-home={isHomePage}>
     <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
-    <div class:list={[className, "!overflow-visible max-w-[var(--page-width)] h-[3.6rem] mx-auto flex items-center px-4"]}>
+    <div class:list={[className, "!overflow-visible max-w-[var(--layout-page-width)] h-[3.6rem] mx-auto flex items-center px-4"]}>
         <!-- 区域1（左）：主页，维持原位 -->
         <div class="flex items-center shrink-0 space-x-1">
         <a href={url('/')} class="btn-plain scale-animation rounded-lg h-[2.5rem] px-4 font-bold active:scale-95">
@@ -47,7 +46,6 @@ const [homeLink, ...restLinks] = links;
 				{/* 使用navbarTitle配置或默认配置 */}
                 {siteConfig.navbarTitle ? (
                     siteConfig.navbarTitle.mode === "logo" ? (
-                        // 26.11.03：首屏可见的 Logo 不再 lazy（lazy 只会让它更晚出现），
                         // 并显式给出 width/height 撑住版位，避免图片到达时的横向抖动。
                         <img src={url(siteConfig.navbarTitle.logo || navbarLogoFallback)} alt={siteConfig.navbarTitle.text} width="109" height="36" class="h-[2.25rem] max-w-full object-contain" loading="eager" decoding="async" fetchpriority="high" />
                     ) : (
@@ -80,9 +78,6 @@ const [homeLink, ...restLinks] = links;
             </button>
         )}
         <WallpaperSwitch client:only="svelte"></WallpaperSwitch>
-        <!-- 26.09.14：窄屏目录入口（#mobile-toc-switch，仅 html[data-toc-layout="narrow"] 显示）
-             放到「模式 / 切换壁纸」右侧；整个组件只是浮窗（#mobile-toc-panel 是相对 #navbar-wrapper
-             定位的 absolute 浮层），在行内的先后顺序不影响浮窗位置。 -->
         {siteConfig.toc.enable && <MobileTOC client:only="svelte"></MobileTOC>}
         <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
             <Icon name="material-symbols:unfold-more" class="text-[1.25rem]"></Icon>
@@ -266,16 +261,6 @@ if (document.readyState === 'loading') {
 </script>
 
 {import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
-/**
- * 26.11.03（动效整体修缮 · 批 2）：Pagefind 改为「按需加载」
- * ────────────────────────────────────────────────────────────────────
- * 旧行为：DOMContentLoaded 就对 /pagefind/pagefind.js 发 HEAD 再动态 import，
- * 即便访问者从不搜索也要付一次索引/wasm 的下载；而 CI 用的是 `pnpm astro build`
- * （不跑 pagefind 生成），线上 dist 里根本没有该目录 ⇒ 每页白花一次 404。
- * 现在：只在「搜索入口被使用」时由 window.__ensurePagefind() 触发，
- * 对外契约（pagefindready / pagefindloaderror 事件、window.pagefind 桩）保持不变，
- * Search.svelte 在悬停/聚焦/打开面板时调用本函数并等待其完成。
- */
 if (!window.__ensurePagefind) {
     window.__ensurePagefind = (function () {
         let pending = null;

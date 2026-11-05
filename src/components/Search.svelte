@@ -2,6 +2,7 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
+import "@utils/iconify-local";
 import { navigateToPage } from "@utils/navigation-utils";
 import { url } from "@utils/url-utils";
 import { onMount, onDestroy } from "svelte";
@@ -11,6 +12,8 @@ let keywordDesktop = $state("");
 let keywordMobile = $state("");
 let result: SearchResult[] = $state([]);
 let pagefindLoaded = false;
+let searched = $state(false);
+let searchUnavailable = $state(false);
 let initialized = $state(false);
 let isDesktopSearchExpanded = $state(false);
 let debounceTimer: NodeJS.Timeout;
@@ -36,7 +39,6 @@ const fakeResult: SearchResult[] = [
 	},
 ];
 
-// 26.11.03：Pagefind 改为按需加载（见 Navbar.astro 的 window.__ensurePagefind）。
 // 这里负责「首次搜索意图 → 触发加载 → 初始化」，不再依赖页面加载时就绪。
 const initializeSearch = () => {
 	initialized = true;
@@ -44,6 +46,7 @@ const initializeSearch = () => {
 		typeof window !== "undefined" &&
 		!!window.pagefind &&
 		typeof window.pagefind.search === "function";
+	searchUnavailable = initialized && !pagefindLoaded;
 };
 
 let ensureStarted = false;
@@ -120,6 +123,8 @@ const closeSearchPanel = (): void => {
 	keywordDesktop = "";
 	keywordMobile = "";
 	result = [];
+	searched = false;
+	searchUnavailable = false;
 };
 
 const handleResultClick = (event: Event, url: string): void => {
@@ -151,11 +156,15 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 			console.error("Pagefind is not available in production environment.");
 		}
 		result = searchResults;
-		setPanelVisibility(result.length > 0, isDesktop);
+		searched = true;
+		searchUnavailable = !(import.meta.env.PROD && pagefindLoaded);
+		setPanelVisibility(result.length > 0 || searched, isDesktop);
 	} catch (error) {
 		console.error("Search error:", error);
 		result = [];
-		setPanelVisibility(false, isDesktop);
+		searched = true;
+		searchUnavailable = true;
+		setPanelVisibility(true, isDesktop);
 	}
 };
 
@@ -166,7 +175,6 @@ onMount(() => {
 		);
 		initializeSearch();
 	} else {
-		// 26.11.03：加载由 ensureSearchEngine 按需触发，这里只负责接事件
 		// （旧版在这里挂了一个 2s 兜底定时器，会把「尚未加载」误判成「加载失败」）。
 		document.addEventListener("pagefindready", () => {
 			initializeSearch();
@@ -176,6 +184,7 @@ onMount(() => {
 				"Pagefind load error event received. Search functionality will be limited.",
 			);
 			initializeSearch(); // Initialize with pagefindLoaded as false
+			searchUnavailable = true;
 		});
 	}
 
@@ -285,6 +294,16 @@ onDestroy(() => {
         >
     </div>
     <!-- search results -->
+    {#if searched && result.length === 0}
+        <div class="px-3 py-4 text-sm text-50">
+            {searchUnavailable
+                ? "搜索索引暂不可用，请使用归档页搜索。"
+                : "没有找到相关结果。"}
+            <a class="block mt-2 font-bold text-[var(--primary)]" href={url("/archive/")} onclick={(event) => handleResultClick(event, url("/archive/"))}>
+                前往归档搜索
+            </a>
+        </div>
+    {/if}
     {#each result as item}
         <a href={item.url}
            onclick={(e) => handleResultClick(e, item.url)}

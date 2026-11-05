@@ -31,9 +31,6 @@ async function getRawSortedPosts() {
 		// 否则按发布日期排序
 		const dateA = new Date(a.data.published);
 		const dateB = new Date(b.data.published);
-		// 26.09.15：日期只写到「天」时很多文章时间戳完全相同，
-		// 旧写法（相等也返回 1）会让同日期文章的先后顺序不稳定。
-		// 现在：先按时间倒序，完全相同再按文章 id 字典序兜底 ⇒ 顺序确定、可复现。
 		const diff = dateB.getTime() - dateA.getTime();
 		if (diff !== 0) return diff;
 		return String(a.id).localeCompare(String(b.id));
@@ -41,7 +38,6 @@ async function getRawSortedPosts() {
 	return sorted;
 }
 
-// 26.08.30修改，内容为：上一篇/下一篇链接只在 active=true 的文章之间连接，active=false 的文章不参与
 export async function getSortedPosts() {
 	const sorted = await getRawSortedPosts();
 
@@ -59,8 +55,6 @@ export async function getSortedPosts() {
 	return sorted;
 }
 
-// 26.09.02 [10、H-01]：新增 getActiveSortedPosts——供站点统计等对外计数取数（保留 body），过滤 active:false；
-// getSortedPosts 保持全量（含 active:false）供详情页（posts/[...slug].astro、[permalink].astro）生成 inactive 详情路径，两者职责分离
 export async function getActiveSortedPosts(): Promise<CollectionEntry<"posts">[]> {
 	const sorted = await getRawSortedPosts();
 	return sorted.filter((post) => post.data.active !== false);
@@ -76,8 +70,6 @@ export async function getSortedPostsList(): Promise<PostForList[]> {
 	// 初始化文章 ID 映射（用于 permalink 功能）
 	initPostIdMap(sortedFullPosts);
 
-	// 26.09.02 [10、H-01]：归档/列表数据源过滤 active:false（draft 语义已由 getRawSortedPosts 处理）；
-	// id 映射仍传入全量（含 inactive），维持 %post_id% 既有语义不变
 	const activeSortedFullPosts = sortedFullPosts.filter(
 		(post) => post.data.active !== false,
 	);
@@ -97,7 +89,6 @@ export type Tag = {
 };
 
 export async function getTagList(): Promise<Tag[]> {
-	// 26.09.02 [10、H-01]：标签计数数据源过滤条件增加 active !== false（inactive 不参与计数；draft 语义保留）
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
 		const draftOk = import.meta.env.PROD ? data.draft !== true : true;
 		return draftOk && data.active !== false;
@@ -126,7 +117,6 @@ export type Category = {
 };
 
 export async function getCategoryList(): Promise<Category[]> {
-	// 26.09.02 [10、H-01]：分类计数数据源过滤条件增加 active !== false（inactive 不参与计数；draft 语义保留）
 	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
 		const draftOk = import.meta.env.PROD ? data.draft !== true : true;
 		return draftOk && data.active !== false;

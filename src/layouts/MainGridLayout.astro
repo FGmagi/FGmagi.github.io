@@ -8,10 +8,8 @@ import SideBar from "@components/widget/SideBar.astro";
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import FullscreenWallpaper from "../components/misc/FullscreenWallpaper.astro";
-import IconifyLoader from "../components/misc/IconifyLoader.astro";
-import ImageWrapper from "../components/misc/ImageWrapper.astro";
-import TypewriterText from "../components/TypewriterText.astro";
 import TOC from "../components/widget/TOC.astro";
+import Banner from "../components/layout/Banner.astro";
 import {
 	fullscreenWallpaperConfig,
 	siteConfig,
@@ -38,7 +36,6 @@ interface Props {
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
 	headings?: MarkdownHeading[];
-	// 26.08.30修改，内容为：新增 fill 属性，主页列表页填充视口高度（不足8篇时分页图标贴视觉底部）
 	fill?: boolean;
 }
 
@@ -57,10 +54,6 @@ interface Props {
 // 	);
 // };
 
-/**
- * 26.09.01 [2]：防御性归一化图片路径
- * 去除配置中误写的 public/ 前缀，并确保本地路径以 / 开头；http(s) 远程地址原样返回；兼容 string 与数组
- */
 const normalizeAssetPath = (src: string | string[]): string | string[] => {
 	const normalizeOne = (s: string): string => {
 		if (!s) return s;
@@ -109,7 +102,6 @@ const getBannerImages = async () => {
 		};
 	}
 	// 如果是字符串或字符串数组，同时用于桌面端和移动端
-	// 26.09.02 [7]：bannerSrc 在 imageApi 分支被重新赋值，TS 无法收窄掉对象分支，显式断言修复 astro check 类型错误（行为不变）
 	const flatBannerSrc = bannerSrc as string | string[];
 	return {
 		desktop: normalizeAssetPath(flatBannerSrc),
@@ -119,9 +111,8 @@ const getBannerImages = async () => {
 
 const bannerImages = await getBannerImages();
 
-// 26.09.01 [3]：默认 fullscreen 时强制横幅桌面图源为空，从源头杜绝 wideBanner.desktop 首帧渲染/闪现（F-01）
-const isFullscreenDefault = siteConfig.wallpaperMode.defaultMode === "fullscreen";
-const bannerDesktopImages = isFullscreenDefault ? [] : bannerImages.desktop;
+// Banner.astro only writes an image src after the active mode is `banner`.
+const bannerDesktopImages = bannerImages.desktop;
 
 const {
 	title,
@@ -138,24 +129,24 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 
 // 检查是否为首页
 const isHomePage = Astro.url.pathname === "/" || Astro.url.pathname === "";
-const showHomeText = siteConfig.banner.homeText?.enable && isHomePage;
+const bannerModeEnabled = siteConfig.wallpaperMode.enableBannerMode !== false;
+const pageKind = (() => {
+	const path = Astro.url.pathname;
+	if (isHomePage) return "home";
+	if (path.startsWith("/archive")) return "archive";
+	if (path.startsWith("/albums/") && path !== "/albums/") return "album-detail";
+	if (path.startsWith("/albums")) return "album-index";
+	if (path.startsWith("/friends")) return "friends";
+	if (path.startsWith("/anime")) return "anime";
+	if (postSlug || path.startsWith("/posts/")) return "post";
+	return "other";
+})();
 // 手机端非首页不显示banner的CSS类
 const mobileNonHomeBannerClass = !isHomePage ? "mobile-hide-banner" : "";
 
 // 计算主内容区域位置，考虑手机端非首页时banner被隐藏
 // 当默认模式为 banner 时，使用banner高度；否则使用顶栏高度
 // 让主内容区域紧贴波浪线下方，波浪线高度约为10-15vh，所以主内容从banner顶部开始
-const mainPanelTop =
-	siteConfig.wallpaperMode.defaultMode === "banner"
-		? `${BANNER_HEIGHT}vh`
-		: "5.5rem";
-// const mobileNonHomeMainTop = !isHomePage ? "5.5rem" : mainPanelTop;
-
-// 当默认模式不是 banner 时，主内容区域应该始终从顶栏下面开始
-const finalMainPanelTop =
-	siteConfig.wallpaperMode.defaultMode === "banner" ? mainPanelTop : "5.5rem";
-
-// 26.08.30修改，内容为：左右侧边栏、手机 drawer、平板侧边栏是否显示均增加"仅首页显示"限制（isHomePage），非首页隐藏全部磁贴
 // 检查左侧边栏是否有组件（仅首页显示）
 const hasLeftSidebarComponents =
 	isHomePage &&
@@ -263,46 +254,16 @@ const mainContentClass = `
 	.trim()
 	.replace(/\s+/g, " ");
 
-// 26.08.31修改，内容为：透明状态改由 body.wallpaper-transparent 统一控制，移除静态标记，确保隐藏壁纸模式清除毛玻璃效果
 ---
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug}>
 
-<!-- 26.09.14：首帧预渲染门（解析期同步脚本，位于 body 内容最前）。
-     首次打开网页 / 刷新：页面必须先完成预渲染，再统一渐变显示。
-     为什么必须在这里挂类（而不是等下面那段模块脚本）：
-       · 模块脚本在文档解析完成后才执行，浏览器可能已经绘制过首帧 ⇒ 会先闪一下完整页面；
-       · 本脚本是解析期同步脚本，执行时 body 已存在、主内容尚未解析 ⇒ 不可能出现可见首帧；
-       · 换页时 swup 的 ScriptsPlugin 会把本脚本重放一遍（不是「不再执行」），所以用
-         window.__pageTransitionBooted 做幂等守卫：只有真正首载/刷新才挂门，重放直接退出。
-         挂门 + 该标记就是「首载」的唯一判据（src/utils/page-transition.ts 读
-         window.__pagePrerenderArmed 决定是否走首载分支）。
-     可见性规则见 Layout.astro 的 <head> 内联 <style>（同一次布局计算内即可生效）。 -->
-<script is:inline>
-	(function () {
-		// ⚠ 换页时 swup 的 ScriptsPlugin 会把本文档里的内联脚本重放一遍 ⇒ 本段会被重复执行。
-		//   只有「首次打开 / 刷新」才该挂门：已启动过就直接退出，否则重放会把预渲染门
-		//   在换页之后重新挂回 body，而此时控制器已经收尾（phase=idle）不会再来摘它
-		//   ⇒ 新页面永久停在不可见。
-		if (window.__pageTransitionBooted) return;
-		window.__pageTransitionBooted = true;
-		var b = document.body;
-		if (!b) return;
-		// 标记「本次是首载 / 刷新」：控制器据此走首载分支，预渲染完成后由它摘掉
-		window.__pagePrerenderArmed = true;
-		b.classList.add('page-prerender');
-	})();
-</script>
-
-<!-- 26.09.14：页面切换渐变控制器（模块副作用：写 CSS 时长变量、注册 swup 钩子、
-     处理首载预渲染后的统一渐显）。用普通 <script> 让 Vite 打包，写法和本仓库其余模块脚本一致。 -->
+<!-- Swup content is readable immediately. Only navigation gets a short opacity transition. -->
 <script>
 	import "../utils/page-transition.ts";
 </script>
 
-<script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling}}>
-
-	// 26.08.30修改，内容为：页面渲染前始终强制使用列表模式（布局切换按钮已隐藏），并应用简洁模式（默认开启，隐藏左右磁贴）
+<script type="module" is:inline define:vars={{navbarTransparentMode: siteConfig.banner?.navbar?.transparentMode || "semi", defaultWallpaperMode: siteConfig.wallpaperMode.defaultMode, defaultPostListLayout: siteConfig.postListLayout?.defaultMode || "list", BANNER_HEIGHT: BANNER_HEIGHT, pageScaling: siteConfig.pageScaling, bannerModeEnabled}}>
 
 	// 立即执行，在页面渲染前应用壁纸模式和布局模式，避免闪烁
 	(function() {
@@ -310,10 +271,13 @@ const mainContentClass = `
 		localStorage.setItem('postListLayout', 'list');
 		sessionStorage.setItem('postListLayout', 'list');
 
-		const wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+		let wallpaperMode = localStorage.getItem('wallpaperMode') || defaultWallpaperMode;
+		if (!bannerModeEnabled && wallpaperMode === 'banner') {
+			wallpaperMode = 'fullscreen';
+			localStorage.setItem('wallpaperMode', wallpaperMode);
+		}
 		const body = document.body;
 		
-		// 26.08.31修改，内容为：简洁模式默认改为关闭（常规模式），仅当存储值为 true 时启用
 		const simpleMode = localStorage.getItem('simpleMode');
 		if (simpleMode === 'true') {
 			body.classList.add('simple-mode');
@@ -346,7 +310,6 @@ const mainContentClass = `
 		// 立即应用布局模式（避免闪烁和位置错误）
 		// 使用 requestAnimationFrame 确保 DOM 准备好
 		requestAnimationFrame(function() {
-			// ⚠ 26.09.14：这里原本还会用 requestAnimationFrame 写 mainContent.style.top
 			//   （banner → `${BANNER_HEIGHT}vh`，其余 → 5.5rem）——横幅模式遗留代码。
 			//   主面板的 top 现在完全由 CSS 按模式与断点决定（body.enable-banner 的
 			//   70vh/75vh/60vh/35vh 与 body.no-banner-mode 的 5.5rem），而且模式类在解析期
@@ -399,7 +362,6 @@ const mainContentClass = `
 		applyWallpaperMode();
 	}
 	
-	// 26.09.02 [14]：全屏↔隐藏壁纸模式切换增加背景渐变过渡——全屏→隐藏先淡出壁纸再切终态，
 	// 隐藏→全屏先 display:block + opacity:0 强制一帧再淡入并加回透明类；
 	// 时长与 [data-fullscreen-wallpaper] 既有 opacity 0.6s 过渡一致；prefers-reduced-motion 下直接切换；
 	// 初始加载 / swup 切页不传 animate，保持任务D 首帧缓冲与 F-02 门控语义
@@ -415,7 +377,7 @@ const mainContentClass = `
 	}
 
 	function prefersReducedWallpaperMotion() {
-		return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+		return document.documentElement.dataset.reducedMotion === 'true';
 	}
 
 	function applyWallpaperBannerState() {
@@ -561,7 +523,6 @@ const mainContentClass = `
 		applyWallpaperMode(true);
 	});
 	
-	// 26.08.30修改，内容为：新增监听 simple-mode-change 事件，实时切换 body 的 simple-mode 类（无需刷新页面）
 
 	// 监听简洁模式变化，立即应用（不重载页面）
 	window.addEventListener('simple-mode-change', function(event) {
@@ -573,40 +534,9 @@ const mainContentClass = `
 		}
 	});
 
-	/** 摘掉新页容器内所有入场动画类：只摘类、不动内联样式，避免与 CSS 动画打架 */
-	function stripRegionEnterAnimations(region) {
-		if (!region) return;
-		const nodes = region.querySelectorAll('.onload-animation');
-		if (nodes.length > 0) {
-			nodes.forEach(function(element) {
-				element.classList.remove('onload-animation');
-			});
-		}
-		// #toc-swup-region 本身可能是空壳（非文章页），此时什么都不用做
-	}
-
-	// 26.08.31修改，内容为：Swup 页面切换统一由 #main-grid 控制淡出和淡入，清除新节点动画并保留 page-entering 至渐变结束
-	// 26.09.14修改，内容为：连带清除 #toc-swup-region（目录 rail 随 swup 换页换新，同样带 onload-animation）——
-	// 否则该类自己的 150ms 延迟 + 500ms 淡入会在 page-entering 结束后重新触发，目录闪一下。
-	function clearPageRegionAnimations() {
-		const regions = ['#main-grid', '#toc-swup-region'];
-		regions.forEach(function(selector) {
-			stripRegionEnterAnimations(document.querySelector(selector));
-		});
-	}
-
-	/* 26.09.14：页面切换渐变改由独立控制器负责（src/utils/page-transition.ts，在本布局顶部 import）。
-	   控制器统一处理：点击 → 整页渐变消失(fadeOut) → 目标页加载 → 预渲染 → 统一渐变显示(fadeIn)，
-	   同 URL 点击同样「消失 → 重新加载 → 重新预渲染 → 渐显」，首载/刷新也必须先预渲染再渐显。
-	   本文件只保留与「布局」强相关的职责（与渐变时序无关）：
-	     · stripRegionEnterAnimations / clearPageRegionAnimations：摘掉新页容器的入场动画类；
-	     · setupSwupLayoutSync：布局模式应用、主页壁纸切换、新页入场动画清理。
-	   时长唯一来源：siteConfig.pageTransition（见 config.ts），CSS 侧读 --page-fade-out / --page-fade-in。 */
-
 	function setupSwupLayoutSync() {
 		// @ts-ignore
 		if (typeof window !== 'undefined' && window.swup) {
-			// 26.09.01 [3]：visit:start 阶段记录目标页是否为主页（content:replace 阶段 location 可能尚未更新），供主页背景切换判断
 			// @ts-ignore
 			window.swup.hooks.on('visit:start', function(visit) {
 				var targetPath = visit && visit.to ? visit.to.url : '';
@@ -621,8 +551,6 @@ const mainContentClass = `
 			// **之后**（Hooks.getHandlers/call 的执行序 = before → 默认 handler → on()）⇒ 这里拿到的已经是【新 DOM】。
 			// @ts-ignore
 			window.swup.hooks.on('content:replace', function() {
-				// 新页节点就位后先清除其入场动画，再让 #main-grid 统一渐变（避免中间卡片各自延迟）
-				clearPageRegionAnimations();
 				const mainGrid = document.getElementById('main-grid');
 				if (mainGrid) {
 					// @ts-ignore
@@ -660,19 +588,11 @@ const mainContentClass = `
 					delete window.__pendingLayoutMode;
 				}
 
-				// 26.09.01 [3]：目标页为主页时触发全屏壁纸随机切换（F-02），新主页已开始渲染、渐变与新页淡入同步
-				if (window.__pendingTargetHome && typeof window.__mizukiSwitchWallpaper === 'function') {
-					window.__mizukiSwitchWallpaper();
-				}
 				delete window.__pendingTargetHome;
 			});
 
 			// 目标页布局状态：主页/非主页的磁贴显隐与网格列同步（swup 只替换容器内容，不更新 #main-grid 的类）
 			// @ts-ignore
-			window.swup.hooks.on('page:view', function() {
-				clearPageRegionAnimations();
-			});
-
 			return true;
 		}
 		return false;
@@ -692,14 +612,10 @@ const mainContentClass = `
 	}
 	
 	// 支持 Swup 页面过渡
-	// 26.08.30修改，内容为：swup 页面切换后重新应用简洁模式（simple-mode 类），避免切页后磁贴显示状态残留
 
 	document.addEventListener('swup:page:view', function() {
-		// 26.08.31修改，内容为：新页面节点插入后再次清除加载动画，避免跨页瞬间各自淡入（统一由 #main-grid 渐变）
-		clearPageRegionAnimations();
 		applyWallpaperMode();
 		
-		// 26.08.31修改，内容为：在Swup页面切换时重新应用简洁模式（默认常规模式）
 		const simpleMode = localStorage.getItem('simpleMode');
 		if (simpleMode === 'true') {
 			document.body.classList.add('simple-mode');
@@ -753,18 +669,13 @@ const mainContentClass = `
 <FullscreenWallpaper config={fullscreenWallpaperConfig} />
 
 <!-- 全局图标加载器 -->
-<IconifyLoader />
+<script>
+	import "../utils/iconify-local";
+</script>
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
-<!-- 26.09.06：吸顶职责上移到 #top-row；#navbar-wrapper 回到 relative，宽度与文章宽度（--content-width）保持一致 -->
-<!-- 26.09.14：吸顶由 sticky 改为 fixed —— 「所有页面导航栏始终位于顶部、下拉时不消失」。
-     sticky 的问题：吸附位置取决于元素在文档流中的位置与自身高度，本行在 banner 模式被撑到
-     ≈30vh，吸附后导航栏落在视口上方 ⇒ 滚动即整条消失，且各页面/模式表现不一致（用户报告）。
-     fixed 与文档流彻底解耦：任何页面、任何壁纸模式、任何滚动位置都在视口顶部。
-     原本由文档流让出的空间改由紧随其后的 #top-row-space 占位（高度与 --top-row-h 恒等），
-     因此首屏布局与改动前逐像素一致，不会把首屏内容顶到导航栏下面。 -->
-<div id="top-row" class="z-50 pointer-events-none fixed top-0 left-0 right-0 transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" data-navbar-pinned={siteConfig.navbar?.pinned === false ? "false" : "true"}>
+<div id="top-row" class="z-50 pointer-events-none fixed top-0 left-0 right-0 transition-all duration-700 max-w-[var(--layout-page-width)] px-0 md:px-4 mx-auto" data-navbar-pinned={siteConfig.navbar?.pinned === false ? "false" : "true"}>
     <div id="navbar-wrapper" class="pointer-events-auto relative transition-all h-full">
         <Navbar></Navbar>
     </div>
@@ -775,202 +686,23 @@ const mainContentClass = `
 <!-- Banner - 始终渲染，通过 JS 控制显示隐藏 -->
 <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
 
-    {siteConfig.banner.carousel?.enable && ((bannerDesktopImages && Array.isArray(bannerDesktopImages) && bannerDesktopImages.length > 1) || (bannerImages.mobile && Array.isArray(bannerImages.mobile) && bannerImages.mobile.length > 1)) ? (
-        <!-- Carousel mode for multiple images -->
-        <div id="banner-carousel" class="relative h-full w-full">
-            <ul class="carousel-list h-full w-full">
-                {Math.max(
-                    Array.isArray(bannerDesktopImages) ? bannerDesktopImages.length : 0,
-                    Array.isArray(bannerImages.mobile) ? bannerImages.mobile.length : 0
-                ) && Array.from({ length: Math.max(
-                    Array.isArray(bannerDesktopImages) ? bannerDesktopImages.length : 0,
-                    Array.isArray(bannerImages.mobile) ? bannerImages.mobile.length : 0
-                ) }).map((_, index) => {
-                    // 确保至少有一个平台有对应索引的图片
-                    const hasDesktopImage = Array.isArray(bannerDesktopImages) && bannerDesktopImages[index];
-                    const hasMobileImage = Array.isArray(bannerImages.mobile) && bannerImages.mobile[index];
-                    
-                    // 如果两个平台都没有对应索引的图片，跳过这个轮播项
-                    if (!hasDesktopImage && !hasMobileImage) {
-                        return null;
-                    }
-                    
-                    return (
-                        <li class={`carousel-item absolute inset-0 transition-all duration-500 ${index === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-110'}`}>
-                            <!-- Mobile: use mobile-specific images -->
-                            {hasMobileImage && (
-                                <ImageWrapper 
-                                    alt={`Mobile banner image ${index + 1}`} 
-                                    class:list={["block md:hidden object-cover h-full w-full transition-transform duration-500 ease-out"]}
-                                    src={Array.isArray(bannerImages.mobile) ? bannerImages.mobile[index] : (typeof bannerImages.mobile === 'string' ? bannerImages.mobile : '')} 
-                                    position={siteConfig.banner.position}
-                                    loading={index === 0 ? "eager" : "lazy"}
-                                    
-                                />
-                            )}
-                            <!-- Desktop/Tablet: use desktop-specific images -->
-                            {hasDesktopImage && (
-                                <ImageWrapper 
-                                    alt={`Desktop banner image ${index + 1}`} 
-                                    class:list={["hidden md:block object-cover h-full w-full transition-transform duration-500 ease-out"]}
-                                    src={Array.isArray(bannerDesktopImages) ? bannerDesktopImages[index] : (typeof bannerDesktopImages === 'string' ? bannerDesktopImages : '')} 
-                                    position={siteConfig.banner.position}
-                                    loading={index === 0 ? "eager" : "lazy"}
-                                />
-                            )}
-                        </li>
-                    );
-                }).filter(Boolean)}
-            </ul>
-        </div>
-    ) : (
-        <!-- Single image mode -->
-        <div id="banner-single-container" class="relative h-full w-full">
-            <script is:inline define:vars={{ desktopImages: bannerDesktopImages, mobileImages: bannerImages.mobile, position: siteConfig.banner.position }}>
-                (function() {
-                    const getRandomImage = (images, storageKey) => {
-                        if (Array.isArray(images)) {
-                            if (images.length === 0) return null;
-                            if (images.length === 1) return images[0];
-                            
-                            const lastIndex = sessionStorage.getItem(storageKey);
-                            let newIndex;
-                            
-                            do {
-                                newIndex = Math.floor(Math.random() * images.length);
-                            } while (newIndex === parseInt(lastIndex || '-1'));
-                            
-                            sessionStorage.setItem(storageKey, newIndex.toString());
-                            return images[newIndex];
-                        }
-                        return images || null;
-                    };
-                    
-                    const desktopSrc = getRandomImage(desktopImages, 'banner_desktop_index');
-                    const mobileSrc = getRandomImage(mobileImages, 'banner_mobile_index');
-                    
-                    const container = document.getElementById('banner-single-container');
-                    
-                    if (mobileSrc) {
-                        const mobileImg = document.createElement('img');
-                        mobileImg.alt = 'Mobile banner image of the blog';
-                        mobileImg.className = 'block md:hidden object-cover h-full w-full transition duration-700 opacity-100';
-                        mobileImg.src = mobileSrc;
-                        mobileImg.loading = 'eager';
-                        mobileImg.dataset.position = position;
-                        container.appendChild(mobileImg);
-                    }
-                    
-                    if (desktopSrc) {
-                        const desktopImg = document.createElement('img');
-                        desktopImg.id = 'banner';
-                        desktopImg.alt = 'Desktop banner image of the blog';
-                        desktopImg.className = 'hidden md:block object-cover h-full w-full transition duration-700 opacity-100';
-                        desktopImg.src = desktopSrc;
-                        desktopImg.loading = 'eager';
-                        desktopImg.dataset.position = position;
-                        container.appendChild(desktopImg);
-                    }
-                })();
-            </script>
-        </div>
+    {bannerModeEnabled && (
+        <Banner
+            desktop={Array.isArray(bannerDesktopImages) ? bannerDesktopImages : []}
+            mobile={Array.isArray(bannerImages.mobile) ? bannerImages.mobile : []}
+        />
     )}
     
-    <!-- Home page text overlay -->
-    {siteConfig.banner.homeText?.enable && (
-        <div class={`banner-text-overlay absolute inset-0 z-20 flex items-center justify-center ${!showHomeText ? 'hidden' : ''}`}>
-            <div class="w-4/5 lg:w-3/4 text-center mb-0">
-                <div class="flex flex-col">
-                    {siteConfig.banner.homeText?.title && (
-                        <h1 class="banner-title text-6xl lg:text-8xl text-white drop-shadow-lg mb-2 lg:mb-4">
-                            {siteConfig.banner.homeText.title}
-                        </h1>
-                    )}
-                    {siteConfig.banner.homeText?.subtitle && (
-                        <h2 class="banner-subtitle text-xl lg:text-3xl text-white/90 drop-shadow-md">
-                            <span class="inline-block min-h-[1.2em]">
-                                {siteConfig.banner.homeText.typewriter?.enable ? (
-                                    <TypewriterText 
-                                        text={siteConfig.banner.homeText.subtitle}
-                                        speed={siteConfig.banner.homeText.typewriter.speed}
-                                        deleteSpeed={siteConfig.banner.homeText.typewriter.deleteSpeed}
-                                        pauseTime={siteConfig.banner.homeText.typewriter.pauseTime}
-                                    />
-                                ) : (
-                                    Array.isArray(siteConfig.banner.homeText.subtitle) 
-                                        ? siteConfig.banner.homeText.subtitle[0] 
-                                        : siteConfig.banner.homeText.subtitle
-                                )}
-                            </span>
-                        </h2>
-                    )}
-                </div>
-            </div>
-        </div>
-    )}
-    
-    <!-- Water waves effect -->
-    {siteConfig.banner.waves?.enable && (
-        <div class="waves absolute -bottom-[1px] h-[10vh] max-h-[9.375rem] min-h-[3.125rem] w-full md:h-[15vh]" id="header-waves" style="transform: translateZ(0);">
-            <svg
-                class="waves"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                viewBox="0 20 150 32"
-                preserveAspectRatio="none"
-                shape-rendering="auto"
-                style="transform: translateZ(0); backface-visibility: hidden;"
-            >
-                <defs>
-                    <path
-                        id="gentle-wave"
-                        d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v48h-352z"
-                    >
-                    </path>
-                </defs>
-                <g class="parallax" style="transform: translateZ(0);">
-                    <use
-                        xlink:href="#gentle-wave"
-                        x="48"
-                        y="0"
-                        class="opacity-25 fill-[var(--page-bg)]"
-                        style="animation-delay: -2s; animation-duration: 7s; "
-                    ></use>
-                    <use
-                        xlink:href="#gentle-wave"
-                        x="48"
-                        y="3"
-                        class="opacity-50 fill-[var(--page-bg)]"
-                        style="animation-delay: -3s; animation-duration: 10s; "
-                    ></use>
-                    <use
-                        xlink:href="#gentle-wave"
-                        x="48"
-                        y="5"
-                        class="opacity-75 fill-[var(--page-bg)]"
-                        style="animation-delay: -4s; animation-duration: 13s; "
-                    ></use>
-                    <use
-                        xlink:href="#gentle-wave"
-                        x="48"
-                        y="7"
-                        class="fill-[var(--page-bg)]"
-                        style="animation-delay: -5s; animation-duration: 20s; "
-                    ></use>
-                </g>
-            </svg>
-        </div>
-    )}
-    
-
 </div>
 
 <!-- Main content -->
-<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${siteConfig.wallpaperMode.defaultMode === 'none' ? 'no-banner-layout' : ''}`} style={`top: ${finalMainPanelTop}`}>
+<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${siteConfig.wallpaperMode.defaultMode === 'none' ? 'no-banner-layout' : ''}`}>
+    {isHomePage && <h1 class="sr-only">{siteConfig.title}</h1>}
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative max-w-[var(--content-width)] mx-auto pointer-events-auto">
         <div id="main-grid" class={`page-transition-region w-full left-0 right-0 grid ${gridCols} grid-rows-none md:grid-rows-[auto] mx-auto gap-4 px-2 md:px-4 ${!mobileShowSidebar || !hasMobileDrawerComponents ? 'mobile-no-sidebar' : ''} ${hasRightSidebarComponents ? 'mobile-both-sidebar' : ''}`}
              data-layout-mode={defaultPostListLayout}
+             data-page-kind={pageKind}
         >
             <!-- Banner image credit -->
             {hasBannerCredit && <a href={siteConfig.banner.credit.url} id="banner-credit" target="_blank" rel="noopener" aria-label="Visit image source"
@@ -985,8 +717,6 @@ const mainContentClass = `
                 </Icon>
             </a>}
 
-
-            {/* 26.08.30修改，内容为：左右磁贴容器改为始终渲染（带 home-sidebar/home-right-sidebar 类），由 CSS 按首页/简洁模式控制显隐，供 swup 切换时同步 */}
             {/* 侧边栏和主内容区域容器 */}
 
             {/* 侧边栏和主内容区域容器 */}
@@ -1041,23 +771,11 @@ const mainContentClass = `
             document.documentElement.setAttribute('data-toc-layout', 'desktop');
     </script>
 )}
-{/* 26.09.14：目录区外壳（恒渲染）+ swup 容器。
-     为什么需要它：侧栏目录不能放进 main（会被 #main-grid 的透明度动画父子相乘成二次淡入），
-     而此前它只是 body 下的一块「本页标记」——swup 只替换 main / #sidebar-swup-container，
-     切页时这块标记保持旧页状态：从非文章页进文章页时目录压根不存在；文章页→文章页时
-     目录条目要等客户端 100ms 后才重建（表现为「目录没进入预渲染」）。
-     现在把目录标记包进恒存在的 #toc-swup-region 并登记为 swup 容器（astro.config.mjs）：
-     swup 换页整体替换该容器 ⇒ 目标页目录（含 SSR 条目）在 content:replace 阶段即就位，
-     随后与文章卡片一起在预渲染帧内排版、同一帧开始渐变。 */}
 <div id="toc-swup-region">
 {siteConfig.toc.enable && isSidebarTOC && headings.length > 0 ? (
-    // 26.09.14：不再用 hidden(display:none)——目录轨道常驻渲染（只切 visibility），
     // 这样切宽窄时是「已有排版的目录做收放动画」，不必先重排再动画（用户要求：提前渲染/缓存）。
     <div id="toc-rail-wrapper" data-toc-present="true" class="absolute w-full z-0 onload-animation">
         <div class="relative max-w-[var(--content-width)] mx-auto">
-            <!-- 26.09.06：卡片宽度 = 右侧余量的 60%（--toc-card-width）；横向定位改由 style 块的
-                 #toc-inner-wrapper 规则负责（在「文章卡片右边缘 → 视口右边缘」的余量内居中，
-                 并以距视口右 --toc-edge-gap 为底线）；此处 #toc-wrapper 仅承载显隐与宽高 -->
             <div id="toc-wrapper" class:list={["block transition absolute top-0 w-[var(--toc-card-width)] items-center",
                 {"toc-hide": siteConfig.wallpaperMode.defaultMode === "banner"}]}
             >
@@ -1075,20 +793,11 @@ const mainContentClass = `
 )}
 </div>
 </Layout>
-{/* 26.08.30修改，内容为：新增简洁模式与非首页时隐藏左右磁贴、主内容占满整行的样式 */}
-
 
 <style define:vars={{
     'page-fade-out': `${siteConfig.pageTransition.fadeOut}ms`,
     'page-fade-in': `${siteConfig.pageTransition.fadeIn}ms`,
 }}>
-/* 26.09.14：渐变动画时长（唯一来源 siteConfig.pageTransition）——只在此处写一次，
-   src/styles/transition.css 的过渡/动画时长全部读这两个变量，改 config 即同步生效。
-   ⚠ 不要在这里或 transition.css 里写死毫秒值（下面的 :root 兜底值只为「模块尚未执行」时仍有值）。
-   ⚠ 变量落在 :root（继承属性）⇒ 任何位置的选择器都能读到，也是 transition.css（全局样式表）
-      与 Layout.astro 首帧内联样式共用的前提。
-   ⚠ Astro 对含 define:vars 的样式会把变量写到「该选择器自身」，所以选择器必须是 :root，
-      而且规则里不能再引用同名变量（自引用会解析失败）。 */
 :root {
     --page-fade-out: 200ms;
     --page-fade-in: 250ms;
@@ -1098,10 +807,6 @@ const mainContentClass = `
     display: none !important;
 }
 
-/* 26.09.14：导航栏常驻吸顶（fixed）+ 等高占位块。
-   #top-row 已由 Layout.astro 给出 --top-row-h（banner 模式跟随横幅高度，其余模式 3.6rem）；
-   这里把同一变量写给占位块，保证「脱离文档流」与「补回空间」严格等值 ⇒ 首屏排版零变化。
-   ⚠ 若将来再调 --top-row-h 的取值，占位块无需改动（同源变量）。 */
 :global(#top-row-space) {
     height: var(--top-row-h, 3.6rem);
 }
@@ -1120,10 +825,6 @@ const mainContentClass = `
     transform: none !important;
 }
 
-/* 26.09.15：导航栏「悬挂」（吸顶）开关 —— siteConfig.navbar.pinned
-   · true（默认）：#top-row 固定悬挂在视口顶部，下拉时始终可见（原行为，本段不生效）；
-   · false：#top-row 回到文档流（position:static），导航栏随页面一起滚走、不再悬挂；
-     紧随其后的等高占位块 #top-row-space 同步取消，否则会多出一段空白。 */
 :global(#top-row[data-navbar-pinned="false"]) {
     position: static !important;
     top: auto !important;
@@ -1133,21 +834,28 @@ const mainContentClass = `
     display: none !important;
 }
 
-/* 切页期间导航栏同样常驻：#main-grid 淡出/预渲染/淡入时，#top-row 保持可见不被牵连
+/* 切页期间导航栏同样常驻：#main-grid 淡出/淡入时，#top-row 保持可见不被牵连
    （对应 Layout.astro 注释中「#top-row/#navbar-wrapper 顶部工具栏保留，站点骨架不淡出」）。 */
 :global(body.swup-leaving) #top-row,
-:global(body.page-entering) #top-row,
-:global(body.page-prerender) #top-row {
+:global(body.page-entering) #top-row {
     opacity: 1 !important;
     animation: none !important;
     pointer-events: none;
 }
 
 :global(body.swup-leaving) #top-row #navbar-wrapper,
-:global(body.page-entering) #top-row #navbar-wrapper,
-:global(body.page-prerender) #top-row #navbar-wrapper {
+:global(body.page-entering) #top-row #navbar-wrapper {
     opacity: 1 !important;
     animation: none !important;
+    pointer-events: none;
+}
+
+/* The banner-mode top row is height-matched to the artwork. Only the actual
+   navbar should receive pointer input; the transparent rest must pass through. */
+:global(#navbar-wrapper) {
+    pointer-events: none;
+}
+:global(#navbar) {
     pointer-events: auto;
 }
 
@@ -1157,10 +865,6 @@ const mainContentClass = `
     display: none !important;
 }
 
-/* 26.09.14：导航栏与主卡片重合时的下边界描边。
-   需求：下拉后导航栏与主卡片（文章卡片/友链卡片/图片卡片…）宽度常常相同，需要可视区分；
-   只在「被压住的那段卡片宽度」上、于导航栏下边界画一条主题色横线，带阴影，随重合淡入淡出。
-   ⚠ 刻意不做圆角：观感要接近一条横线，而不是圆角矩形的下边线。 */
 :global(#navbar-card-separator) {
     position: fixed;
     left: 0;
@@ -1208,19 +912,15 @@ const mainContentClass = `
     }
 }
 
-/* 26.08.31修改，内容为：主页列表区高度改由 JS 按左右磁贴下端对齐（syncPanelHeight），不再固定视口高度 */
 :global(#content-wrapper.home-content-fill) {
     display: flex;
     flex-direction: column;
 }
 
-/* 26.08.31修改，内容为：常规模式（fill 页面）下文章列表区拉伸至视口底部，仅高于切页按钮 */
 :global(#content-wrapper.home-content-fill > #post-list-container) {
     flex: 1 1 auto;
 }
 
-/* Banner text styles
-   26.11.05：改用 motion.css 的 mo-fade-rise（原先本文件自带一份 fadeInUp 关键帧）。 */
 .banner-title {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     animation: mo-fade-rise var(--mo-hero, 560ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) both;
@@ -1239,18 +939,10 @@ body.no-banner-mode .absolute.w-full.z-30 {
     top: 5.5rem !important;
 }
 
-/* TOC 垂直对齐优化（26.09.06：几何改由 toc-layout.js 写入 --toc-top/--toc-max-h，
-   两种模式（banner / no-banner）统一读同一组变量，不再各自硬编码 max-height）。
-   这里给出无 JS / 未重算时的兜底值（不依赖 Tailwind 任意值解析）。 */
 #toc-inner-wrapper {
     top: var(--toc-top, 3.5rem);
     max-height: var(--toc-max-h, calc(100vh - 10rem));
     overflow: hidden;
-    /* 26.09.06：目录卡片在「文章卡片右边缘 → 视口右边缘」的右侧余量内居中。
-       余量 R = --toc-width + --article-gutter，卡宽 T = --toc-card-width，
-       居中 ⇒ 右侧空隙 = (R − T) / 2；max() 第二分支是距视口右 1rem 的硬性下限。
-       横向定位只此一处：#toc-wrapper（absolute）已不再持有任何 right 规则，
-       避免两套定位规则并存。 */
     right: max(
         calc((var(--toc-width) + var(--article-gutter) - var(--toc-card-width)) / 2),
         var(--toc-edge-gap, 1rem)
@@ -1262,12 +954,6 @@ body.no-banner-mode #toc-inner-wrapper {
     max-height: var(--toc-max-h, calc(100vh - 8rem)) !important;
 }
 
-/* 26.09.14：侧栏目录轨道「始终渲染、只切换可见性」。
-   要求（用户）：目录要提前渲染好/缓存起来，切宽窄时直接动画收放，不再 display:none 后重新排版。
-   做法：有轨道的文章页恒 display:block（排版常驻），默认 visibility:hidden + opacity:0；
-   只有 toc-layout.js 判定 desktop 时才可见（JS 之前的首帧也不会闪）。
-   narrow 时由 toc-layout.js 播「收进导航栏按钮」动画，动画期间用内联 visibility 临时可见，
-   结束后交还给 CSS。 */
 :global(#toc-rail-wrapper[data-toc-present="true"]) {
     display: block;
     visibility: hidden;
@@ -1292,18 +978,6 @@ body.no-banner-mode #toc-inner-wrapper {
     }
 }
 
-/* 26.09.14：预渲染帧内目录 rail 必须「已经在位」。
-   问题（用户报告：从其它页面跳转文章页时 toc 没有进入预渲染）：
-   `html[data-toc-layout]` 是 toc-layout.js 的**客户端**判定结果，而 swup 换页是同步替换
-   #toc-swup-region —— 预渲染帧里 rail 刚被换成新节点，属性却还可能停留在「上一页」的取值
-   （从首页/列表页进入时是 narrow 或干脆没有），于是 rail 在预渲染帧里 display:none，
-   下一帧才被重算点亮 ⇒ 目录在渐变结束后才「跳」出来，与文章卡片不同步。
-   这里补一条不依赖任何 JS 时序的可见性来源：结构数据（data-toc-layout）或
-   节点自身的 data-toc-present（SSR 只在本页确实渲染了 rail 时输出）任一满足即显示。
-   ⚠ 必须用 min-width 媒体查询兜住：媒体查询里的 rem 恒按初始 16px 解析，
-     88rem = 1408px，正好是「解析期脚本置位 desktop」与「JS 判 narrow」之间的分界带
-     （详见下方解析期脚本的长注释）。1280px 档位（= MOBILE_ENTRY_MAX / lg 断点）与
-     toc-layout.js 的 MOBILE_ENTRY_MAX 同源，不会出现「CSS 判定显示、JS 判定窄屏」的闪烁。 */
 /* 全屏壁纸模式下的 TOC 毛玻璃背景 - 仅在 TOC 加载完成后显示
    （--toc-inner-pad 供 table-of-contents 的 max-height 扣掉卡片内边距，
      否则最后一个条目的文字/图标会溢出卡片下边缘） */
@@ -1573,7 +1247,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     
     /* 桌面端轮播图片过渡优化 - 与移动端保持一致 */
     .carousel-item {
-        transition: all 0.5s ease-out !important; /* 优化过渡时间，避免与轮播间隔冲突 */
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out !important;
         transform-origin: center center !important; /* 确保缩放从中心开始 */
     }
     
@@ -1613,7 +1287,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     
     /* 轮播图片过渡优化 - 与电脑端保持一致 */
     .carousel-item {
-        transition: all 1s ease-out !important; /* 包含opacity和transform的过渡 */
+        transition: opacity 1s ease-out, transform 1s ease-out !important;
         transform-origin: center center !important; /* 确保缩放从中心开始 */
     }
     
@@ -1634,20 +1308,13 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
         overflow: hidden !important;
     }
 
-    /* 26.11.03：原 .onload-animation-fade-in 的 mobile-fade-in 覆盖已删除——
-       该类全站无任何元素使用（仅此文件与 transition.css 声明过），其 keyframes 同步移除。 */
 }
-
-/* 26.11.03：@keyframes mobile-fade-in 已随 .onload-animation-fade-in 的覆盖规则一并删除
-   （唯一消费者已不存在；移动端入场统一走 motion.css 的 mo-rise 级联）。 */
 
 /* 手机端非首页隐藏banner - 改进的分阶段动画 */
 @media (max-width: 1279px) {
     #banner-wrapper {
         transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease-out;
         transform-origin: top center;
-        /* 26.11.03：移除常驻 will-change（每帧都占着一个合成层、且没有实际收益——
-           transform/opacity 动画期间浏览器本就会自动提升）。硬件加速保留 translateZ(0)。 */
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
         transform: translateZ(0);
@@ -1662,12 +1329,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
         transition: transform 0.3s ease-in, opacity 0.2s ease-in !important;
     }
     
-    /* 主内容区域位置过渡：⚠ 26.09.14 改为只跟着「显式切换壁纸模式」走（横幅模式遗留修复）。
-       原先无条件给 .absolute.w-full.z-30 挂 `transition: top 0.4s ... 0.1s`，
-       于是「首载时按当前模式把 top 修正到正确值」这件纯内部的事被播成了 0.4 秒的可见位移
-       （配合上面那条漏写模式前缀的横屏规则 ⇒ 首屏内容卡片上移一段）。
-       现在首载/换页一律即时就位；只有 applyWallpaperMode(animate=true) 期间
-       （body.wallpaper-mode-transition，全屏↔隐藏壁纸）才播这段过渡。 */
     body.wallpaper-mode-transition .absolute.w-full.z-30 {
         transition: top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s;
         /* 硬件加速优化 */
@@ -1703,7 +1364,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
 /* 移动端banner性能优化 */
 @media (max-width: 1279px) {
     .banner-container {
-        /* 启用硬件加速（26.11.03：去掉常驻 will-change，只留 translateZ 层） */
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
 
@@ -1716,7 +1376,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     }
 
     .carousel-item {
-        /* 硬件加速（26.11.03：去掉常驻 will-change） */
         transform: translateZ(0);
         -webkit-transform: translateZ(0);
         
@@ -1770,7 +1429,7 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
         height: 8px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.5);
-        transition: all 0.3s ease;
+        transition: opacity 0.3s ease, transform 0.3s ease;
         cursor: pointer;
     }
 
@@ -1865,15 +1524,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
         height: 60vh !important;
     }
 
-    /* 主内容区域位置调整 - 确保在banner下面，但不影响非首页
-       ⚠ 26.09.14：必须带 body.enable-banner 模式前缀（横幅模式遗留 bug）。
-       这条规则的含义是「横幅高 60vh ⇒ 内容从 60vh 开始」，只有横幅模式才成立；
-       此前漏写前缀，于是默认的 fullscreen（以及 none）模式下：
-         ① 首帧没有任何模式类时，主面板被这条 !important 规则顶到 60vh；
-         ② body.no-banner-mode 生效后再压回 5.5rem；
-         ③ 面板又带着 transition: top 0.4s ⇒ 首屏内容卡片肉眼可见地上移一段。
-       现在按模式限定，非横幅模式的 top 只由 body.no-banner-mode 那条规则决定，
-       首帧起就恒为 5.5rem，不存在「先错位再拉回」。 */
     body.enable-banner .absolute.w-full.z-30:not(.mobile-main-no-banner) {
         top: 60vh !important; /* 与banner高度对应 */
         min-height: calc(100vh - 60vh) !important;
@@ -1927,7 +1577,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     /* 确保水波纹完整显示 */
     overflow: visible;
     z-index: 5;
-    /* 硬件加速，确保与背景同步渲染（26.11.03：去掉常驻 will-change） */
     transform: translateZ(0);
     /* 确保与页面背景在同一合成层 */
     contain: layout style paint;
@@ -1942,10 +1591,6 @@ body.wallpaper-transparent #toc-inner-wrapper:has(table-of-contents[data-loaded=
     transform: translateZ(0);
     backface-visibility: hidden;
 }
-
-/* 波浪填充色主题切换优化
-   26.11.03：原来的 `.waves use { will-change: fill }` 已删除——fill 变化只是重绘，
-   will-change 对它没有任何加速作用，只会让四个 <use> 常驻合成层。 */
 
 /* 波浪与背景同步切换优化 - 解决交界线闪烁 */
 #header-waves {

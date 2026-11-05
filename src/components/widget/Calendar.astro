@@ -4,6 +4,9 @@ import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import WidgetLayout from "./WidgetLayout.astro";
 import { Icon } from "astro-icon/components";
+import { getSortedPosts } from "../../utils/content-utils";
+import { getPostUrl } from "../../utils/url-utils";
+import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 interface Props {
 	class?: string;
@@ -39,6 +42,14 @@ const weekDays = [
 
 const isChinese = siteConfig.lang.startsWith("zh");
 const yearSuffix = isChinese ? "年" : " ";
+const calendarPosts = (await getSortedPosts())
+	.filter((post) => post.data.active !== false)
+	.map((post) => ({
+		id: post.id,
+		title: post.data.title,
+		date: formatDateToYYYYMMDD(post.data.published),
+		url: getPostUrl(post),
+	}));
 ---
 
 <WidgetLayout
@@ -133,9 +144,10 @@ const yearSuffix = isChinese ? "年" : " ";
 	define:vars={{
 		monthNames,
 		yearSuffix,
+		calendarPosts,
 	}}
 >
-	let allPostsData = [];
+	let allPostsData = Array.isArray(calendarPosts) ? calendarPosts : [];
 	const postDateMap = {};
 	const postsByMonth = {};
 	const stats = {
@@ -145,29 +157,13 @@ const yearSuffix = isChinese ? "年" : " ";
 		maxYear: new Date().getFullYear() + 5,
 	};
 
-	async function fetchCalendarData() {
-		try {
-			const res = await fetch("/api/calendar-data.json");
-			const data = await res.json();
-			if (Array.isArray(data)) {
-				allPostsData = data;
-				processPostsData(allPostsData);
-				const currentPostId = getCurrentPostId();
-				if (currentPostId) {
-					const matchedPost = allPostsData.find(
-						(p) => p.id === currentPostId,
-					);
-					if (matchedPost) {
-						const [y, m] = matchedPost.date.split("-");
-						currentYear = parseInt(y);
-						currentMonth = parseInt(m) - 1;
-					}
-				}
-				renderCalendar();
-			}
-		} catch (error) {
-			console.error("Failed to fetch calendar data:", error);
-		}
+	function escapeHtml(value) {
+		return String(value ?? "")
+			.replaceAll("&", "&amp;")
+			.replaceAll("<", "&lt;")
+			.replaceAll(">", "&gt;")
+			.replaceAll('"', "&quot;")
+			.replaceAll("'", "&#039;");
 	}
 
 	function processPostsData(posts) {
@@ -225,15 +221,30 @@ const yearSuffix = isChinese ? "年" : " ";
 			: decodedPath;
 
 		const matchedPost = allPostsData.find((post) => {
-			return normalizedPath.endsWith(`/${post.id}`);
+			try {
+				const postPath = new URL(post.url, window.location.origin).pathname
+					.replace(/\/+$/, "");
+				return normalizedPath === postPath;
+			} catch {
+				return normalizedPath.endsWith(`/${post.id}`);
+			}
 		});
 		return matchedPost ? matchedPost.id : null;
 	}
 
 	function init() {
+		processPostsData(allPostsData);
+		const currentPostId = getCurrentPostId();
+		const matchedPost = currentPostId
+			? allPostsData.find((post) => post.id === currentPostId)
+			: null;
+		if (matchedPost) {
+			const [y, m] = matchedPost.date.split("-");
+			currentYear = parseInt(y);
+			currentMonth = parseInt(m) - 1;
+		}
 		renderCalendar();
 		setupEventListeners();
-		fetchCalendarData();
 	}
 
 	function setupEventListeners() {
@@ -423,8 +434,8 @@ const yearSuffix = isChinese ? "年" : " ";
 				}
 
 				return `
-            <a href="/posts/${post.id}/" class="${containerClass}">
-                <span class="${titleClass}">${post.title}</span>
+            <a href="${escapeHtml(post.url)}" class="${containerClass}">
+                <span class="${titleClass}">${escapeHtml(post.title)}</span>
                 <span class="${dateClass}">${dateStr}</span>
             </a>
         `;

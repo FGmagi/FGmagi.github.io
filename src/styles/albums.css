@@ -1,8 +1,5 @@
 /* 相册模块样式 */
 
-/* 相册卡片动画
-   26.11.04：hover 不再整体上移（-4px 位移会让指针贴边时 hover 反复进出 ⇒ 抖动），
-   改为阴影加深 + 只过渡真正会变的属性（不再 `transition: all`）。 */
 .album-card {
   transition:
     box-shadow var(--mo-base, 220ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)),
@@ -13,13 +10,8 @@
   box-shadow: 0 12px 28px -14px rgb(0 0 0 / 0.4);
 }
 
-/* 照片网格布局（26.11.05：动画改用 motion.css 的 mo-fade-rise，删掉本文件自带的 fadeInUp） */
-.photo-gallery {
-  animation: mo-fade-rise var(--mo-slow, 320ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) both;
-}
-
 .photo-item {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 /* 瀑布流布局优化 */
@@ -88,7 +80,7 @@
 /* 灯箱按钮 */
 .lightbox button {
   backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .lightbox button:hover {
@@ -144,8 +136,6 @@
     columns: 1;
   }
 }
-
-/* 加载动画：已统一到 motion.css 的 mo-fade-rise（26.11.05 移除本地 @keyframes fadeInUp） */
 
 /* 图片懒加载占位符 */
 .photo-image[loading="lazy"] {

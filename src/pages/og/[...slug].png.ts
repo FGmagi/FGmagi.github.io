@@ -110,7 +110,6 @@ export async function GET({
 	const avatarBuffer = fs.readFileSync(`./src/${profileConfig.avatar}`);
 	const avatarBase64 = `data:image/png;base64,${avatarBuffer.toString("base64")}`;
 
-	// 26.09.02 [7]：favicon 兜底路径改读 config（dataFiles.faviconIco）
 	let iconPath = `./${dataFiles.faviconIco}`;
 	if (siteConfig.favicon.length > 0) {
 		iconPath = `./public${siteConfig.favicon[0].src}`;

@@ -26,9 +26,7 @@ if (!friendsPost) {
 
 const { Content } = await render(friendsPost);
 
-// 26.09.02 [7]：友链数据路径改读 config（dataFiles.friendsJson，网页路径 /data/friends.json）；按 flag 升序、相同 flag 按 id 升序排序
 // friends.json 单条结构（flag 可选，缺失时归入默认分组）——用于给 JSON.parse 结果补类型，消除隐式 any
-// 26.11.03：新增 first/second 等可选字段的类型（见 utils/friend-links.ts），支持单卡片两个跳转网页
 interface RawFriend extends FriendRawItem {
 	id: number;
 	flag?: number;
@@ -41,7 +39,6 @@ const rawFriends = JSON.parse(
 	fs.readFileSync(friendsJsonPath, "utf-8"),
 ) as RawFriend[];
 
-// 26.11.03：按钮文案/启用判定/色相偏移统一由 parseFriendLinks 决策
 // - 仅简中、繁中采用 friends.json 里的 first/second 自定义名称；ja/en 按 i18n 固定文案（訪問/Visit、訪問/予備、Main/Backup）
 const FRIEND_LANG = (siteConfig.lang || "en").toLowerCase().replace(/-/g, "_");
 const useFriendJsonNames = FRIEND_LANG === "zh_cn" || FRIEND_LANG === "zh_tw";
@@ -59,7 +56,6 @@ const friendsList = rawFriends
 		flag: typeof item.flag === "number" ? item.flag : 1,
 		...parseFriendLinks(item, friendLabels, useFriendJsonNames),
 	}))
-	// 26.11.03：siteurl（含数组语法糖）解析后一个链接都没有、且无 first/second_siteurl 覆盖值时，该友链不显示
 	.filter((item) => item.hasUrl)
 	.sort((a, b) => {
 		if (a.flag !== b.flag) return a.flag - b.flag;
@@ -69,7 +65,6 @@ const friendsList = rawFriends
 // 获取所有标签
 const allTags = Array.from(new Set(friendsList.flatMap((item) => item.tags)));
 
-// 26.09.02 [12]：友链卡片响应式列数——按 config friendCardLayout.breakpoints（minWidth 升序、单位为 px，columns 夹紧 1-4）在构建期生成媒体查询 CSS：
 // 最小区间（minWidth<=0）作为无媒体查询的基础兜底；窗口宽度跨档位时由媒体查询天然实时生效（无需 JS）
 const FRIEND_BREAKPOINTS = (
 	siteConfig.friendCardLayout?.breakpoints?.length
@@ -110,7 +105,7 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
     import('../scripts/right-sidebar-layout.js');
   </script>
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-		<div class="card-base z-10 px-9 py-6 relative w-full">
+		<div class="card-base z-10 px-9 py-6 relative w-full" data-effect1-card data-filter-layout-container>
       <!-- 页面标题 -->
       <div class="flex flex-col items-start justify-center mb-8">
         <h1 class="text-4xl font-bold text-black/90 dark:text-white/90 mb-2 relative
@@ -165,7 +160,6 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 				</div>
 			</div>
 
-			<!-- 26.09.02 [12]：友链网格列数由 config 生成的媒体查询驱动（原固定 sm:grid-cols-2 xl:grid-cols-3 移除；默认 <640=1、640-1280=2、1280-1600=3、≥1600=4） -->
 			{friendGridCss && <Fragment set:html={`<style>${friendGridCss}</style>`} />}
 			<div id="friends-grid" class="grid gap-6 mb-6">
 				{friendsList.map((item) => (
@@ -181,7 +175,6 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 						<div class="p-6">
 							<!-- 头像和标题区 -->
 							<div class="flex items-start gap-4 mb-4">
-								<!-- 网站图标（26.11.03：imgurl 为空时由 parseFriendLinks 按第一个网页链接生成 favicon 地址） -->
 								<div class="w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden 
 												bg-[var(--btn-regular-bg)] 
 												ring-2 ring-transparent
@@ -200,7 +193,6 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 												 group-hover:text-[var(--primary)] transition-colors duration-200">
 										{item.title}
 									</h3>
-									{/* 26.11.03：链接改用解析后的有效站点地址（first_siteurl 优先覆盖 siteurl），hostname 解析失败时回退原串 */}
 									{item.siteUrl && (
 										<a 
 											href={item.siteUrl} 
@@ -308,27 +300,10 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 </MainGridLayout>
 
 <style>
-	/* 友链卡片动画
-	   26.11.03：改用统一令牌（motion.css），曲线与位移和全站一档。
-	   26.11.04：改回带淡入的 `mo-fade-rise` —— 上一版只留 transform，卡片不再淡入，
-	   观感上是「入场动画没了」（与改动前的 fadeInUp 行为不一致）。
-	   26.11.05：fill 由 both 改 backwards —— both 会让动画结束后仍“钉住” opacity/transform，
-	   使标签筛选的「下滑淡出 / 上滑淡入」类改不动这两个属性（动画值优先级高于普通声明）。 */
 	.friend-card {
-		animation: mo-fade-rise var(--mo-slow, 320ms) var(--mo-ease-out, cubic-bezier(0.22, 0.8, 0.32, 1)) backwards;
+		min-width: 0;
 	}
 
-	.friend-card:nth-child(1) { animation-delay: calc(var(--mo-stagger, 45ms) * 1); }
-	.friend-card:nth-child(2) { animation-delay: calc(var(--mo-stagger, 45ms) * 2); }
-	.friend-card:nth-child(3) { animation-delay: calc(var(--mo-stagger, 45ms) * 3); }
-	.friend-card:nth-child(4) { animation-delay: calc(var(--mo-stagger, 45ms) * 4); }
-	.friend-card:nth-child(5) { animation-delay: calc(var(--mo-stagger, 45ms) * 5); }
-	.friend-card:nth-child(6) { animation-delay: calc(var(--mo-stagger, 45ms) * 6); }
-
-	/* 26.11.03：desc 固定两行高（text-sm 行高 1.25rem，随根字号缩放）。
-	   desc 超过两行时在卡片内部滚动查看全文：滚动条常隐（无滑块可拖，仅滚轮/触控滚动）。
-	   滚动链拦截（overscroll-behavior: contain）不写死——只有「电脑端（≥768px）且 desc 确实超过两行、可滚动」
-	   时才由 /js/friends-page-handler.js 动态加 .friend-desc--scroll-lock；移动端与两行内不滚动的卡片不加。 */
 	.friend-desc {
 		height: calc(1.25rem * 2);
 		overflow-y: auto;
@@ -341,8 +316,6 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 		overscroll-behavior: contain;
 	}
 
-	/* 26.11.03：跳转按钮名称过长（带图标时被截断）时，由 /js/friends-page-handler.js 给按钮加
-	   .is-text-only，自动隐藏外链图标，把宽度让给名称（名称能完整显示时保留图标）。 */
 	.friend-visit-link.is-text-only .friend-visit-icon {
 		display: none;
 	}
@@ -353,12 +326,6 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 		display: none;
 	}
 
-	/* 26.11.03：本地 @keyframes fadeInUp 已删除，卡片入场改用 motion.css 的 mo-rise
-	   （只动 transform，淡入统一由父级 #main-grid 的 opacity 过渡负责）。 */
-
-	/* 标签筛选按钮样式 - 与番剧页面一致
-	   （26.11.05 评估：友链/设备/番剧三处 chip 的尺寸与选中态类名各不相同，
-	    强行合并会引入耦合且不减少行数，故保持各自页面内维护。） */
 	.filter-container {
 		display: flex;
 		flex-wrap: wrap;

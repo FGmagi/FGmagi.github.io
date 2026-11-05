@@ -1,9 +1,15 @@
 export interface Photo {
 	id?: string;
 	src: string;
+	/** Lightbox/original URL. Kept separate from the responsive thumbnail path. */
+	originalSrc?: string;
 	alt?: string;
 	title?: string;
 	thumbnail?: string;
+	medium?: string;
+	srcset?: string;
+	webp?: Array<{ width: number; url: string }>;
+	cacheVersion?: string;
 	tags?: string[];
 	description?: string;
 	date?: string;
@@ -12,6 +18,8 @@ export interface Photo {
 	height?: number;
 	/** 构建期内部去重键（不渲染）：本地图片=文件内容 md5；外链图片=规范化 URL 键（懒加载/防流量折衷，不下载内容） */
 	hash?: string;
+	/** URL enumerated from the checked-in remote lock, not fetched in this build. */
+	locked?: boolean;
 }
 
 /**
@@ -45,6 +53,7 @@ export interface AlbumGroup {
 	title: string;
 	description?: string;
 	cover: string;
+	coverThumbnail?: string;
 	date: string;
 	location?: string;
 	tags?: string[];

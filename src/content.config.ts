@@ -3,12 +3,6 @@ import { glob } from "astro/loaders";
 import { z } from 'astro/zod';
 import { dataFiles } from "./config";
 
-/**
- * 26.09.15：日期宽松解析。
- * md 里允许写 2026-1-5 / 2026-1-05 / 2026.1.05 / 2026\1\5 / 2026年1月5日（可带 12:30[:45]），
- * 统一解析成 Date（按**本地时区**，与归档按年份分组、展示格式化同口径）；
- * 解析不了时给出明确告警并回退 1970-01-01（排序最旧），避免 md 日期笔误导致整站构建失败。
- */
 function parseLooseDate(input: unknown): Date {
 	if (input instanceof Date && !Number.isNaN(input.getTime())) return input;
 	if (typeof input === "number" && Number.isFinite(input)) return new Date(input);
@@ -44,7 +38,6 @@ const looseDate = z.preprocess(
 );
 
 const postsCollection = defineCollection({
-	// 26.09.02 [7]：posts 集合 glob base 改读 config（dataFiles.postsDir）；active 字段控制文章是否对外显示
 	loader: glob({ pattern: "**/*.md", base: dataFiles.postsDir }),
 	schema: z.object({
 		title: z.string(),
@@ -74,9 +67,7 @@ const postsCollection = defineCollection({
 		/* 文章封面渲染模式：up=标题上方，down=标题下方正文前，background=封面作为页面背景 */
 		image_mode: z.enum(["up", "down", "background"]).optional().default("up"),
 
-		/* 26.09.18：正文分页/排版模式（封面渲染不受影响）
-		   default=沿用现在的整篇流式排版；single=A4 分页 + 单栏；double=A4 分页 + 双栏。
-		   正文里还可以用 `<!-- model:single -->` 之类的指令，从该处往后临时切换模式。 */
+
 		display_mode: z
 			.enum(["default", "single", "double"])
 			.optional()
@@ -87,9 +78,7 @@ const postsCollection = defineCollection({
 			.optional()
 			.default("left"),
 
-		/* 26.09.20：正文 / 图片 / 音频的对齐方式（left=靠左，middle=居中，right=靠右）。
-		   正文里可以用 `<!-- text_position:middle -->` 指令，从该处往后临时切换；
-		   节点自带的行内 style（如 <p style="text-align:right">）优先级更高。 */
+
 		text_position: z
 			.enum(["left", "middle", "right"])
 			.optional()
@@ -106,7 +95,6 @@ const postsCollection = defineCollection({
 	}),
 });
 const specCollection = defineCollection({
-	// 26.09.02 [7]：spec 集合 glob base 改读 config（dataFiles.specDir）
 	loader: glob({ pattern: "**/*.md", base: dataFiles.specDir }),
 	schema: z.object({}),
 });

@@ -9,7 +9,7 @@
   border-radius: 0.5rem;
   font-weight: 500;
   font-size: 0.875rem;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
   border: none;
   cursor: pointer;
   text-decoration: none;

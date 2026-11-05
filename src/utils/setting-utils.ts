@@ -19,7 +19,8 @@ export function getDefaultHue(): number {
 
 export function getHue(): number {
 	const stored = localStorage.getItem("hue");
-	return stored ? Number.parseInt(stored) : getDefaultHue();
+	const value = stored ? Number.parseInt(stored, 10) : getDefaultHue();
+	return Number.isFinite(value) ? Math.min(360, Math.max(0, value)) : getDefaultHue();
 }
 
 export function setHue(hue: number): void {
@@ -91,7 +92,8 @@ export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 	if (
 		needsThemeChange &&
 		document.startViewTransition &&
-		!window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		document.documentElement.dataset.motionThemeTransition !== "off" &&
+		document.documentElement.dataset.reducedMotion !== "true"
 	) {
 		// 添加标记类，表示正在使用 View Transitions
 		document.documentElement.classList.add(
@@ -148,14 +150,25 @@ export function setTheme(theme: LIGHT_DARK_MODE): void {
 }
 
 export function getStoredTheme(): LIGHT_DARK_MODE {
-	return (localStorage.getItem("theme") as LIGHT_DARK_MODE) || DEFAULT_THEME;
+	const stored = localStorage.getItem("theme");
+	return stored === LIGHT_MODE || stored === DARK_MODE
+		? stored
+		: DEFAULT_THEME;
 }
 
 export function getStoredWallpaperMode(): WALLPAPER_MODE {
-	return (
-		(localStorage.getItem("wallpaperMode") as WALLPAPER_MODE) ||
-		siteConfig.wallpaperMode.defaultMode
-	);
+	const stored = localStorage.getItem("wallpaperMode");
+	if (
+		stored === "banner" ||
+		stored === "fullscreen" ||
+		stored === "none"
+	) {
+		if (stored === "banner" && siteConfig.wallpaperMode.enableBannerMode === false) {
+			return "fullscreen";
+		}
+		return stored;
+	}
+	return siteConfig.wallpaperMode.defaultMode;
 }
 
 export function setWallpaperMode(mode: WALLPAPER_MODE): void {

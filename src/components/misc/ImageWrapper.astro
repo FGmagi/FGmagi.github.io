@@ -9,14 +9,31 @@ interface Props {
 	position?: string;
 	basePath?: string;
 	loading?: "eager" | "lazy";
-	// 26.08.31修改，内容为：新增 hideOverlay 属性，用于隐藏默认的半透明暗色遮罩层（封面透明边距需要）
+	originalSrc?: string;
+	srcset?: string;
+	sizes?: string;
+	width?: number;
+	height?: number;
 	hideOverlay?: boolean;
 }
 
 import { Image } from "astro:assets";
 import { url } from "../../utils/url-utils";
 
-const { id, src, alt, position = "center", basePath = "/", loading = "lazy", hideOverlay = false } = Astro.props;
+const {
+	id,
+	src,
+	alt,
+	position = "center",
+	basePath = "/",
+	loading = "lazy",
+	hideOverlay = false,
+	originalSrc,
+	srcset,
+	sizes,
+	width,
+	height,
+} = Astro.props;
 const className = Astro.props.class;
 
 const isLocal = !(
@@ -27,7 +44,6 @@ const isLocal = !(
 );
 const isPublic = src.startsWith("/");
 
-// 26.08.30修改，内容为：修复 content 集合移至 public/data 后，public 目录下的本地图片无法通过 import.meta.glob 渲染的问题（glob 只匹配 src/ 内文件），找不到时回退为 public URL 渲染
 // TODO temporary workaround for images dynamic import
 // https://github.com/withastro/astro/issues/3373
 // biome-ignore lint/suspicious/noImplicitAnyLet: <check later>
@@ -66,11 +82,48 @@ const isBilibiliImage = !isLocal && src.includes("hdslb.com");
 // 对于外部图片（特别是Bilibili），需要设置referrerpolicy避免403错误
 const referrerPolicy = !isLocal && isBilibiliImage ? "no-referrer" : undefined;
 ---
-<div id={id} class:list={[className, 'overflow-hidden relative']}>
+<div
+    id={id}
+    class:list={[className, "image-shell overflow-hidden relative"]}
+    data-image-shell
+    data-image-state="idle"
+>
     {!hideOverlay && (
         <div class="transition absolute inset-0 dark:bg-black/10 bg-opacity-50 pointer-events-none"></div>
     )}
-    {isLocal && img && <Image src={img} alt={alt || ""} class={imageClass} style={imageStyle} loading={loading}/>}
-    {isLocal && !img && publicImagePath && <img src={publicImagePath} alt={alt || ""} class={imageClass} style={imageStyle} loading={loading}/>}
-    {!isLocal && <img src={isPublic ? url(src) : src} alt={alt || ""} class={imageClass} style={imageStyle} loading={loading} referrerpolicy={referrerPolicy} crossorigin={isBilibiliImage ? "anonymous" : undefined}/>}
+    {isLocal && img && <Image src={img} alt={alt || ""} class={imageClass} style={imageStyle} loading={loading} width={width} height={height} data-image-fallback="1" data-original-src={originalSrc || publicImagePath || src}/>}
+    {isLocal && !img && publicImagePath && <img src={publicImagePath} alt={alt || ""} class={imageClass} style={imageStyle} loading={loading} width={width} height={height} srcset={srcset} sizes={sizes} data-image-fallback="1" data-original-src={originalSrc || publicImagePath}/>}
+    {!isLocal && <img src={isPublic ? url(src) : src} alt={alt || ""} class={imageClass} style={imageStyle} loading={loading} width={width} height={height} srcset={srcset} sizes={sizes} referrerpolicy={referrerPolicy} crossorigin={isBilibiliImage ? "anonymous" : undefined} data-image-fallback="1" data-original-src={originalSrc || src}/>}
+    <span class="image-error-label" aria-hidden="true">图片不可用</span>
 </div>
+
+<style>
+    .image-shell {
+        background: linear-gradient(
+            135deg,
+            color-mix(in oklab, var(--card-bg), black 6%),
+            var(--card-bg)
+        );
+    }
+    .image-shell.is-error .image-error-label {
+        display: flex;
+    }
+    .image-error-label {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-50, rgb(100 116 139));
+        font-size: 0.75rem;
+    }
+    .image-shell.is-error img {
+        opacity: 0;
+    }
+    .image-shell img {
+        transition: opacity var(--mo-base, 220ms) ease;
+    }
+    :global(html[data-motion-image-reveal="off"]) .image-shell img {
+        transition: none;
+    }
+</style>

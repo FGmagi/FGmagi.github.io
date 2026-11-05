@@ -1,19 +1,4 @@
-/**
- * 相册图片尺寸「空闲预计算」（B 任务）：在非相册页空闲时提前计算所有相册图片的尺寸。
- *
- * 硬性约束：
- *  - 严禁提前加载图片内容 —— 只走 manifest + Range 头字节探测（photo-size），绝不全量下载；
- *  - 渐进分批、可中止 —— requestIdleCallback（降级 setTimeout）+ AbortController：
- *    离开/隐藏/切页中止；当前关注相册优先（即不抢占相册页自身渲染，探测并发压低）；
- *  - 26.09.14：探测整体下沉 Web Worker（photo-probe-client），主线程只收结果写缓存；
- *    单轮有全局截止（PREFETCH_DEADLINE_MS），外链大面积不可达时不会一直空转；
- *  - 尺寸一律入 localStorage（photo-cache，mzAlbumPhoto: 命名空间），与 A 共用同一套尺寸
- *    获取 + 缓存；运行期绝不回写构建产物。
- *
- * 注册时机：模块顶层只注册一次；但「只在用户首次进入相册相关页后」才真正开始预计算
- * （sessionStorage 记录），避免从未关心相册的访客产生无谓的 Range 请求。
- * manifest 获取带 404 / 结构守卫（predev 不产出文件时静默跳过）。
- */
+
 
 import { getSize, setSize, prune, sweepByKeys } from "../utils/photo-cache.js";
 import { probePhotoSizes } from "../utils/photo-probe-client.js";
@@ -34,7 +19,6 @@ let running = false;
 let lastAttempt = 0;
 let armedForPageView = false;
 let currentAbort = null;
-// 26.09.14：诊断通道状态。模块级声明（runRound 需要读它），install() 时按 ?prefetch=debug 置位
 let DEBUG = false;
 
 function ssGet(key) {
@@ -70,7 +54,6 @@ function abortCurrent() {
 }
 
 async function probeDims(tasks, signal) {
-	// 26.09.14：整批交 Worker（并发 3、全局截止 10s），主线程只负责写缓存
 	await probePhotoSizes(tasks, {
 		signal,
 		concurrency: PROBE_CONCURRENCY,
@@ -106,13 +89,6 @@ async function runRound(signal) {
 	}
 	if (!data || data.schema !== 2 || !Array.isArray(data.albums)) return;
 
-	// 26.09.14：候选过滤改为「校验式」——
-	// 本仓库 74/74 张外链图的尺寸在构建期就被 sharp 从本地原档解析出来了（manifest 里全都带 w/h），
-	// 旧的「构建期已知就跳过」会让候选恒为 0，预取等于永不工作。现在改为：
-	//   a) 构建期声明式已知（photo.known !== true）→ 无需运行期校验，跳过；
-	//   b) 构建期探测所得（photo.known === true）→ 只有本版本已校验过（verifiedOnly 命中）才跳过；
-	//   c) 构建期未知 → 任意缓存（探测所得或其它来源）都算数；
-	//   d) 非 http(s) 外链不探测。
 	const tasks = [];
 	for (const album of data.albums) {
 		if (!album || !album.id) continue;
@@ -129,7 +105,6 @@ async function runRound(signal) {
 		}
 	}
 
-	// 26.09.14：空候选必须可见 —— 否则「无日志」会被当成功能失效
 	if (tasks.length === 0) {
 		console.warn(
 			`[album-prefetch] 本轮无候选（manifest ${data.albums.length} 个相册）：所有外链图尺寸均已在构建期解析并已校验，跳过预取。`,
@@ -140,7 +115,6 @@ async function runRound(signal) {
 		);
 	}
 
-	// 26.09.14：整批交 Worker 渐进探测（内部分批 + 全局截止 + 可中止），绝不全量下载
 	if (tasks.length > 0) await probeDims(tasks, signal);
 	if (signal.aborted) return;
 	// 只有整批都「已校验」（或本轮无候选）才算跑完；被截止/失败截断的留待下一轮（受冷却间隔约束）
@@ -148,7 +122,6 @@ async function runRound(signal) {
 		(task) => !getSize(task.key, { verifiedOnly: true }),
 	).length;
 	if (remaining > 0) {
-		// 26.09.14：不收敛也要可见（静默 return 会让问题无法诊断）
 		console.warn(
 			`[album-prefetch] 未收敛 ${remaining}/${tasks.length} 张（外链不可达或被单轮截止截断），${Math.round(RETRY_COOLDOWN_MS / 1000)}s 冷却后可再试。`,
 		);
@@ -212,7 +185,6 @@ function install() {
 	if (typeof window === "undefined" || typeof document === "undefined")
 		return;
 
-	// 26.09.14：诊断通道 —— 仅 ?prefetch=debug 时输出详细日志
 	DEBUG =
 		typeof location !== "undefined" &&
 		new URLSearchParams(location.search).get("prefetch") === "debug";
@@ -248,10 +220,6 @@ function install() {
 	// 整页离开中止
 	window.addEventListener("pagehide", abortCurrent);
 
-	// 首载（26.09.14 注：触发条件由 scheduleRoundIfDue 内部把关，本处逻辑无需改动）
-	// 非相册页首载 → scheduleRoundIfDue()；但它会被 `if (!seenAlbum) return;` 挡住 —— 这是设计：
-	// 只有「本会话先访问过 /albums 或 /albums/*」的访客才会预取，从未关心相册的访客不产生任何 Range 请求。
-	// 也就是说：fresh session 直接开在文章页不会预取；先看过相册页、再回到非相册页（或刷新）才会预取。
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", () => {
 			markSeenIfAlbum();

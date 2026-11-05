@@ -1,13 +1,46 @@
 <script lang="ts">
 	import { navigateToPage } from "@utils/navigation-utils";
 	import { url } from "@utils/url-utils";
+	import { onMount } from "svelte";
 
-	// 26.08.31修改，内容为：搜索栏复用友链搜索栏的高度/阴影/图标样式，去除搜索按钮，Enter 或点击搜索图标触发搜索，右侧显示“Enter”提示文字
 	export let keyword = "";
 	export let placeholder = "搜索标题、说明、标签、内容…";
 	export let className = "";
 
 	let value = keyword;
+	let composing = false;
+	let frame = 0;
+
+	function applyLiveSearch(restoreOnly = false) {
+		const normalized = value.trim().toLowerCase();
+		document
+			.querySelectorAll<HTMLElement>("#post-list-container [data-search-text]")
+			.forEach((card) => {
+				const matches =
+					restoreOnly ||
+					!normalized ||
+					(card.dataset.searchText || "").includes(normalized);
+				card.dataset.searchMatch = matches ? "true" : "false";
+			});
+	}
+
+	function scheduleLiveSearch() {
+		if (frame) cancelAnimationFrame(frame);
+		frame = requestAnimationFrame(() => {
+			frame = 0;
+			applyLiveSearch();
+			window.dispatchEvent(
+				new CustomEvent("fgmagi:search-input", { detail: { q: value } }),
+			);
+			if (location.pathname.startsWith("/archive/")) {
+				const next = new URL(location.href);
+				const query = value.trim();
+				if (query) next.searchParams.set("q", query);
+				else next.searchParams.delete("q");
+				history.replaceState(history.state, "", next);
+			}
+		});
+	}
 
 	function doSearch() {
 		const kw = value.trim();
@@ -21,17 +54,27 @@
 			doSearch();
 		}
 	}
-	// 26.08.31修改，内容为：右键清空搜索栏内容
 	function handleContextMenu(event: MouseEvent) {
 		event.preventDefault();
 		value = "";
+		applyLiveSearch(true);
 	}
+
+	onMount(() => {
+		applyLiveSearch();
+		const refresh = () => applyLiveSearch();
+		document.addEventListener("astro:page-load", refresh);
+		document.addEventListener("swup:page:view", refresh);
+		return () => {
+			document.removeEventListener("astro:page-load", refresh);
+			document.removeEventListener("swup:page:view", refresh);
+			if (frame) cancelAnimationFrame(frame);
+		};
+	});
 </script>
 
 <div class={className}>
 	<div class="relative">
-		<!-- 26.09.15 [/root]：搜索图标是纯装饰（点击与键盘均以输入框为主入口），
-		     标记 aria-hidden 后不再作为无名可聚焦元素被读屏器读到 -->
 		<svg
 			onclick={doSearch}
 			aria-hidden="true"
@@ -55,6 +98,16 @@
 			aria-label={placeholder}
 			onkeydown={handleKeydown}
 			oncontextmenu={handleContextMenu}
+			oninput={() => {
+				if (!composing) scheduleLiveSearch();
+			}}
+			oncompositionstart={() => {
+				composing = true;
+			}}
+			oncompositionend={() => {
+				composing = false;
+				scheduleLiveSearch();
+			}}
 			class="post-search-input w-full px-4 py-2 pl-10 pr-16 rounded-lg bg-[var(--btn-regular-bg)] text-[0.9625rem] text-75 border border-black/10 dark:border-white/10 focus:outline-none transition-colors duration-200 placeholder:text-black/40 dark:placeholder:text-white/40"
 		/>
 		<span
@@ -66,7 +119,6 @@
 </div>
 
 <style>
-	/* 26.08.31修改，内容为：简洁模式主页与“全部”页搜索栏与下方内容卡片左对齐，长度固定为卡片长度 2/3 */
 	:global(body.simple-mode) .home-search-bar > div,
 	.archive-search-bar > div {
 		max-width: 66.666%;

@@ -1,5 +1,4 @@
 <script lang="ts">
-// 26.09.02 [11]修改，内容为：移除分类筛选入口/逻辑——category URL 参数筛选、uncategorized 特殊分支与 categories prop 全部删除，关键词搜索与标签筛选不受影响
 import { onMount } from "svelte";
 
 import I18nKey from "../i18n/i18nKey";
@@ -12,7 +11,7 @@ export let postsContent: Record<string, string> = {};
 
 const params = new URLSearchParams(window.location.search);
 tags = params.has("tag") ? params.getAll("tag") : [];
-const searchKeyword = params.get("q") || "";
+let searchKeyword = params.get("q") || "";
 
 interface Post {
 	id: string;
@@ -44,7 +43,7 @@ function formatTag(tagList: string[]) {
 	return tagList.map((t) => `#${t}`).join(" ");
 }
 
-onMount(async () => {
+function updateGroups(keyword = searchKeyword) {
 	let filteredPosts: Post[] = sortedPosts;
 
 	if (tags.length > 0) {
@@ -55,8 +54,7 @@ onMount(async () => {
 		);
 	}
 
-	// 26.08.30修改，内容为：新增关键字搜索——匹配标题/说明/标签/正文，空格分词、大小写不敏感、任意关键字命中即匹配（分类筛选已于 26.09.02 [11] 移除，现与标签筛选互不影响）
-	const keywords = searchKeyword
+	const keywords = keyword
 		.trim()
 		.toLowerCase()
 		.split(/\s+/)
@@ -102,12 +100,26 @@ onMount(async () => {
 	groupedPostsArray.sort((a, b) => b.year - a.year);
 
 	groups = groupedPostsArray;
+}
+
+onMount(() => {
+	updateGroups();
+	const handleSearch = (event: Event) => {
+		const detail = (event as CustomEvent<{ q?: string }>).detail;
+		searchKeyword = detail?.q || "";
+		updateGroups(searchKeyword);
+	};
+	window.addEventListener("fgmagi:search-input", handleSearch);
+	return () => window.removeEventListener("fgmagi:search-input", handleSearch);
 });
 </script>
 
 <PostSearchBar keyword={searchKeyword} className="archive-search-bar mb-4" />
 
-<div class="card-base px-8 py-6">
+<div class="card-base px-8 py-6" data-effect1-card>
+    {#if groups.length === 0}
+        <p class="text-center text-50 py-8">没有找到相关文章。</p>
+    {/if}
     {#each groups as group}
         <div>
             <div class="flex flex-row w-full items-center h-[3.75rem]">

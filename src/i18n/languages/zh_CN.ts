@@ -15,7 +15,6 @@ export const zh_CN: Translation = {
 	[Key.navOthers]: "其他",
 
 	[Key.tags]: "标签",
-	// 26.09.02 [13]：标签筛选卡片标题
 	[Key.tagFilter]: "标签筛选",
 	[Key.categories]: "分类",
 	[Key.recentPosts]: "最新文章",
@@ -34,7 +33,6 @@ export const zh_CN: Translation = {
 	[Key.friendsFilterAll]: "全部",
 	[Key.friendsNoResults]: "未找到匹配的友链",
 	[Key.friendsVisit]: "访问",
-	// 26.11.03：友链双站点按钮文案（左侧/右侧）
 	[Key.friendsVisitMain]: "访问",
 	[Key.friendsVisitBackup]: "备用",
 	[Key.friendsCopyLink]: "复制链接",
@@ -51,7 +49,7 @@ export const zh_CN: Translation = {
 	[Key.postCount]: "篇文章",
 	[Key.postsCount]: "篇文章",
 
-	[Key.themeColor]: "主题", // 26.08.30修改，内容为：主题色按钮文案由"主题色"改为"主题"
+	[Key.themeColor]: "主题",
 
 	[Key.lightMode]: "亮色",
 	[Key.darkMode]: "暗色",
@@ -339,8 +337,6 @@ export const zh_CN: Translation = {
 	[Key.switchToGridMode]: "切换到网格模式",
 	[Key.switchToListMode]: "切换到列表模式",
 
-	// 26.08.30修改，内容为：新增布局/主题模式显示文案与简洁模式文案
-	// 布局/主题模式显示
 	[Key.listMode]: "网格模式",
 	[Key.gridMode]: "列表模式",
 	[Key.dayMode]: "夜晚模式",

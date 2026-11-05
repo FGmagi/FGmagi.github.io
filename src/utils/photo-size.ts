@@ -1,14 +1,4 @@
-/**
- * 相册图片「尺寸探测」工具（双端可用）。
- *
- * - `parseImageSizeFromBytes`：从图片文件头字节解析宽高（JPEG SOF0/2 / PNG IHDR / GIF /
- *   WebP VP8/VP8L/VP8X / AVIF ispe）。绝不依赖完整文件，仅需头部一段字节。
- * - `fetchHeaderSize`：对远程图片用 HTTP Range「字节范围读文件头」的方式拿头部字节，
- *   按需放大探测窗口、设封顶；服务器无视 Range 时只读首块即 cancel 流，绝不全量下载；
- *   失败返回 null（调用方默认宽高比占位）。26.09.14：网络失败不再放大窗口重试。
- *
- * 不含任何 node / DOM 专属依赖，可被客户端、Node 与 Web Worker 同时 import。
- */
+
 
 export interface PhotoDim {
 	w: number;
@@ -279,14 +269,6 @@ type RangeResult =
 	| { kind: "unsupported" }
 	| { kind: "error" };
 
-/**
- * 远程图片尺寸探测：Range 读文件头，绝不全量下载。
- * 返回 null 表示探测失败（网络 / 服务器不支持 / 格式不支持 / 头不完整）。
- *
- * 26.09.14：只在「真的拿到头部字节但没解析出尺寸」时才放大窗口重试；
- * 网络错误/超时/HTTP 失败立即收工（此前会把一次失败放大成 3 次请求 × 超时，
- * 大量外链不可达时相册页尺寸期因此长达数分钟，表现为整页卡死）。
- */
 export async function fetchHeaderSize(
 	url: string,
 	opts: FetchHeaderOptions = {},

@@ -27,17 +27,8 @@ import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
 import { remarkContent } from "./src/plugins/remark-content.mjs";
 import { remarkRelativeMedia } from "./src/plugins/remark-relative-media.mjs";
 import { rehypeImageWidth } from "./src/plugins/rehype-image-width.mjs";
+import { rehypeResponsiveMedia } from "./src/plugins/rehype-responsive-media.mjs";
 
-/**
- * 26.09.14：dev 专用 Vite 插件 —— `astro dev` 下让 GET /data/photo-meta.json 返回「即时生成」的清单。
- *
- * 背景：该清单要跑一次全量扫描 + sharp 尺寸探测（本地实测 18~24s），dev 下每次刷新都现算无法接受；
- * 而把清单写进 public/ 会落盘（陈旧清单有覆盖线上产物的风险），故走中间件 + 内存缓存，不落盘。
- *
- * 边界：apply:"serve" 只在 dev 生效；线上（production）仍由 src/pages/data/photo-meta.json.ts
- * 在构建期产出 dist/data/photo-meta.json（output:"static" 不变）。
- * 另注：Astro 在 build 时会主动过滤掉 apply==="serve" 的插件（见 astro/dist/core/create-vite.js），双重保险。
- */
 function devPhotoMetaManifest() {
 	const TTL_MS = 45 * 1000; // 内存缓存 45s，避免每次刷新都跑一次 18~24s 的扫描
 	/** @type {{ at: number; body: string } | null} */
@@ -49,7 +40,6 @@ function devPhotoMetaManifest() {
 		name: "dev-photo-meta-manifest",
 		apply: "serve",
 		configureServer(server) {
-			// 26.09.14：动态 import 的 .ts 由 dev 的 Vite 转译，无需新依赖；
 			// 若 config 本身是经 Vite SSR 加载的（Node 不能直接跑 TS 时的回退路径），
 			// 配置期那次 SSR module runner 可能已随其临时 server 关闭，此时退回 dev server 的 ssrLoadModule。
 			const loadModules = async () => {
@@ -158,8 +148,6 @@ export default defineConfig({
 		swup({
 			theme: false,
 			animationClass: "transition-swup-",
-			// 26.08.30修改，内容为：swup 容器由 main 扩展为同时包含 #sidebar-swup-container，使页面切换时侧边栏磁贴随内容一起过渡
-			// 26.09.14修改，内容为：容器再加入 #toc-swup-region（恒渲染的目录区外壳，见 MainGridLayout）——
 			// 侧栏目录不在 main 内（否则会被 #main-grid 的透明度动画二次相乘），此前 swup 切页不会替换它，
 			// 文章页的目录只能等客户端 100ms 后重建（或干脆不存在），表现为「目录没进入预渲染」。
 			containers: ["main", "#sidebar-swup-container", "#toc-swup-region"],
@@ -239,7 +227,6 @@ export default defineConfig({
 		remarkPlugins: [
 			remarkMath,
 			remarkContent,
-			// 26.09.15：HTML 写的 <img>/<video>/<audio> 也支持相对路径（与 ![]() 一致）
 			remarkRelativeMedia,
 			remarkGithubAdmonitionsToDirectives,
 			remarkDirective,
@@ -253,6 +240,7 @@ export default defineConfig({
 			rehypeWrapTable,
 			rehypeMermaid,
 			rehypeImageWidth,
+			rehypeResponsiveMedia,
 			[
 				rehypeComponents,
 				{
@@ -308,7 +296,6 @@ export default defineConfig({
 				},
 			},
 		},
-		// 26.09.14：dev 专用清单中间件（apply:"serve"，构建期不介入；详见 devPhotoMetaManifest 注释）
 		plugins: [devPhotoMetaManifest()],
 	},
 });

@@ -1,13 +1,13 @@
 ---
 
-import { expressiveCodeConfig, siteConfig } from "../config";
+import { Effect3, expressiveCodeConfig, siteConfig } from "../config";
 ---
 
 <!-- 全局配置载体 -->
 <div id="config-carrier" data-hue={siteConfig.themeColor.hue} data-hide-code-blocks-during-transition={expressiveCodeConfig.hideDuringThemeTransition ? "true" : "false"}>
 </div>
 
-<script is:inline define:vars={{ tocEnable: siteConfig.toc.enable, tocDepth: siteConfig.toc.depth, tocUseJapaneseBadge: siteConfig.toc.useJapaneseBadge, pageTransition: siteConfig.pageTransition }}>
+<script is:inline define:vars={{ tocEnable: siteConfig.toc.enable, tocDepth: siteConfig.toc.depth, tocUseJapaneseBadge: siteConfig.toc.useJapaneseBadge, pageTransition: siteConfig.pageTransition, effect3: Effect3 }}>
   // 将TOC配置传递到前端
   window.siteConfig = window.siteConfig || {};
   window.siteConfig.toc = {
@@ -20,6 +20,7 @@ import { expressiveCodeConfig, siteConfig } from "../config";
   // MainGridLayout.astro 的 <style define:vars> 写到 :root（--page-fade-out / --page-fade-in），
   // 因此本桥接只服务于 JS，不参与 CSS。
   window.siteConfig.pageTransition = pageTransition;
+  window.siteConfig.effect3 = effect3;
 
 </script>
 

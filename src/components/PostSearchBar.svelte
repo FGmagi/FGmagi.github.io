@@ -10,6 +10,12 @@
 	let value = keyword;
 	let composing = false;
 	let frame = 0;
+	let homeSearchRun = 0;
+
+	function isHomePage() {
+		// 使用组件自身的挂载位置判断，兼容首页分页路径。
+		return className.split(/\s+/).includes("home-search-bar");
+	}
 
 	function applyLiveSearch(restoreOnly = false) {
 		const normalized = value.trim().toLowerCase();
@@ -24,7 +30,26 @@
 			});
 	}
 
+	async function runHomeSearch() {
+		const run = ++homeSearchRun;
+		const container = document.getElementById("post-list-container");
+		if (container && window.CardFilter) {
+			await window.CardFilter.config().waitForIdle(container);
+		}
+		if (run !== homeSearchRun) return;
+		window.dispatchEvent(
+			new CustomEvent("fgmagi:home-search", {
+				detail: { q: value },
+			}),
+		);
+	}
+
 	function scheduleLiveSearch() {
+		if (isHomePage()) {
+			void runHomeSearch();
+			return;
+		}
+
 		if (frame) cancelAnimationFrame(frame);
 		frame = requestAnimationFrame(() => {
 			frame = 0;
@@ -43,6 +68,10 @@
 	}
 
 	function doSearch() {
+		if (isHomePage()) {
+			void runHomeSearch();
+			return;
+		}
 		const kw = value.trim();
 		if (!kw) return;
 		navigateToPage(`${url("/archive/")}?q=${encodeURIComponent(kw)}`);
@@ -51,20 +80,24 @@
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === "Enter") {
 			event.preventDefault();
-			doSearch();
+			if (isHomePage()) void runHomeSearch();
+			else doSearch();
 		}
 	}
 	function handleContextMenu(event: MouseEvent) {
 		event.preventDefault();
 		value = "";
-		applyLiveSearch(true);
+		if (isHomePage()) void runHomeSearch();
+		else applyLiveSearch(true);
 	}
 
 	onMount(() => {
-		applyLiveSearch();
+		if (!isHomePage()) applyLiveSearch();
 		const refresh = () => applyLiveSearch();
-		document.addEventListener("astro:page-load", refresh);
-		document.addEventListener("swup:page:view", refresh);
+		if (!isHomePage()) {
+			document.addEventListener("astro:page-load", refresh);
+			document.addEventListener("swup:page:view", refresh);
+		}
 		return () => {
 			document.removeEventListener("astro:page-load", refresh);
 			document.removeEventListener("swup:page:view", refresh);

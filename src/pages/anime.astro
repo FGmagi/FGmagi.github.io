@@ -1,6 +1,6 @@
 ---
 import ImageWrapper from "../components/misc/ImageWrapper.astro";
-import { siteConfig } from "../config";
+import { Effect3, siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -205,7 +205,6 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 									return (
 										<div
 											class="anime-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-shadow duration-300 hover:shadow-xl"
-											data-effect1-card
 											data-anime-status={anime.status}
 										>
 											<div class="relative anime-cover-container aspect-[2/3] overflow-hidden">
@@ -347,7 +346,6 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 									return (
 										<div
 											class="anime-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10 overflow-hidden transition-shadow duration-300 hover:shadow-xl"
-											data-effect1-card
 											data-anime-status={anime.status}
 										>
 											<div class="relative anime-cover-container aspect-[2/3] overflow-hidden">
@@ -765,12 +763,16 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 		})();
 	</script>
 
-	<script is:inline>
+	<script is:inline define:vars={{ effect3: Effect3 }}>
 		if (typeof window.animeFilterEventListeners === "undefined") {
 			window.animeFilterEventListeners = [];
 		}
 
 		function initFilterButtons() {
+			if (window.__animeFilterCleanup) {
+				window.__animeFilterCleanup();
+			}
+
 			const filterTags = document.querySelectorAll(".anime-filter-tag");
 			const sentinel = document.getElementById(
 				"infinite-scroll-sentinel",
@@ -787,6 +789,278 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 			const allFilter = Array.from(filterTags).find(
 				(tag) => tag.getAttribute("data-status") === "all",
 			);
+			let activeStatus =
+				document.querySelector(".anime-filter-tag.anime-active")
+					?.getAttribute("data-status") || "all";
+			let filterRun = 0;
+			let filterObserver = null;
+			let animationTimer = 0;
+			let pendingAnimationResolve = null;
+
+			function getAnimeCards() {
+				return Array.from(listContainer?.children || []).filter(
+					(item) => item.hasAttribute("data-anime-status"),
+				);
+			}
+
+			function matchesStatus(item, status) {
+				return (
+					status === "all" ||
+					item.getAttribute("data-anime-status") === status
+				);
+			}
+
+			function isCardHidden(card) {
+				return window.CardFilter
+					? window.CardFilter.isHidden(card)
+					: card.classList.contains("effect2-hidden") ||
+							card.classList.contains("hidden") ||
+							card.getAttribute("hidden") !== null ||
+							card.style.display === "none";
+			}
+
+			function updateSentinel() {
+				if (!sentinel) return;
+				if (!lazyStore || lazyStore.content.children.length === 0) {
+					sentinel.style.display = "none";
+					filterObserver?.disconnect();
+					return;
+				}
+				sentinel.style.display = "";
+			}
+
+			function materializeAllLazyCards() {
+				if (
+					!lazyStore ||
+					!listContainer ||
+					lazyStore.content.children.length === 0
+				) {
+					updateSentinel();
+					return;
+				}
+				const fragment = document.createDocumentFragment();
+				while (lazyStore.content.firstChild) {
+					fragment.appendChild(lazyStore.content.firstChild);
+				}
+				listContainer.appendChild(fragment);
+				if (sentinel) sentinel.style.display = "none";
+				filterObserver?.disconnect();
+			}
+
+			function runAnimeFilterAnimation(items, status, run) {
+				const itemsToHide = [];
+				const itemsToShow = [];
+				const itemsToKeep = [];
+
+				items.forEach((item) => {
+					const shouldShow =
+						status === "all" ||
+						item.getAttribute("data-anime-status") === status;
+					const currentlyVisible = !isCardHidden(item);
+					if (shouldShow) {
+						(currentlyVisible ? itemsToKeep : itemsToShow).push(
+							item,
+						);
+					} else if (currentlyVisible) {
+						itemsToHide.push(item);
+					}
+				});
+
+				const firstPositions = new Map(
+					itemsToKeep.map((item) => [
+						item,
+						item.getBoundingClientRect(),
+					]),
+				);
+				const animation = effect3.anime;
+				const cleanupAfter =
+					Math.max(
+						animation.cleanupDelay,
+						animation.fadeDuration +
+							Math.min(
+								itemsToShow.length,
+								animation.fadeInStaggerLimit,
+							) *
+								animation.fadeInStagger,
+						animation.moveDuration,
+					) + animation.cleanupBuffer;
+
+				return new Promise((resolve) => {
+					const finish = () => {
+						window.clearTimeout(animationTimer);
+						animationTimer = 0;
+						pendingAnimationResolve = null;
+						[...itemsToHide, ...itemsToShow, ...itemsToKeep].forEach(
+							(item) => {
+								item.classList.remove(
+									"anime-fade-out",
+									"anime-fade-in",
+									"anime-fade-in-active",
+								);
+								item.style.transition = "";
+								item.style.transform = "";
+								item.style.opacity = "";
+								item.style.willChange = "";
+								item.style.transitionDelay = "";
+							},
+						);
+						resolve();
+					};
+					pendingAnimationResolve = finish;
+
+					const applyChanges = () => {
+						if (run !== filterRun || !listContainer?.isConnected) {
+							finish();
+							return;
+						}
+
+						const applyVisibility = () => {
+							itemsToHide.forEach((item) => {
+								item.classList.add("anime-hidden");
+								item.classList.remove("anime-fade-out");
+							});
+							itemsToShow.forEach((item) => {
+								item.classList.remove("anime-hidden");
+								item.classList.add("anime-fade-in");
+								item.style.transition = "none";
+							});
+						};
+						const host =
+							listContainer.closest(
+								"[data-filter-layout-container][data-effect1-card]",
+							) || listContainer;
+						if (
+							window.CardFilter &&
+							host &&
+							effect3.container
+						) {
+							void window.CardFilter.animateHeight(
+								host,
+								applyVisibility,
+								effect3.container.duration,
+								effect3.container.easing,
+							).catch((error) => {
+								console.error(
+									"[Anime] Container height animation failed:",
+									error,
+								);
+							});
+						} else {
+							applyVisibility();
+						}
+
+						const deltas = itemsToKeep.map((item) => {
+							const first = firstPositions.get(item);
+							const last = item.getBoundingClientRect();
+							return {
+								item,
+								x: first ? Math.round(first.left - last.left) : 0,
+								y: first ? Math.round(first.top - last.top) : 0,
+							};
+						});
+						deltas.forEach(({ item, x, y }) => {
+							if (!x && !y) return;
+							item.style.transition = "none";
+							item.style.willChange = "transform";
+							item.style.transform = `translate(${x}px, ${y}px)`;
+						});
+
+						requestAnimationFrame(() => {
+							if (
+								run !== filterRun ||
+								!listContainer?.isConnected
+							) {
+								return;
+							}
+							itemsToKeep.forEach((item) => {
+								item.style.transition =
+									`transform ${animation.moveDuration}ms ${animation.moveEasing}`;
+								item.style.transform = "";
+							});
+							itemsToShow.forEach((item, index) => {
+								item.style.transition = "";
+								item.style.willChange = "opacity, transform";
+								item.style.transitionDelay =
+									index < animation.fadeInStaggerLimit
+										? `${index * animation.fadeInStagger}ms`
+										: "0ms";
+								requestAnimationFrame(() => {
+									if (
+										run !== filterRun ||
+										!listContainer?.isConnected
+									) {
+										return;
+									}
+									item.classList.remove("anime-fade-in");
+									item.classList.add("anime-fade-in-active");
+								});
+							});
+							animationTimer = window.setTimeout(
+								finish,
+								cleanupAfter,
+							);
+						});
+					};
+
+					if (itemsToHide.length) {
+						itemsToHide.forEach((item) =>
+							item.classList.add("anime-fade-out"),
+						);
+						animationTimer = window.setTimeout(
+							applyChanges,
+							animation.fadeOutDelay,
+						);
+					} else {
+						applyChanges();
+					}
+				});
+			}
+
+			function loadMoreForActiveFilter() {
+				if (
+					!listContainer ||
+					!lazyStore ||
+					lazyStore.content.children.length === 0
+				) {
+					updateSentinel();
+					return;
+				}
+
+				const fragment = document.createDocumentFragment();
+				let movedCount = 0;
+				while (
+					lazyStore.content.firstChild &&
+					movedCount < effect3.anime.lazyBatchSize
+				) {
+					const node = lazyStore.content.firstChild;
+					if (node.nodeType === 1) {
+						node.classList.add("anime-fade-in-active");
+					}
+					fragment.appendChild(node);
+					movedCount += 1;
+				}
+				requestAnimationFrame(() => {
+					listContainer.appendChild(fragment);
+					updateSentinel();
+				});
+			}
+
+			function cleanupFilterRuntime() {
+				filterRun += 1;
+				window.clearTimeout(animationTimer);
+				pendingAnimationResolve?.();
+				pendingAnimationResolve = null;
+				filterObserver?.disconnect();
+				filterObserver = null;
+				window.CardFilter?.clearRuntime();
+			}
+			window.__animeFilterCleanup = cleanupFilterRuntime;
+			window.addEventListener("pagehide", cleanupFilterRuntime);
+			window.animeFilterEventListeners.push([
+				window,
+				"pagehide",
+				cleanupFilterRuntime,
+			]);
 
 			filterTags.forEach((tag) => {
 				const clickHandler = function () {
@@ -801,60 +1075,45 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 						t.classList.remove("anime-active"),
 					);
 					target.classList.add("anime-active");
+					activeStatus =
+						target.getAttribute("data-status") || "all";
 
-					if (
-						lazyStore &&
-						lazyStore.content.children.length > 0 &&
-						listContainer
-					) {
-						const fragment = document.createDocumentFragment();
-						while (lazyStore.content.firstChild) {
-							const node = lazyStore.content.firstChild;
-							fragment.appendChild(node);
-						}
-						listContainer.appendChild(fragment);
-					}
+					const run = ++filterRun;
 
-					if (sentinel) sentinel.style.display = "none";
-					const initialHidden =
-						listContainer.querySelectorAll(".initial-hidden");
-					initialHidden.forEach((el) => {
-						el.classList.remove("hidden", "initial-hidden");
-					});
+					window.clearTimeout(animationTimer);
+					pendingAnimationResolve?.();
+					pendingAnimationResolve = null;
+					materializeAllLazyCards();
+					const animeItems = getAnimeCards();
 
-					const status = target.getAttribute("data-status");
-					const animeItems = Array.from(
-						listContainer.children,
-					).filter((item) => item.hasAttribute("data-anime-status"));
-					const desired = new Map();
-					animeItems.forEach((item) => {
-						const itemStatus =
-							item.getAttribute("data-anime-status");
-						desired.set(
-							item,
-							status === "all" || itemStatus === status,
-						);
-					});
-					if (window.CardFilter) {
-						window.CardFilter.applyGroup(
-							animeItems,
-							(item) => desired.get(item) === true,
-							{
-								group: listContainer,
-								layoutContainer:
-									listContainer.closest(
-										"[data-filter-layout-container]",
-									),
-								animateLayoutHeight: true,
-							},
-						);
-					} else {
-						animeItems.forEach((item) => {
-							item.style.display = desired.get(item)
-								? ""
-								: "none";
+					Promise.resolve()
+						.then(() =>
+							runAnimeFilterAnimation(
+								animeItems,
+								activeStatus,
+								run,
+							),
+						)
+						.catch((error) => {
+							console.error("[Anime] Filter failed:", error);
+							animeItems.forEach((item) => {
+								item.classList.toggle(
+									"anime-hidden",
+									!matchesStatus(item, activeStatus),
+								);
+								item.classList.remove(
+									"anime-fade-out",
+									"anime-fade-in",
+									"anime-fade-in-active",
+								);
+							});
+							updateSentinel();
+						})
+						.finally(() => {
+							if (run === filterRun) {
+								updateSentinel();
+							}
 						});
-					}
 				};
 
 				tag.addEventListener("click", clickHandler);
@@ -865,42 +1124,19 @@ const hiddenAnimeList = animeList.slice(INITIAL_DISPLAY_COUNT);
 				]);
 			});
 			if (sentinel && lazyStore && listContainer) {
-				const observer = new IntersectionObserver(
+				filterObserver = new IntersectionObserver(
 					(entries) => {
 						if (entries[0].isIntersecting) {
-							const BATCH_SIZE = 24;
-							if (lazyStore.content.children.length === 0) {
-								sentinel.style.display = "none";
-								observer.disconnect();
-								return;
-							}
-
-							const fragment = document.createDocumentFragment();
-							let movedCount = 0;
-							while (
-								lazyStore.content.firstChild &&
-								movedCount < BATCH_SIZE
-							) {
-								const node = lazyStore.content.firstChild;
-								fragment.appendChild(node);
-								movedCount++;
-							}
-
-							requestAnimationFrame(() => {
-								listContainer.appendChild(fragment);
-								if (lazyStore.content.children.length === 0) {
-									sentinel.style.display = "none";
-									observer.disconnect();
-								}
-							});
+							void loadMoreForActiveFilter();
 						}
 					},
-					{ rootMargin: "200px" },
+					{ rootMargin: `${effect3.anime.lazyRootMargin}px` },
 				);
-				observer.observe(sentinel);
+				filterObserver.observe(sentinel);
 			} else if (sentinel) {
 				sentinel.style.display = "none";
 			}
+			updateSentinel();
 		}
 
 		document.addEventListener("DOMContentLoaded", initFilterButtons);

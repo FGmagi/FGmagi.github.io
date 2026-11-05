@@ -79,7 +79,7 @@ try {
 		// 优先级（ID+属性）高于任何普通类，卡片根节点上的 transition 清单一律会被它接管 ——
 		// 于是 hover 的 transform 动画根本不会过渡，只会瞬跳（观感即「指针一指就抖」）。
 		// 卡片悬停反馈沿用原有实现：变暗层（.post-card-hover-dim，150ms 透明度）+ 标题变色。
-		"card-base group flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative",
+		"card-base group flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-visible relative",
 		className,
 	]}
 	style={cardStyle}
@@ -175,7 +175,7 @@ try {
 				class:list={[
 					"post-cover-link",
 					"max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0",
-					"md:w-[var(--coverWidth)] relative md:absolute md:top-[12.5%] md:bottom-[12.5%] md:right-3 rounded-xl overflow-hidden active:scale-95",
+					"md:w-[var(--coverWidth)] relative md:absolute md:top-[12.5%] md:bottom-[12.5%] md:right-3 rounded-xl overflow-visible active:scale-95",
 				]}
 			>
 				<ImageWrapper

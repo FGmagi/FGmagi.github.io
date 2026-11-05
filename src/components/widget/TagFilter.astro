@@ -106,14 +106,26 @@ const style = Astro.props.style;
 			return window.__tagFilterActive;
 		}
 
+		function getSearchTerm() {
+			var input = document.querySelector(
+				'.home-search-bar .post-search-input',
+			);
+			return input && input.value
+				? input.value.trim().toLowerCase()
+				: '';
+		}
+
 		function applyTagFilter(animate) {
 			var container = document.getElementById('post-list-container');
 			if (!container) return;
 			var active = getActiveTags();
-			var cards = container.querySelectorAll('[data-tags]');
+			var searchTerm = getSearchTerm();
+			var cards = container.querySelectorAll(
+				':scope > [data-effect1-card]',
+			);
 			var pagination = document.querySelector('[data-page-pagination]');
 			var desired = new Map();
-			if (animate === false && active.size === 0) {
+			if (animate === false && active.size === 0 && !searchTerm) {
 				cards.forEach(function (card) {
 					card.classList.remove(
 						'effect2-card',
@@ -133,15 +145,20 @@ const style = Astro.props.style;
 			for (var i = 0; i < cards.length; i++) {
 				var card = cards[i];
 				var tags = (card.getAttribute('data-tags') || '').split(/\s+/);
-				var visible = active.size === 0;
-				if (!visible) {
+				var tagVisible = active.size === 0;
+				if (!tagVisible) {
 					for (var j = 0; j < tags.length; j++) {
 						if (tags[j] && active.has(tags[j])) {
-							visible = true;
+							tagVisible = true;
 							break;
 						}
 					}
 				}
+				var searchText =
+					(card.getAttribute('data-search-text') || '').toLowerCase();
+				var searchVisible =
+					!searchTerm || searchText.indexOf(searchTerm) >= 0;
+				var visible = tagVisible && searchVisible;
 				desired.set(card, visible);
 			}
 
@@ -304,6 +321,9 @@ const style = Astro.props.style;
 
 			document.addEventListener('swup:page:view', clearTagFilter);
 			window.addEventListener('popstate', clearTagFilter);
+			window.addEventListener('fgmagi:home-search', function () {
+				applyTagFilter(true);
+			});
 			window.addEventListener('resize', function () {
 				requestAnimationFrame(syncTagFilterFiller);
 			});

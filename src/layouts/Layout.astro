@@ -11,6 +11,7 @@ import {
 import {
 	Effect1,
 	Effect2,
+	Effect3,
 	motionSettingsConfig,
 	umamiConfig,
 } from "../config";
@@ -437,7 +438,7 @@ if (fontFaces.length > 0) {
 
 		<style
 			is:inline
-			set:html={`:root{--effect1-full-alpha:${Effect1.FullAlpha};--effect1-sim-alpha:${Effect1.SimAlpha};--effect1-content-alpha:${Effect1.ContentAlpha};--effect1-offer:${Effect1.offer}px;--effect1-offer2:${Effect1.offer2}px;--effect1-duration-show:${Effect1.duration_show}ms;--effect1-duration-hide:${Effect1.duration_hide}ms;--effect2-duration-hide:${Effect2.duration_hide}ms;--effect2-duration-move:${Effect2.duration_move}ms;--effect2-duration-show:${Effect2.duration_show}ms}`}
+			set:html={`:root{--effect1-full-alpha:${Effect1.FullAlpha};--effect1-sim-alpha:${Effect1.SimAlpha};--effect1-content-alpha:${Effect1.ContentAlpha};--effect1-offer:${Effect1.offer}px;--effect1-offer2:${Effect1.offer2}px;--effect1-duration-show:${Effect1.duration_show}ms;--effect1-duration-hide:${Effect1.duration_hide}ms;--effect2-duration-hide:${Effect2.duration_hide}ms;--effect2-duration-move:${Effect2.duration_move}ms;--effect2-move-easing:${Effect2.move_easing};--effect2-duration-show:${Effect2.duration_show}ms;--effect3-friend-duration:${Effect3.friend.duration}ms;--effect3-friend-offset:${Effect3.friend.offset}px;--effect3-friend-easing:${Effect3.friend.easing};--effect3-anime-duration:${Effect3.anime.fadeDuration}ms;--effect3-anime-move-duration:${Effect3.anime.moveDuration}ms;--effect3-anime-scale:${Effect3.anime.scale};--effect3-anime-easing:${Effect3.anime.easing};--effect3-anime-move-easing:${Effect3.anime.moveEasing}}`}
 		></style>
 
 		{fontFaceCss && <Fragment set:html={`<style>${fontFaceCss}</style>`} />}

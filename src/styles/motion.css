@@ -7,10 +7,6 @@
   --effect1-offer2: 20px;
   --effect1-duration-show: 420ms;
   --effect1-duration-hide: 260ms;
-  --effect2-duration-hide: 180ms;
-  --effect2-duration-move: 320ms;
-  --effect2-duration-show: 240ms;
-
   /* 时长 */
   --mo-fast: 140ms; /* 悬浮 / 按压 / 颜色 */
   --mo-base: 220ms; /* 面板 / 卡片状态切换 */
@@ -134,6 +130,10 @@ body.wallpaper-transparent [data-effect1-card] {
   --effect1-keyframe-y-to: var(--effect1-offer2);
 }
 
+[data-effect1-card].effect1-hiding.effect1-hiding-allow-interaction {
+  pointer-events: auto;
+}
+
 [data-effect1-card].effect1-hiding::before,
 [data-effect1-card].effect1-hiding > * {
   animation: Effect1_hide var(--effect1-duration-hide) linear both !important;
@@ -206,7 +206,9 @@ body.wallpaper-transparent [data-effect1-card] {
 .effect2-moving {
   /* Cards that remain visible must only move. Including opacity in this
      transition lets unrelated state cleanup briefly fade them out. */
-  transition: transform var(--effect2-duration-move) linear !important;
+  transition:
+    transform var(--effect2-duration-move)
+      var(--effect2-move-easing, cubic-bezier(0.4, 0, 0.2, 1)) !important;
 }
 
 /* --------------------------------------------------------------------

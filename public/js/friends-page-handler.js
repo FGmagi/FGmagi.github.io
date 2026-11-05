@@ -46,6 +46,10 @@
 				copySuccessTextElement.textContent;
 		}
 
+		if (window.friendsPageState.cancelFilter) {
+			window.friendsPageState.cancelFilter();
+		}
+
 		// 清理旧的事件监听器
 		if (window.friendsPageState.eventListeners.length > 0) {
 			console.log(
@@ -67,71 +71,72 @@
 
 		var currentTag = "all";
 		var searchTerm = "";
-		var filterRun = 0;
+		window.friendsPageState.cancelFilter = function () {
+			friendsGrid?.removeAttribute("aria-busy");
+			if (window.CardFilter) window.CardFilter.clearRuntime();
+		};
+		window.addEventListener(
+			"pagehide",
+			window.friendsPageState.cancelFilter,
+		);
+		window.friendsPageState.eventListeners.push([
+			window,
+			"pagehide",
+			window.friendsPageState.cancelFilter,
+		]);
 
-		// 过滤函数
-		function filterFriends() {
-			var run = ++filterRun;
-			var visibleCount = 0;
-			var desired = new Map();
-			for (var i = 0; i < friendCards.length; i++) {
-				var card = friendCards[i];
-				var title = (card.getAttribute("data-title") || "").toLowerCase();
-				var desc = (card.getAttribute("data-desc") || "").toLowerCase();
-				var tags = card.getAttribute("data-tags") || "";
-
-				var matchesSearch =
-					!searchTerm ||
-					title.indexOf(searchTerm) >= 0 ||
-					desc.indexOf(searchTerm) >= 0;
-				var matchesTag =
-					currentTag === "all" || tags.split(",").indexOf(currentTag) >= 0;
-
-				var visible = matchesSearch && matchesTag;
-				desired.set(card, visible);
-				if (visible) visibleCount++;
-			}
-
+		function updateFilterUi(visibleCount) {
 			if (visibleCount > 0) {
 				noResults.classList.add("hidden");
 				friendsGrid.classList.remove("hidden");
+			} else {
+				noResults.classList.remove("hidden");
+				friendsGrid.classList.add("hidden");
 			}
+		}
 
-			var transition = window.CardFilter
-				? window.CardFilter.applyGroup(friendCards, function (card) {
-						return desired.get(card) === true;
-					}, {
-						group: friendsGrid,
-						layoutContainer: document.querySelector(
-							"[data-filter-layout-container]",
-						),
-						animateLayoutHeight: true,
-					})
-				: Promise.resolve().then(function () {
-						friendCards.forEach(function (card) {
-							card.style.display = desired.get(card) ? "" : "none";
-						});
-					});
-
-			transition.then(function () {
-				if (run !== filterRun) return;
-				updateDynamicLayout();
-				if (visibleCount === 0) {
-					noResults.classList.remove("hidden");
-					friendsGrid.classList.add("hidden");
+		// 参考 Mizuki 友链页：筛选即时提交，卡片重新显示时使用 CSS fadeInUp。
+		function filterFriends() {
+			var host = document.querySelector(
+				"[data-filter-layout-container][data-effect1-card]",
+			);
+			var effect3 = window.siteConfig?.effect3;
+			var containerAnimation = effect3?.container;
+			var applyVisibility = function () {
+				var visibleCount = 0;
+				for (var i = 0; i < friendCards.length; i++) {
+					var card = friendCards[i];
+					var title = (
+						card.getAttribute("data-title") || ""
+					).toLowerCase();
+					var desc = (
+						card.getAttribute("data-desc") || ""
+					).toLowerCase();
+					var tags = card.getAttribute("data-tags") || "";
+					var matchesSearch =
+						!searchTerm ||
+						title.indexOf(searchTerm) >= 0 ||
+						desc.indexOf(searchTerm) >= 0;
+					var matchesTag =
+						currentTag === "all" ||
+						tags.split(",").indexOf(currentTag) >= 0;
+					var visible = matchesSearch && matchesTag;
+					card.style.display = visible ? "" : "none";
+					if (visible) visibleCount += 1;
 				}
-			});
-			Promise.resolve().then(updateDynamicLayout);
-			window.clearTimeout(window.__friendsLayoutTimer);
-			window.__friendsLayoutTimer = window.setTimeout(
-				updateDynamicLayout,
-				window.CardFilter
-					? window.CardFilter.config().hide +
-							window.CardFilter.config().move +
-							window.CardFilter.config().show +
-							40
-					: 40,
-				);
+				updateFilterUi(visibleCount);
+			};
+
+			var transition =
+				window.CardFilter && host && containerAnimation
+					? window.CardFilter.animateHeight(
+							host,
+							applyVisibility,
+							containerAnimation.duration,
+							containerAnimation.easing,
+						)
+					: Promise.resolve().then(applyVisibility);
+			transition.finally(updateDynamicLayout);
 		}
 
 		// 才给该 desc 加 .friend-desc--scroll-lock（overscroll-behavior: contain），

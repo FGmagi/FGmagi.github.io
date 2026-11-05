@@ -66,9 +66,43 @@ export const Effect1 = {
 
 export const Effect2 = {
 	// 筛选编排：先淡出，再 FLIP 移动，最后淡入。
-	duration_hide: 180,
-	duration_move: 320,
-	duration_show: 240,
+	duration_hide: 100,
+	duration_move: 300,
+	duration_show: 180,
+	move_easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+	// 卡片变化超过该数量时，改用外层卡片 Effect1 批量切换。
+	edge: 6,
+	// 单次筛选操作的总兜底时间，涵盖加载、布局、隐藏和显示。
+	max_waitting_time: 3000,
+} as const;
+
+export const Effect3 = {
+	// 追番、友链筛选动画。参考 Mizuki 的 fadeInUp / fade / FLIP 实现。
+	container: {
+		duration: 300,
+		easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+	},
+	friend: {
+		duration: 500,
+		offset: 20,
+		stagger: 50,
+		staggerLimit: 6,
+		easing: "ease-out",
+	},
+	anime: {
+		fadeDuration: 500,
+		fadeOutDelay: 200,
+		moveDuration: 500,
+		fadeInStagger: 30,
+		fadeInStaggerLimit: 20,
+		scale: 0.9,
+		easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+		moveEasing: "cubic-bezier(0.4, 0, 0.2, 1)",
+		cleanupDelay: 600,
+		cleanupBuffer: 100,
+		lazyBatchSize: 24,
+		lazyRootMargin: 200,
+	},
 } as const;
 
 export type MotionFeatureDefinition = {

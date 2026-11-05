@@ -5,7 +5,9 @@
 .anime-grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  align-content: start;
   gap: 1.5rem;
+  contain: layout style;
 }
 
 /* === List Mode === */
@@ -53,6 +55,31 @@
 .anime-grid-container.anime-list-mode .group p.text-xs {
   -webkit-line-clamp: 4;
   line-clamp: 4;
+}
+
+.anime-grid-container [data-anime-status] {
+  transition:
+    opacity var(--effect3-anime-duration, 500ms)
+      var(--effect3-anime-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+    transform var(--effect3-anime-move-duration, 500ms)
+      var(--effect3-anime-move-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+    box-shadow 150ms ease-out;
+}
+
+.anime-grid-container [data-anime-status].anime-hidden {
+  display: none !important;
+}
+
+.anime-grid-container [data-anime-status].anime-fade-out,
+.anime-grid-container [data-anime-status].anime-fade-in {
+  opacity: 0;
+  transform: scale(var(--effect3-anime-scale, 0.9));
+  pointer-events: none;
+}
+
+.anime-grid-container [data-anime-status].anime-fade-in-active {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .anime-filter-container {

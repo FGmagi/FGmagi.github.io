@@ -1,7 +1,7 @@
 ---
 import { getEntry, render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
-import { dataFiles, siteConfig } from "../config";
+import { dataFiles, Effect3, siteConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
@@ -162,11 +162,12 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 
 			{friendGridCss && <Fragment set:html={`<style>${friendGridCss}</style>`} />}
 			<div id="friends-grid" class="grid gap-6 mb-6">
-				{friendsList.map((item) => (
+				{friendsList.map((item, index) => (
 					<div 
 						class="friend-card group relative bg-transparent rounded-xl border border-black/10 dark:border-white/10
 								 overflow-hidden transition-all duration-300
-								 hover:shadow-xl"
+								 hover:shadow-xl hover:-translate-y-1"
+						style={`--effect3-friend-delay:${Math.min(index, Math.max(0, Effect3.friend.staggerLimit - 1)) * Effect3.friend.stagger}ms;`}
 						data-title={item.title.toLowerCase()}
 						data-desc={item.desc.toLowerCase()}
 						data-tags={item.tags.join(',')}
@@ -302,6 +303,25 @@ FRIEND_BREAKPOINTS.forEach((bp) => appendFriendGridRule(bp.minWidth, bp.columns)
 <style>
 	.friend-card {
 		min-width: 0;
+		animation: Effect3_friend_in var(--effect3-friend-duration, 500ms)
+			var(--effect3-friend-easing, ease-out) both;
+		animation-delay: var(--effect3-friend-delay, 0ms);
+	}
+
+	@keyframes Effect3_friend_in {
+		from {
+			opacity: 0;
+			transform: translateY(var(--effect3-friend-offset, 20px));
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	#friends-grid {
+		align-content: start;
+		contain: layout style;
 	}
 
 	.friend-desc {

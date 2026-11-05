@@ -54,12 +54,39 @@ declare global {
 				},
 			) => Promise<void>;
 			isHidden: (card: HTMLElement) => boolean;
+			countChanges: (
+				cards: Iterable<HTMLElement>,
+				shouldShow: (card: HTMLElement) => boolean,
+			) => number;
+			setVisibility: (
+				cards: Iterable<HTMLElement>,
+				shouldShow: (card: HTMLElement) => boolean,
+			) => void;
+			hideEffect1: (host: HTMLElement, deadline: number) => Promise<void>;
+			showEffect1: (host: HTMLElement, deadline: number) => Promise<void>;
+			runEffect1: (options: {
+				host: HTMLElement;
+				layoutContainer: HTMLElement;
+				deadline: number;
+				duringHidden: () => void | Promise<void>;
+			}) => Promise<void>;
+			clearRuntime: () => void;
+			animateHeight: (
+				host: HTMLElement,
+				mutate: () => void,
+				duration: number,
+				easing: string,
+			) => Promise<void>;
 			config: () => {
 				enable: boolean;
 				duration: number;
 				hide: number;
 				move: number;
 				show: number;
+				edge: number;
+				maxWaitingTime: number;
+				isAnimating: (group: Element) => boolean;
+				waitForIdle: (group: Element) => Promise<void>;
 			};
 		};
 		initSemifullScrollDetection?: () => void;

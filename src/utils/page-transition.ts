@@ -1,4 +1,4 @@
-import { Effect1, siteConfig } from "../config";
+import { Effect1, Effect2, siteConfig } from "../config";
 import {
 	hideCardsForNavigation,
 	replayEffect1Show,
@@ -19,7 +19,7 @@ type Timing = { fadeOut: number; fadeIn: number };
 
 const CLASS_LEAVING = "swup-leaving";
 const CLASS_ENTERING = "page-entering";
-const SAFETY_MS = 1600;
+const SAFETY_MS = Effect2.transition_max_waitting;
 const PROGRESS_MAX_BEFORE_FINISH = 0.86;
 
 let progressElement: HTMLElement | null = null;

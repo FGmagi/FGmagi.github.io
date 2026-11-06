@@ -73,7 +73,10 @@ export const Effect2 = {
 	// 卡片变化超过该数量时，改用外层卡片 Effect1 批量切换。
 	edge: 6,
 	// 单次筛选操作的总兜底时间，涵盖加载、布局、隐藏和显示。
-	max_waitting_time: 3000,
+	max_waitting_time: 10000,
+
+	// 页面切换，最大等待时间
+	transition_max_waitting: 300000,
 } as const;
 
 export const Effect3 = {
@@ -837,3 +840,4 @@ export const umamiConfig = {
 <script defer src="XXXX.XXX" data-website-id="ABCD1234"></script>
   `.trim(), // 要插入的统计脚本（无需再去 Layout 中插入）
 } as const;
+

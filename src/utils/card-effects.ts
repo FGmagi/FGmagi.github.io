@@ -26,10 +26,7 @@ type ActiveFilterRun = {
 };
 
 const activeFilterRuns = new WeakMap<Element, ActiveFilterRun>();
-const activeHeightRuns = new WeakMap<
-	HTMLElement,
-	{ cancel: () => void }
->();
+const activeHeightRuns = new WeakMap<HTMLElement, { cancel: () => void }>();
 const activeHeightHosts = new Set<HTMLElement>();
 const HIDDEN_CLASS = "effect2-hidden";
 const FILTER_CLASS = "effect2-card";
@@ -66,18 +63,9 @@ function getAnimationName(animation: Animation): string | null {
 
 function syncEffect2CssTiming(): void {
 	const style = document.documentElement.style;
-	style.setProperty(
-		"--effect2-duration-hide",
-		`${Effect2.duration_hide}ms`,
-	);
-	style.setProperty(
-		"--effect2-duration-move",
-		`${Effect2.duration_move}ms`,
-	);
-	style.setProperty(
-		"--effect2-duration-show",
-		`${Effect2.duration_show}ms`,
-	);
+	style.setProperty("--effect2-duration-hide", `${Effect2.duration_hide}ms`);
+	style.setProperty("--effect2-duration-move", `${Effect2.duration_move}ms`);
+	style.setProperty("--effect2-duration-show", `${Effect2.duration_show}ms`);
 }
 
 async function waitForCssMotion(
@@ -177,8 +165,7 @@ async function waitForEffect1Phase(
 
 function isHidden(card: HTMLElement): boolean {
 	return (
-		hasHiddenState(card) ||
-		window.getComputedStyle(card).display === "none"
+		hasHiddenState(card) || window.getComputedStyle(card).display === "none"
 	);
 }
 
@@ -280,11 +267,11 @@ export async function applyCardFilter(
 	const savedStyles = new Map(
 		uniqueCards.map((card) => [card, saveStyle(card)]),
 	);
-	const layoutContainer =
-		options.layoutContainer?.isConnected ? options.layoutContainer : null;
+	const layoutContainer = options.layoutContainer?.isConnected
+		? options.layoutContainer
+		: null;
 	const animateLayoutHeight = options.animateLayoutHeight === true;
-	const moveAlong =
-		options.moveAlong?.isConnected ? options.moveAlong : null;
+	const moveAlong = options.moveAlong?.isConnected ? options.moveAlong : null;
 	const layoutStartHeight = layoutContainer?.getBoundingClientRect().height;
 	const layoutSavedHeight = layoutContainer?.style.height ?? "";
 	const layoutSavedTransition = layoutContainer?.style.transition ?? "";
@@ -307,7 +294,8 @@ export async function applyCardFilter(
 			layoutContainer.style.transition = layoutSavedTransition;
 			layoutContainer.style.willChange = layoutSavedWillChange;
 		}
-		if (moveAlong && moveAlongStyle) restoreStyle(moveAlong, moveAlongStyle);
+		if (moveAlong && moveAlongStyle)
+			restoreStyle(moveAlong, moveAlongStyle);
 		resolveCancelled?.();
 		resolveDone?.();
 	};
@@ -333,10 +321,7 @@ export async function applyCardFilter(
 		rect: card.getBoundingClientRect(),
 	}));
 	for (const { card, opacity, rect } of firstStates) {
-		card.style.setProperty(
-			"--effect2-keep-opacity",
-			opacity,
-		);
+		card.style.setProperty("--effect2-keep-opacity", opacity);
 		card.classList.add(KEEPING_CLASS);
 		firstPositions.set(card, rect);
 	}
@@ -483,10 +468,7 @@ export async function applyCardFilter(
 		moveAlong.style.transform = `translate3d(${moveAlongStartX}px, ${moveAlongStartY}px, 0)`;
 	}
 
-	if (
-		(movingCards.size || moveAlongChanges) &&
-		Effect2.duration_move > 0
-	) {
+	if ((movingCards.size || moveAlongChanges) && Effect2.duration_move > 0) {
 		await nextFrame();
 		if (await abortIfCancelled()) return;
 		const moveMotionElements = Array.from(movingCards.keys());
@@ -602,8 +584,7 @@ export async function applyCardFilter(
 		if (layoutContainer) {
 			await waitForCssMotion(
 				[layoutContainer],
-				(animation) =>
-					getTransitionProperty(animation) === "height",
+				(animation) => getTransitionProperty(animation) === "height",
 				Effect2.duration_show,
 				cancelledPromise,
 			);
@@ -611,7 +592,11 @@ export async function applyCardFilter(
 		if (await abortIfCancelled()) return;
 	}
 
-	if (deferAnimatedLayoutToReveal && layoutContainer && layoutEndHeight !== null) {
+	if (
+		deferAnimatedLayoutToReveal &&
+		layoutContainer &&
+		layoutEndHeight !== null
+	) {
 		layoutContainer.style.height = `${layoutEndHeight}px`;
 		void layoutContainer.offsetHeight;
 		layoutContainer.style.height = layoutSavedHeight;
@@ -737,10 +722,7 @@ export async function showCardFilterHost(
 	deadline: number,
 ): Promise<void> {
 	if (!host.isConnected) return;
-	host.classList.remove(
-		"effect1-hiding",
-		"effect1-hiding-allow-interaction",
-	);
+	host.classList.remove("effect1-hiding", "effect1-hiding-allow-interaction");
 	host.classList.add("effect1-reset");
 	void host.offsetHeight;
 	await Promise.race([
